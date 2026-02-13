@@ -217,6 +217,15 @@ export async function registerRoutes(
 
   // ─── Blog Post Routes ─────────────────────────────────────────
 
+  app.get("/api/posts/queue", authMiddleware, requireRole("root", "admin", "editor"), async (_req, res) => {
+    try {
+      const queued = await storage.getPosts("queued");
+      res.json(queued);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch queue" });
+    }
+  });
+
   app.get("/api/posts", async (req, res) => {
     try {
       const status = req.query.status as string | undefined;
@@ -312,7 +321,7 @@ export async function registerRoutes(
     }
   });
 
-  // ─── AI Article Generation ────────────────────────────────────
+  // ─── AI Article Generation (single topic) ──────────────────────
 
   app.post("/api/ai/generate-article", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
     try {
@@ -405,7 +414,28 @@ Respond in this exact JSON format:
     }
   });
 
-  // ─── Research Agent: Competitive Research + 5 Article Generation ──
+  // ─── Research Agent: 5 Topic Suggestions Only ──────────────────
+
+  app.get("/api/topics", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const allTopics = await storage.getTopics(status);
+      res.json(allTopics);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch topics" });
+    }
+  });
+
+  app.get("/api/topics/:id", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const topic = await storage.getTopicById(id);
+      if (!topic) return res.status(404).json({ message: "Topic not found" });
+      res.json(topic);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch topic" });
+    }
+  });
 
   app.post("/api/ai/research", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
     try {
@@ -434,27 +464,29 @@ Then identify 5 highly effective article topics that will:
 - Include location-specific angles where relevant
 - Cover informational, commercial, and transactional intent
 
-For each article topic provide:
+For each topic provide:
 - title: compelling headline
-- topic: detailed description of what to cover
+- overview: 1-paragraph overview of the article concept (what it covers, angle, unique value)
 - targetKeywords: array of 5-8 target keywords/phrases
 - searchIntent: "informational" | "commercial" | "transactional"
 - estimatedSearchVolume: "high" | "medium" | "low"
 - competitionLevel: "high" | "medium" | "low"
 - leadPotential: brief explanation of how this drives leads
+- reasoning: why this topic was chosen, what search data supports it
 
 Respond in JSON format:
 {
   "marketInsights": "Brief summary of competitive landscape and opportunities",
-  "articles": [
+  "topics": [
     {
       "title": "...",
-      "topic": "...",
+      "overview": "...",
       "targetKeywords": ["..."],
       "searchIntent": "...",
       "estimatedSearchVolume": "...",
       "competitionLevel": "...",
-      "leadPotential": "..."
+      "leadPotential": "...",
+      "reasoning": "..."
     }
   ]
 }`;
@@ -471,22 +503,62 @@ Respond in JSON format:
           try {
             research = JSON.parse(researchRaw);
           } catch {
-            research = { marketInsights: "", articles: [] };
+            research = { marketInsights: "", topics: [] };
           }
 
-          await storage.updateAiJob(job.id, { output: JSON.stringify({ phase: "research_complete", research }), status: "research_complete" });
+          const topicsData = research.topics || [];
+          for (const t of topicsData.slice(0, 5)) {
+            await storage.createTopic({
+              title: t.title,
+              overview: t.overview || "",
+              targetKeywords: t.targetKeywords || [],
+              searchIntent: t.searchIntent || null,
+              estimatedSearchVolume: t.estimatedSearchVolume || null,
+              competitionLevel: t.competitionLevel || null,
+              leadPotential: t.leadPotential || null,
+              reasoning: t.reasoning || null,
+              aiJobId: job.id,
+            });
+          }
 
-          const articlesData = research.articles || [];
-          const generatedArticles: any[] = [];
+          await storage.updateAiJob(job.id, {
+            output: JSON.stringify({ research, topicCount: topicsData.length }),
+            status: "completed",
+          });
+        } catch (e: any) {
+          console.error("Research agent error:", e?.message);
+          await storage.updateAiJob(job.id, { output: JSON.stringify({ error: e?.message }), status: "failed" });
+        }
+      })();
+    } catch (error: any) {
+      console.error("Research agent error:", error);
+      res.status(500).json({ message: "Failed to start research agent", error: error?.message });
+    }
+  });
 
-          for (const articlePlan of articlesData.slice(0, 5)) {
-            const articlePrompt = `You are an expert automotive content writer for Dent Society, a precision hail damage repair company in Dallas, TX.
+  // ─── Writer Agent: Generate Article from Topic ──────────────────
+
+  app.post("/api/topics/:id/generate", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const topicId = parseInt(req.params.id);
+      const topic = await storage.getTopicById(topicId);
+      if (!topic) return res.status(404).json({ message: "Topic not found" });
+      if (topic.status === "generated" || topic.status === "generating") {
+        return res.status(400).json({ message: "Article already generated or in progress for this topic" });
+      }
+
+      await storage.updateTopic(topicId, { status: "generating" });
+      res.json({ status: "generating", topicId });
+
+      (async () => {
+        try {
+          const articlePrompt = `You are an expert automotive content writer for Dent Society, a precision hail damage repair company in Dallas, TX.
 
 Write a comprehensive, SEO-optimized blog article based on this research:
-Topic: ${articlePlan.title}
-Description: ${articlePlan.topic}
-Target Keywords: ${(articlePlan.targetKeywords || []).join(", ")}
-Search Intent: ${articlePlan.searchIntent}
+Topic: ${topic.title}
+Overview: ${topic.overview}
+Target Keywords: ${(topic.targetKeywords || []).join(", ")}
+Search Intent: ${topic.searchIntent || "informational"}
 
 Rules:
 - Write in a controlled, confident tone. No exclamation points. No sales hype.
@@ -509,76 +581,63 @@ Respond in JSON format:
   "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
 }`;
 
-            try {
-              const articleResponse = await openai.chat.completions.create({
-                model: "gpt-5.2",
-                messages: [{ role: "user", content: articlePrompt }],
-                response_format: { type: "json_object" },
-                max_completion_tokens: 8192,
-              });
+          const articleResponse = await openai.chat.completions.create({
+            model: "gpt-5.2",
+            messages: [{ role: "user", content: articlePrompt }],
+            response_format: { type: "json_object" },
+            max_completion_tokens: 8192,
+          });
 
-              const articleRaw = articleResponse.choices[0]?.message?.content || "{}";
-              let article;
-              try {
-                article = JSON.parse(articleRaw);
-              } catch {
-                article = { title: articlePlan.title, content: articleRaw, excerpt: "", tags: [], seoTitle: "", seoDescription: "", seoKeywords: [] };
-              }
-
-              let slug = slugify(article.title || articlePlan.title);
-              const existingSlug = await storage.getPostBySlug(slug);
-              if (existingSlug) slug = slug + "-" + Date.now().toString(36);
-
-              const post = await storage.createPost({
-                title: article.title || articlePlan.title,
-                slug,
-                content: article.content || "",
-                excerpt: article.excerpt || null,
-                tags: article.tags || [],
-                seoTitle: article.seoTitle || null,
-                seoDescription: article.seoDescription || null,
-                seoKeywords: article.seoKeywords || [],
-                status: "queued",
-                featuredImage: null,
-                publishedAt: null,
-                researchJobId: job.id,
-                authorId: req.user!.id,
-              });
-
-              generatedArticles.push({ postId: post.id, title: post.title, slug: post.slug });
-            } catch (e: any) {
-              console.error("Failed to generate article:", articlePlan.title, e?.message);
-            }
+          const articleRaw = articleResponse.choices[0]?.message?.content || "{}";
+          let article;
+          try {
+            article = JSON.parse(articleRaw);
+          } catch {
+            article = { title: topic.title, content: articleRaw, excerpt: "", tags: [], seoTitle: "", seoDescription: "", seoKeywords: [] };
           }
 
-          await storage.updateAiJob(job.id, {
-            output: JSON.stringify({ research, generatedArticles }),
-            status: "completed",
+          let slug = slugify(article.title || topic.title);
+          const existingSlug = await storage.getPostBySlug(slug);
+          if (existingSlug) slug = slug + "-" + Date.now().toString(36);
+
+          const post = await storage.createPost({
+            title: article.title || topic.title,
+            slug,
+            content: article.content || "",
+            excerpt: article.excerpt || null,
+            tags: article.tags || [],
+            seoTitle: article.seoTitle || null,
+            seoDescription: article.seoDescription || null,
+            seoKeywords: article.seoKeywords || [],
+            status: "queued",
+            featuredImage: null,
+            publishedAt: null,
+            topicId,
+            authorId: req.user!.id,
           });
+
+          await storage.updateTopic(topicId, { status: "generated", postId: post.id });
         } catch (e: any) {
-          console.error("Research agent error:", e?.message);
-          await storage.updateAiJob(job.id, { output: JSON.stringify({ error: e?.message }), status: "failed" });
+          console.error("Writer agent error:", e?.message);
+          await storage.updateTopic(topicId, { status: "suggested" });
         }
       })();
     } catch (error: any) {
-      console.error("Research agent error:", error);
-      res.status(500).json({ message: "Failed to start research agent", error: error?.message });
+      console.error("Writer agent error:", error);
+      res.status(500).json({ message: "Failed to generate article from topic" });
     }
   });
 
-  app.get("/api/ai/research/:id", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+  // ─── Archive Topic ──────────────────────────────────────────────
+
+  app.patch("/api/topics/:id/archive", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const jobs = await storage.getAiJobs();
-      const job = jobs.find(j => j.id === id && j.type === "research");
-      if (!job) return res.status(404).json({ message: "Research job not found" });
-
-      const queuedPosts = await storage.getPosts("queued");
-      const relatedPosts = queuedPosts.filter(p => (p as any).researchJobId === job.id);
-
-      res.json({ job, queuedArticles: relatedPosts });
+      const topic = await storage.updateTopic(id, { status: "archived" });
+      if (!topic) return res.status(404).json({ message: "Topic not found" });
+      res.json(topic);
     } catch {
-      res.status(500).json({ message: "Failed to fetch research job" });
+      res.status(500).json({ message: "Failed to archive topic" });
     }
   });
 
@@ -591,26 +650,158 @@ Respond in JSON format:
     }
   });
 
-  // ─── Publisher Queue ────────────────────────────────────────────
-
-  app.get("/api/posts/queue", authMiddleware, requireRole("root", "admin", "editor"), async (_req, res) => {
-    try {
-      const queued = await storage.getPosts("queued");
-      res.json(queued);
-    } catch {
-      res.status(500).json({ message: "Failed to fetch queue" });
-    }
-  });
+  // ─── Publisher Agent: Publish + SEO + Backlinks + Auto-Newsletter ──
 
   app.post("/api/posts/:id/publish", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const post = await storage.getPostById(id);
       if (!post) return res.status(404).json({ message: "Post not found" });
+
       const updated = await storage.updatePost(id, { status: "published", publishedAt: new Date() });
       res.json(updated);
+
+      (async () => {
+        try {
+          if (!post.seoTitle || !post.seoDescription || !(post.seoKeywords && post.seoKeywords.length > 0)) {
+            const seoPrompt = `You are an SEO specialist. Generate optimized SEO metadata for this blog article.
+
+Title: ${post.title}
+Excerpt: ${post.excerpt || ""}
+Tags: ${(post.tags || []).join(", ")}
+
+Respond in JSON:
+{
+  "seoTitle": "SEO title (60 chars max)",
+  "seoDescription": "Meta description (155 chars max)",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+}`;
+
+            try {
+              const seoResponse = await openai.chat.completions.create({
+                model: "gpt-5.2",
+                messages: [{ role: "user", content: seoPrompt }],
+                response_format: { type: "json_object" },
+                max_completion_tokens: 512,
+              });
+
+              const seoRaw = seoResponse.choices[0]?.message?.content || "{}";
+              let seoData;
+              try { seoData = JSON.parse(seoRaw); } catch { seoData = {}; }
+
+              const seoUpdates: Record<string, any> = {};
+              if (!post.seoTitle && seoData.seoTitle) seoUpdates.seoTitle = seoData.seoTitle;
+              if (!post.seoDescription && seoData.seoDescription) seoUpdates.seoDescription = seoData.seoDescription;
+              if ((!post.seoKeywords || post.seoKeywords.length === 0) && seoData.seoKeywords) seoUpdates.seoKeywords = seoData.seoKeywords;
+
+              if (Object.keys(seoUpdates).length > 0) {
+                await storage.updatePost(id, seoUpdates);
+              }
+            } catch (e: any) {
+              console.error("SEO agent error:", e?.message);
+            }
+          }
+
+          const baseUrl = process.env.REPLIT_DEV_DOMAIN
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+            : process.env.REPLIT_DEPLOYMENT_URL
+              ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+              : "";
+
+          const backlinkPlatforms = ["Reddit", "LinkedIn", "Twitter", "Medium", "Hacker News"];
+          for (const platform of backlinkPlatforms) {
+            try {
+              const shortCode = crypto.randomBytes(4).toString("hex");
+              const utmSource = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+              const utmCampaign = post.slug;
+              const articleUrl = `${baseUrl}/blog/${post.slug}?utm_source=${utmSource}&utm_medium=referral&utm_campaign=${utmCampaign}`;
+
+              await storage.createBacklink({
+                postId: id,
+                platform,
+                url: articleUrl,
+                utmSource,
+                utmMedium: "referral",
+                utmCampaign,
+                shortCode,
+              });
+            } catch (e: any) {
+              console.error(`Backlink creation error for ${platform}:`, e?.message);
+            }
+          }
+
+          try {
+            const articleLink = `${baseUrl}/blog/${post.slug}`;
+            const nlSubject = post.title;
+            const nlHtml = `<div style="font-family:Manrope,sans-serif;background:#0B0B0D;color:#F5F5F7;padding:40px 20px;">
+<h1 style="font-size:24px;margin-bottom:16px;">${post.title}</h1>
+${post.excerpt ? `<p style="color:#B3B3B8;font-size:16px;line-height:1.6;margin-bottom:24px;">${post.excerpt}</p>` : ""}
+<a href="${articleLink}" style="display:inline-block;background:#FF192C;color:white;padding:12px 32px;text-decoration:none;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Read Full Article</a>
+<p style="color:#B3B3B8;font-size:12px;margin-top:40px;">Dent Society - Precision Restoration Lab</p>
+</div>`;
+
+            const newsletter = await storage.createNewsletter({ subject: nlSubject, htmlContent: nlHtml });
+
+            const activeSubscribers = await storage.getSubscribers("active");
+            if (activeSubscribers.length > 0) {
+              let sent = 0;
+              try {
+                const { client, fromEmail } = await getResendClient();
+                for (const sub of activeSubscribers) {
+                  try {
+                    await client.emails.send({
+                      from: fromEmail,
+                      to: sub.email,
+                      subject: nlSubject,
+                      html: nlHtml +
+                        `<p style="font-size:12px;color:#999;margin-top:40px;"><a href="${baseUrl}/api/unsubscribe/${sub.unsubscribeToken}">Unsubscribe</a></p>`,
+                    });
+                    sent++;
+                  } catch (e) {
+                    console.error(`Failed to send to ${sub.email}:`, e);
+                  }
+                }
+              } catch (e) {
+                console.error("Resend client error:", e);
+              }
+
+              await storage.updateNewsletter(newsletter.id, {
+                status: "sent",
+                sentAt: new Date(),
+                recipientCount: sent,
+              });
+            }
+          } catch (e: any) {
+            console.error("Auto-newsletter error:", e?.message);
+          }
+        } catch (e: any) {
+          console.error("Publisher agent error:", e?.message);
+        }
+      })();
     } catch {
       res.status(500).json({ message: "Failed to publish post" });
+    }
+  });
+
+  // ─── Read/Share Count Tracking ──────────────────────────────────
+
+  app.post("/api/posts/:id/read", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementPostReadCount(id);
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ message: "Failed to track read" });
+    }
+  });
+
+  app.post("/api/posts/:id/share", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementPostShareCount(id);
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ message: "Failed to track share" });
     }
   });
 

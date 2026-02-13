@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -9,6 +9,7 @@ import {
   type AiJob,
   type Backlink,
   type BacklinkClick,
+  type Topic,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -54,6 +55,14 @@ export interface IStorage {
   getAiJobs(): Promise<AiJob[]>;
   getAiJobsByType(type: string): Promise<AiJob[]>;
   updateAiJob(id: number, data: Partial<AiJob>): Promise<AiJob | undefined>;
+
+  createTopic(data: { title: string; overview: string; targetKeywords?: string[]; searchIntent?: string; estimatedSearchVolume?: string; competitionLevel?: string; leadPotential?: string; reasoning?: string; aiJobId?: number }): Promise<Topic>;
+  getTopics(status?: string): Promise<Topic[]>;
+  getTopicById(id: number): Promise<Topic | undefined>;
+  updateTopic(id: number, data: Partial<Topic>): Promise<Topic | undefined>;
+
+  incrementPostReadCount(id: number): Promise<void>;
+  incrementPostShareCount(id: number): Promise<void>;
 
   createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink>;
   getBacklinksByPostId(postId: number): Promise<Backlink[]>;
@@ -208,6 +217,32 @@ export class DatabaseStorage implements IStorage {
   async updateAiJob(id: number, data: Partial<AiJob>): Promise<AiJob | undefined> {
     const [result] = await db.update(aiJobs).set(data).where(eq(aiJobs.id, id)).returning();
     return result;
+  }
+
+  async createTopic(data: { title: string; overview: string; targetKeywords?: string[]; searchIntent?: string; estimatedSearchVolume?: string; competitionLevel?: string; leadPotential?: string; reasoning?: string; aiJobId?: number }): Promise<Topic> {
+    const [result] = await db.insert(topics).values(data).returning();
+    return result;
+  }
+  async getTopics(status?: string): Promise<Topic[]> {
+    if (status) {
+      return db.select().from(topics).where(eq(topics.status, status)).orderBy(desc(topics.createdAt));
+    }
+    return db.select().from(topics).orderBy(desc(topics.createdAt));
+  }
+  async getTopicById(id: number): Promise<Topic | undefined> {
+    const [result] = await db.select().from(topics).where(eq(topics.id, id));
+    return result;
+  }
+  async updateTopic(id: number, data: Partial<Topic>): Promise<Topic | undefined> {
+    const [result] = await db.update(topics).set(data).where(eq(topics.id, id)).returning();
+    return result;
+  }
+
+  async incrementPostReadCount(id: number): Promise<void> {
+    await db.update(posts).set({ readCount: sql`${posts.readCount} + 1` }).where(eq(posts.id, id));
+  }
+  async incrementPostShareCount(id: number): Promise<void> {
+    await db.update(posts).set({ shareCount: sql`${posts.shareCount} + 1` }).where(eq(posts.id, id));
   }
 
   async createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink> {

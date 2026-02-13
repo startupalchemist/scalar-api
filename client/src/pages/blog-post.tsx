@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Share2, Eye } from "lucide-react";
+import { SiX, SiFacebook, SiLinkedin } from "react-icons/si";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Post {
   id: number;
@@ -14,6 +16,8 @@ interface Post {
   seoTitle: string | null;
   seoDescription: string | null;
   seoKeywords: string[] | null;
+  readCount: number;
+  shareCount: number;
   publishedAt: string | null;
   createdAt: string;
 }
@@ -41,6 +45,7 @@ function renderMarkdown(content: string): string {
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
+  const readTracked = useRef(false);
 
   const { data: post, isLoading, error } = useQuery<Post>({
     queryKey: ["/api/posts", slug],
@@ -50,6 +55,12 @@ export default function BlogPost() {
     }),
     enabled: !!slug,
   });
+
+  useEffect(() => {
+    if (!post || readTracked.current) return;
+    readTracked.current = true;
+    fetch(`/api/posts/${post.id}/read`, { method: "POST" }).catch(() => {});
+  }, [post]);
 
   useEffect(() => {
     if (!post) return;
@@ -86,9 +97,45 @@ export default function BlogPost() {
 
     return () => {
       document.title = "Dent Society";
+      document.querySelector('meta[name="description"]')?.remove();
+      document.querySelector('meta[name="keywords"]')?.remove();
+      document.querySelector('meta[property="og:title"]')?.remove();
+      document.querySelector('meta[property="og:description"]')?.remove();
+      document.querySelector('meta[property="og:type"]')?.remove();
+      document.querySelector('meta[property="og:url"]')?.remove();
       document.querySelector('script[data-blog-ld]')?.remove();
     };
   }, [post]);
+
+  const handleShare = (platform: string) => {
+    if (!post) return;
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(post.title);
+    const excerpt = encodeURIComponent(post.excerpt || "");
+
+    let shareUrl = "";
+    switch (platform) {
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+        break;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        break;
+      case "copy":
+        navigator.clipboard.writeText(window.location.href);
+        fetch(`/api/posts/${post.id}/share`, { method: "POST" }).catch(() => {});
+        return;
+    }
+
+    fetch(`/api/posts/${post.id}/share`, { method: "POST" }).catch(() => {});
+
+    if (shareUrl) {
+      window.open(shareUrl, "_blank", "width=600,height=400");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -126,11 +173,23 @@ export default function BlogPost() {
         </Link>
 
         <div className="mb-10">
-          <p className="text-xs text-[#B3B3B8]/60 uppercase tracking-[0.15em] mb-4">
-            {post.publishedAt
-              ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
-              : ""}
-          </p>
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <p className="text-xs text-[#B3B3B8]/60 uppercase tracking-[0.15em]">
+              {post.publishedAt
+                ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+                : ""}
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-read-count">
+                <Eye className="w-3 h-3" />
+                {post.readCount}
+              </span>
+              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-share-count">
+                <Share2 className="w-3 h-3" />
+                {post.shareCount}
+              </span>
+            </div>
+          </div>
           <h1
             className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight leading-[1.05]"
             data-testid="text-post-title"
@@ -158,14 +217,52 @@ export default function BlogPost() {
         />
 
         <div className="mt-16 pt-8 border-t border-white/5">
-          <Link href="/contact">
-            <Button
-              className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
-              data-testid="button-post-cta"
-            >
-              Get a Free Estimate
-            </Button>
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <Link href="/contact">
+              <Button
+                className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
+                data-testid="button-post-cta"
+              >
+                Get a Free Estimate
+              </Button>
+            </Link>
+
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-[#B3B3B8]/40 uppercase tracking-[0.15em] mr-2">Share</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleShare("twitter")}
+                data-testid="button-share-twitter"
+              >
+                <SiX className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleShare("facebook")}
+                data-testid="button-share-facebook"
+              >
+                <SiFacebook className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleShare("linkedin")}
+                data-testid="button-share-linkedin"
+              >
+                <SiLinkedin className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleShare("copy")}
+                data-testid="button-share-copy"
+              >
+                <Share2 className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
+            </div>
+          </div>
         </div>
       </article>
     </div>

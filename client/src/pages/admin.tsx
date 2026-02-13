@@ -35,9 +35,11 @@ import {
   Globe,
   BookOpen,
   X,
+  Archive,
+  Share2,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import type { Lead, Post, Subscriber, Newsletter } from "@shared/schema";
+import type { Lead, Post, Subscriber, Newsletter, Topic } from "@shared/schema";
 import { leadStatuses } from "@shared/schema";
 
 const statusColors: Record<string, string> = {
@@ -72,8 +74,6 @@ export default function Admin() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
 
-  const [showNewPost, setShowNewPost] = useState(false);
-  const [postForm, setPostForm] = useState({ title: "", content: "", excerpt: "", tags: "", seoTitle: "", seoDescription: "" });
   const [aiTopic, setAiTopic] = useState("");
   const [showAiForm, setShowAiForm] = useState(false);
 
@@ -152,10 +152,6 @@ export default function Admin() {
         {activeTab === "blog" && (
           <BlogTab
             toast={toast}
-            showNewPost={showNewPost}
-            setShowNewPost={setShowNewPost}
-            postForm={postForm}
-            setPostForm={setPostForm}
             aiTopic={aiTopic}
             setAiTopic={setAiTopic}
             showAiForm={showAiForm}
@@ -452,14 +448,84 @@ function ArticlePreviewModal({ post, onClose }: { post: Post; onClose: () => voi
   );
 }
 
-type BlogSubTab = "all" | "research" | "queue" | "backlinks";
+function TopicPreviewModal({ topic, onClose }: { topic: Topic; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center overflow-y-auto py-10"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      data-testid="modal-topic-preview-overlay"
+    >
+      <div className="w-full max-w-3xl mx-4 bg-[#141416] border border-white/5 rounded-md p-8 relative" data-testid="modal-topic-preview-content">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4"
+          onClick={onClose}
+          data-testid="button-close-topic-preview"
+        >
+          <X className="w-5 h-5 text-[#B3B3B8]" />
+        </Button>
+
+        <h1 className="text-2xl font-bold text-[#F5F5F7] mb-4 pr-10" data-testid="text-topic-preview-title">{topic.title}</h1>
+
+        {topic.overview && (
+          <p className="text-[#B3B3B8] leading-relaxed mb-6 border-l-2 border-[#FF192C] pl-4" data-testid="text-topic-preview-overview">{topic.overview}</p>
+        )}
+
+        {topic.reasoning && (
+          <div className="mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Reasoning</p>
+            <p className="text-sm text-[#B3B3B8] leading-relaxed" data-testid="text-topic-preview-reasoning">{topic.reasoning}</p>
+          </div>
+        )}
+
+        {topic.targetKeywords && topic.targetKeywords.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Target Keywords</p>
+            <div className="flex flex-wrap gap-2" data-testid="tags-topic-preview-keywords">
+              {topic.targetKeywords.map((kw, i) => (
+                <Badge key={i} className="text-xs bg-blue-500/10 text-blue-400 border-0 no-default-hover-elevate no-default-active-elevate">{kw}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {topic.searchIntent && (
+            <div className="p-4 rounded-md bg-[#0B0B0D] border border-white/5">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-1">Search Intent</p>
+              <p className="text-sm text-[#F5F5F7] font-semibold" data-testid="text-topic-preview-intent">{topic.searchIntent}</p>
+            </div>
+          )}
+          {topic.estimatedSearchVolume && (
+            <div className="p-4 rounded-md bg-[#0B0B0D] border border-white/5">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-1">Search Volume</p>
+              <p className="text-sm text-[#F5F5F7] font-semibold" data-testid="text-topic-preview-volume">{topic.estimatedSearchVolume}</p>
+            </div>
+          )}
+          {topic.competitionLevel && (
+            <div className="p-4 rounded-md bg-[#0B0B0D] border border-white/5">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-1">Competition</p>
+              <p className="text-sm text-[#F5F5F7] font-semibold" data-testid="text-topic-preview-competition">{topic.competitionLevel}</p>
+            </div>
+          )}
+        </div>
+
+        {topic.leadPotential && (
+          <div className="border-t border-white/5 pt-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Lead Potential</p>
+            <p className="text-sm text-[#B3B3B8] leading-relaxed" data-testid="text-topic-preview-lead-potential">{topic.leadPotential}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+type BlogSubTab = "topics" | "queue" | "archive" | "published" | "backlinks";
 
 function BlogTab({
   toast,
-  showNewPost,
-  setShowNewPost,
-  postForm,
-  setPostForm,
   aiTopic,
   setAiTopic,
   showAiForm,
@@ -467,23 +533,21 @@ function BlogTab({
   user,
 }: {
   toast: any;
-  showNewPost: boolean;
-  setShowNewPost: (v: boolean) => void;
-  postForm: { title: string; content: string; excerpt: string; tags: string; seoTitle: string; seoDescription: string };
-  setPostForm: (v: any) => void;
   aiTopic: string;
   setAiTopic: (v: string) => void;
   showAiForm: boolean;
   setShowAiForm: (v: boolean) => void;
   user: { id: number; name: string; email: string; role: string };
 }) {
-  const [blogSubTab, setBlogSubTab] = useState<BlogSubTab>("all");
+  const [blogSubTab, setBlogSubTab] = useState<BlogSubTab>("topics");
   const [previewPost, setPreviewPost] = useState<Post | null>(null);
+  const [previewTopic, setPreviewTopic] = useState<Topic | null>(null);
 
   const subTabs: { key: BlogSubTab; label: string; icon: typeof BookOpen; adminOnly?: boolean }[] = [
-    { key: "all", label: "All Posts", icon: BookOpen },
-    { key: "research", label: "Research Agent", icon: Zap },
-    { key: "queue", label: "Publisher Queue", icon: FileText },
+    { key: "topics", label: "Topics", icon: Zap },
+    { key: "queue", label: "Queue", icon: FileText },
+    { key: "archive", label: "Archive", icon: Archive },
+    { key: "published", label: "Published", icon: Globe },
     { key: "backlinks", label: "Backlinks", icon: Link2, adminOnly: true },
   ];
 
@@ -506,91 +570,80 @@ function BlogTab({
         ))}
       </div>
 
-      {blogSubTab === "all" && (
-        <AllPostsSubTab
+      {blogSubTab === "topics" && (
+        <TopicsSubTab
           toast={toast}
-          showNewPost={showNewPost}
-          setShowNewPost={setShowNewPost}
-          postForm={postForm}
-          setPostForm={setPostForm}
+          onPreviewTopic={setPreviewTopic}
           aiTopic={aiTopic}
           setAiTopic={setAiTopic}
           showAiForm={showAiForm}
           setShowAiForm={setShowAiForm}
-          onPreview={setPreviewPost}
         />
       )}
-      {blogSubTab === "research" && <ResearchAgentSubTab toast={toast} onPreview={setPreviewPost} />}
       {blogSubTab === "queue" && <PublisherQueueSubTab toast={toast} onPreview={setPreviewPost} />}
+      {blogSubTab === "archive" && <ArchiveSubTab />}
+      {blogSubTab === "published" && <PublishedSubTab onPreview={setPreviewPost} />}
       {blogSubTab === "backlinks" && <BacklinksSubTab toast={toast} />}
 
       {previewPost && <ArticlePreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
+      {previewTopic && <TopicPreviewModal topic={previewTopic} onClose={() => setPreviewTopic(null)} />}
     </div>
   );
 }
 
-function AllPostsSubTab({
+function TopicsSubTab({
   toast,
-  showNewPost,
-  setShowNewPost,
-  postForm,
-  setPostForm,
+  onPreviewTopic,
   aiTopic,
   setAiTopic,
   showAiForm,
   setShowAiForm,
-  onPreview,
 }: {
   toast: any;
-  showNewPost: boolean;
-  setShowNewPost: (v: boolean) => void;
-  postForm: any;
-  setPostForm: (v: any) => void;
+  onPreviewTopic: (topic: Topic) => void;
   aiTopic: string;
   setAiTopic: (v: string) => void;
   showAiForm: boolean;
   setShowAiForm: (v: boolean) => void;
-  onPreview: (post: Post) => void;
 }) {
-  const { data: posts = [], isLoading } = useQuery<Post[]>({
-    queryKey: ["/api/posts"],
-  });
-
-  const createPost = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/posts", data);
+  const { data: topics = [], isLoading } = useQuery<Topic[]>({
+    queryKey: ["/api/topics", "suggested"],
+    queryFn: async () => {
+      const res = await fetch("/api/topics?status=suggested", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch topics");
+      return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
-      toast({ title: "Post created" });
-      setShowNewPost(false);
-      setPostForm({ title: "", content: "", excerpt: "", tags: "", seoTitle: "", seoDescription: "" });
-    },
-    onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    refetchInterval: (query) => {
+      const data = query.state.data as Topic[] | undefined;
+      if (data && data.some(t => t.status === "generating")) return 5000;
+      return false;
     },
   });
 
-  const toggleStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      await apiRequest("PATCH", `/api/posts/${id}`, { status });
+  const { data: generatingTopics = [] } = useQuery<Topic[]>({
+    queryKey: ["/api/topics", "generating"],
+    queryFn: async () => {
+      const res = await fetch("/api/topics?status=generating", { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
-      toast({ title: "Post updated" });
-    },
-    onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    refetchInterval: (query) => {
+      const data = query.state.data as Topic[] | undefined;
+      if (data && data.length > 0) return 5000;
+      return false;
     },
   });
 
-  const deletePost = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/posts/${id}`);
+  const allTopics = [...topics, ...generatingTopics.filter(gt => !topics.some(t => t.id === gt.id))];
+
+  const getTopics = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/ai/research");
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
-      toast({ title: "Post deleted" });
+      queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+      toast({ title: "Research agent launched, topics incoming" });
     },
     onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -598,6 +651,34 @@ function AllPostsSubTab({
   });
 
   const generateArticle = useMutation({
+    mutationFn: async (topicId: number) => {
+      const res = await apiRequest("POST", `/api/topics/${topicId}/generate`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      toast({ title: "Article generation started" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const archiveTopic = useMutation({
+    mutationFn: async (topicId: number) => {
+      await apiRequest("PATCH", `/api/topics/${topicId}/archive`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/topics"] });
+      toast({ title: "Topic archived" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const generateSingleArticle = useMutation({
     mutationFn: async (topic: string) => {
       const res = await apiRequest("POST", "/api/ai/generate-article", { topic });
       return res.json();
@@ -613,16 +694,28 @@ function AllPostsSubTab({
     },
   });
 
-  const statusBadgeClass = (status: string) => {
-    if (status === "published") return "bg-green-500/20 text-green-400";
-    if (status === "queued") return "bg-blue-500/20 text-blue-400";
-    return "bg-yellow-500/20 text-yellow-400";
+  const intentBadge = (intent: string | null) => {
+    if (intent === "transactional") return "bg-green-500/20 text-green-400";
+    if (intent === "commercial") return "bg-blue-500/20 text-blue-400";
+    return "bg-purple-500/20 text-purple-400";
+  };
+
+  const volumeBadge = (vol: string | null) => {
+    if (vol === "high") return "bg-green-500/20 text-green-400";
+    if (vol === "medium") return "bg-yellow-500/20 text-yellow-400";
+    return "bg-red-500/20 text-red-400";
+  };
+
+  const competitionBadge = (comp: string | null) => {
+    if (comp === "low") return "bg-green-500/20 text-green-400";
+    if (comp === "medium") return "bg-yellow-500/20 text-yellow-400";
+    return "bg-red-500/20 text-red-400";
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-blog" />
+        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-topics" />
       </div>
     );
   }
@@ -631,16 +724,18 @@ function AllPostsSubTab({
     <div>
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <Button
-          onClick={() => { setShowNewPost(!showNewPost); setShowAiForm(false); }}
+          onClick={() => getTopics.mutate()}
+          disabled={getTopics.isPending}
           className="bg-[#FF192C] text-white"
-          data-testid="button-new-post"
+          data-testid="button-get-topics"
         >
-          <Plus className="w-4 h-4 mr-2" /> New Post
+          {getTopics.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+          Get Topics
         </Button>
         <Button
           variant="ghost"
           className="text-[#B3B3B8]"
-          onClick={() => { setShowAiForm(!showAiForm); setShowNewPost(false); }}
+          onClick={() => setShowAiForm(!showAiForm)}
           data-testid="button-ai-generate"
         >
           <Sparkles className="w-4 h-4 mr-2" /> AI Generate
@@ -649,7 +744,7 @@ function AllPostsSubTab({
 
       {showAiForm && (
         <div className="p-6 rounded-md bg-[#141416] border border-white/5 mb-6" data-testid="form-ai-generate">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4">Generate with AI</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4">Generate Single Article with AI</p>
           <div className="flex flex-wrap gap-3">
             <Input
               placeholder="Enter topic..."
@@ -659,268 +754,103 @@ function AllPostsSubTab({
               data-testid="input-ai-topic"
             />
             <Button
-              onClick={() => aiTopic.trim() && generateArticle.mutate(aiTopic.trim())}
-              disabled={generateArticle.isPending || !aiTopic.trim()}
+              onClick={() => aiTopic.trim() && generateSingleArticle.mutate(aiTopic.trim())}
+              disabled={generateSingleArticle.isPending || !aiTopic.trim()}
               className="bg-[#FF192C] text-white"
               data-testid="button-ai-submit"
             >
-              {generateArticle.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              {generateSingleArticle.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
               Generate
             </Button>
           </div>
         </div>
       )}
 
-      {showNewPost && (
-        <div className="p-6 rounded-md bg-[#141416] border border-white/5 mb-6" data-testid="form-new-post">
-          <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4">New Post</p>
-          <div className="space-y-4">
-            <Input
-              placeholder="Title"
-              value={postForm.title}
-              onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
-              data-testid="input-post-title"
-            />
-            <Textarea
-              placeholder="Content"
-              value={postForm.content}
-              onChange={(e) => setPostForm({ ...postForm, content: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] min-h-[150px]"
-              data-testid="input-post-content"
-            />
-            <Input
-              placeholder="Excerpt"
-              value={postForm.excerpt}
-              onChange={(e) => setPostForm({ ...postForm, excerpt: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
-              data-testid="input-post-excerpt"
-            />
-            <Input
-              placeholder="Tags (comma-separated)"
-              value={postForm.tags}
-              onChange={(e) => setPostForm({ ...postForm, tags: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
-              data-testid="input-post-tags"
-            />
-            <Input
-              placeholder="SEO Title"
-              value={postForm.seoTitle}
-              onChange={(e) => setPostForm({ ...postForm, seoTitle: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
-              data-testid="input-post-seo-title"
-            />
-            <Input
-              placeholder="SEO Description"
-              value={postForm.seoDescription}
-              onChange={(e) => setPostForm({ ...postForm, seoDescription: e.target.value })}
-              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
-              data-testid="input-post-seo-description"
-            />
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => {
-                  if (!postForm.title.trim()) return;
-                  createPost.mutate({
-                    title: postForm.title,
-                    content: postForm.content,
-                    excerpt: postForm.excerpt || null,
-                    tags: postForm.tags ? postForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
-                    seoTitle: postForm.seoTitle || null,
-                    seoDescription: postForm.seoDescription || null,
-                  });
-                }}
-                disabled={createPost.isPending || !postForm.title.trim()}
-                className="bg-[#FF192C] text-white"
-                data-testid="button-post-submit"
-              >
-                {createPost.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Create Post
-              </Button>
-              <Button variant="ghost" className="text-[#B3B3B8]" onClick={() => setShowNewPost(false)} data-testid="button-post-cancel">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-3">
-        {posts.map((post) => (
+        {allTopics.map((topic) => (
           <div
-            key={post.id}
-            className="p-5 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-4"
-            data-testid={`card-post-${post.id}`}
+            key={topic.id}
+            className="p-5 rounded-md bg-[#141416] border border-white/5"
+            data-testid={`card-topic-${topic.id}`}
           >
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-3 mb-1">
-                <span className="text-[#F5F5F7] font-semibold text-sm" data-testid={`text-post-title-${post.id}`}>
-                  {post.title}
-                </span>
-                <Badge
-                  className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${statusBadgeClass(post.status)}`}
-                  data-testid={`badge-post-status-${post.id}`}
-                >
-                  {post.status}
-                </Badge>
-              </div>
-              <p className="text-xs text-[#B3B3B8]/40">
-                {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onPreview(post)}
-                data-testid={`button-preview-post-${post.id}`}
-              >
-                <Eye className="w-4 h-4 text-[#B3B3B8]" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  toggleStatus.mutate({
-                    id: post.id,
-                    status: post.status === "published" ? "draft" : "published",
-                  })
-                }
-                data-testid={`button-toggle-post-${post.id}`}
-              >
-                {post.status === "published" ? (
-                  <EyeOff className="w-4 h-4 text-[#B3B3B8]" />
-                ) : (
-                  <Eye className="w-4 h-4 text-green-400" />
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[#F5F5F7] font-semibold text-sm mb-2" data-testid={`text-topic-title-${topic.id}`}>{topic.title}</h3>
+                {topic.overview && (
+                  <p className="text-xs text-[#B3B3B8] mb-3 line-clamp-2" data-testid={`text-topic-overview-${topic.id}`}>
+                    {topic.overview.length > 150 ? topic.overview.slice(0, 150) + "..." : topic.overview}
+                  </p>
                 )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => deletePost.mutate(post.id)}
-                data-testid={`button-delete-post-${post.id}`}
-              >
-                <Trash2 className="w-4 h-4 text-red-400" />
-              </Button>
+                {topic.targetKeywords && topic.targetKeywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {topic.targetKeywords.slice(0, 5).map((kw, i) => (
+                      <Badge key={i} className="text-xs bg-blue-500/10 text-blue-400 border-0 no-default-hover-elevate no-default-active-elevate">{kw}</Badge>
+                    ))}
+                    {topic.targetKeywords.length > 5 && (
+                      <Badge className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate">+{topic.targetKeywords.length - 5}</Badge>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {topic.searchIntent && (
+                    <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${intentBadge(topic.searchIntent)}`} data-testid={`badge-intent-${topic.id}`}>
+                      {topic.searchIntent}
+                    </Badge>
+                  )}
+                  {topic.estimatedSearchVolume && (
+                    <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${volumeBadge(topic.estimatedSearchVolume)}`} data-testid={`badge-volume-${topic.id}`}>
+                      vol: {topic.estimatedSearchVolume}
+                    </Badge>
+                  )}
+                  {topic.competitionLevel && (
+                    <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${competitionBadge(topic.competitionLevel)}`} data-testid={`badge-competition-${topic.id}`}>
+                      comp: {topic.competitionLevel}
+                    </Badge>
+                  )}
+                  {topic.status === "generating" && (
+                    <Badge className="text-xs bg-yellow-500/20 text-yellow-400 border-0 no-default-hover-elevate no-default-active-elevate" data-testid={`badge-generating-${topic.id}`}>
+                      <Loader2 className="w-3 h-3 animate-spin mr-1" /> generating
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onPreviewTopic(topic)}
+                  data-testid={`button-preview-topic-${topic.id}`}
+                >
+                  <Eye className="w-4 h-4 text-[#B3B3B8]" />
+                </Button>
+                <Button
+                  onClick={() => generateArticle.mutate(topic.id)}
+                  disabled={generateArticle.isPending || topic.status === "generating" || topic.status === "generated"}
+                  className="bg-[#FF192C] text-white"
+                  data-testid={`button-generate-article-${topic.id}`}
+                >
+                  {(generateArticle.isPending || topic.status === "generating") ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-2" />
+                  )}
+                  Generate Article
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => archiveTopic.mutate(topic.id)}
+                  disabled={archiveTopic.isPending}
+                  data-testid={`button-archive-topic-${topic.id}`}
+                >
+                  <Archive className="w-4 h-4 text-[#B3B3B8]" />
+                </Button>
+              </div>
             </div>
           </div>
         ))}
-        {posts.length === 0 && (
-          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-posts">No posts yet.</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ResearchAgentSubTab({ toast, onPreview }: { toast: any; onPreview: (post: Post) => void }) {
-  const { data: researchJobs = [], isLoading } = useQuery<any[]>({
-    queryKey: ["/api/ai/research-jobs"],
-  });
-
-  const { data: allPosts = [] } = useQuery<Post[]>({
-    queryKey: ["/api/posts"],
-  });
-
-  const launchResearch = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/ai/research");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/ai/research-jobs"] });
-      toast({ title: "Research agent launched" });
-    },
-    onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    },
-  });
-
-  const jobStatusBadge = (status: string) => {
-    if (status === "completed") return "bg-green-500/20 text-green-400";
-    if (status === "research_complete") return "bg-blue-500/20 text-blue-400";
-    if (status === "failed") return "bg-red-500/20 text-red-400";
-    return "bg-yellow-500/20 text-yellow-400";
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-research" />
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="mb-6">
-        <Button
-          onClick={() => launchResearch.mutate()}
-          disabled={launchResearch.isPending}
-          className="bg-[#FF192C] text-white"
-          data-testid="button-launch-research"
-        >
-          {launchResearch.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
-          Launch Research Agent
-        </Button>
-      </div>
-
-      <div className="space-y-4">
-        {researchJobs.map((job: any) => {
-          let output: any = null;
-          try { output = job.output ? JSON.parse(job.output) : null; } catch {}
-
-          return (
-            <div key={job.id} className="p-5 rounded-md bg-[#141416] border border-white/5" data-testid={`card-research-job-${job.id}`}>
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-[#F5F5F7] font-semibold text-sm">Research Job #{job.id}</span>
-                  <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${jobStatusBadge(job.status)}`} data-testid={`badge-research-status-${job.id}`}>
-                    {job.status}
-                  </Badge>
-                </div>
-                <span className="text-xs text-[#B3B3B8]/40">
-                  {new Date(job.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                </span>
-              </div>
-
-              {output?.research?.marketInsights && (
-                <div className="mb-4">
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Market Insights</p>
-                  <p className="text-sm text-[#B3B3B8] leading-relaxed" data-testid={`text-market-insights-${job.id}`}>{output.research.marketInsights}</p>
-                </div>
-              )}
-
-              {output?.generatedArticles && output.generatedArticles.length > 0 && (
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Generated Articles</p>
-                  <div className="space-y-2">
-                    {output.generatedArticles.map((article: any, i: number) => {
-                      const fullPost = allPosts.find((p) => p.id === article.postId);
-                      return (
-                        <div key={i} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-md bg-[#0B0B0D] border border-white/5">
-                          <span className="text-sm text-[#F5F5F7]" data-testid={`text-research-article-${article.postId}`}>{article.title}</span>
-                          {fullPost && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onPreview(fullPost)}
-                              data-testid={`button-preview-research-article-${article.postId}`}
-                            >
-                              <Eye className="w-4 h-4 text-[#B3B3B8]" />
-                            </Button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {researchJobs.length === 0 && (
-          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-research-jobs">No research jobs yet.</p>
+        {allTopics.length === 0 && (
+          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-topics">No suggested topics. Click "Get Topics" to generate research-backed suggestions.</p>
         )}
       </div>
     </div>
@@ -1031,10 +961,133 @@ function PublisherQueueSubTab({ toast, onPreview }: { toast: any; onPreview: (po
                 </Button>
               </div>
             </div>
+            <p className="text-xs text-[#B3B3B8]/30 mt-3 italic" data-testid={`text-publish-note-${post.id}`}>
+              Publishing triggers SEO optimization, backlink creation, and newsletter delivery.
+            </p>
           </div>
         ))}
         {queuedPosts.length === 0 && (
           <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-queued">No queued articles.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ArchiveSubTab() {
+  const { data: archivedTopics = [], isLoading } = useQuery<Topic[]>({
+    queryKey: ["/api/topics", "archived"],
+    queryFn: async () => {
+      const res = await fetch("/api/topics?status=archived", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch archived topics");
+      return res.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-archive" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4" data-testid="text-archive-count">
+        {archivedTopics.length} archived topics
+      </p>
+      <div className="space-y-3">
+        {archivedTopics.map((topic) => (
+          <div
+            key={topic.id}
+            className="p-5 rounded-md bg-[#141416] border border-white/5"
+            data-testid={`card-archived-topic-${topic.id}`}
+          >
+            <h3 className="text-[#F5F5F7] font-semibold text-sm mb-1" data-testid={`text-archived-title-${topic.id}`}>{topic.title}</h3>
+            {topic.overview && (
+              <p className="text-xs text-[#B3B3B8] mb-2" data-testid={`text-archived-overview-${topic.id}`}>
+                {topic.overview.length > 200 ? topic.overview.slice(0, 200) + "..." : topic.overview}
+              </p>
+            )}
+            <p className="text-xs text-[#B3B3B8]/40">
+              {new Date(topic.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+          </div>
+        ))}
+        {archivedTopics.length === 0 && (
+          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-archived">No archived topics.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PublishedSubTab({ onPreview }: { onPreview: (post: Post) => void }) {
+  const { data: publishedPosts = [], isLoading } = useQuery<Post[]>({
+    queryKey: ["/api/posts", "published"],
+    queryFn: async () => {
+      const res = await fetch("/api/posts?status=published", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch published posts");
+      return res.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-published" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4" data-testid="text-published-count">
+        {publishedPosts.length} published articles
+      </p>
+      <div className="space-y-3">
+        {publishedPosts.map((post) => (
+          <div
+            key={post.id}
+            className="p-5 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-4"
+            data-testid={`card-published-post-${post.id}`}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-3 mb-1">
+                <span className="text-[#F5F5F7] font-semibold text-sm" data-testid={`text-published-title-${post.id}`}>{post.title}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 mt-1">
+                <span className="text-xs text-[#B3B3B8]/40" data-testid={`text-published-slug-${post.id}`}>/{post.slug}</span>
+                {post.publishedAt && (
+                  <span className="text-xs text-[#B3B3B8]/40">
+                    {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate" data-testid={`badge-reads-${post.id}`}>
+                <Eye className="w-3 h-3 mr-1" />
+                {post.readCount ?? 0}
+              </Badge>
+              <Badge className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate" data-testid={`badge-shares-${post.id}`}>
+                <Share2 className="w-3 h-3 mr-1" />
+                {post.shareCount ?? 0}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onPreview(post)}
+                data-testid={`button-preview-published-${post.id}`}
+              >
+                <Eye className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
+            </div>
+          </div>
+        ))}
+        {publishedPosts.length === 0 && (
+          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-published">No published articles yet.</p>
         )}
       </div>
     </div>
@@ -1562,7 +1615,7 @@ function UsersTab({
                 {u.role}
               </Badge>
             </div>
-            {Number(u.id) !== Number(currentUserId) && (isRoot || u.role !== "root") && (
+            {u.id !== currentUserId && (
               <Button
                 variant="ghost"
                 size="icon"

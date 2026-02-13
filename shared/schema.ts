@@ -86,6 +86,34 @@ export const sessions = pgTable("sessions", {
 
 export type Session = typeof sessions.$inferSelect;
 
+export const topics = pgTable("topics", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  overview: text("overview").notNull().default(""),
+  targetKeywords: text("target_keywords").array().default(sql`'{}'::text[]`),
+  searchIntent: text("search_intent"),
+  estimatedSearchVolume: text("estimated_search_volume"),
+  competitionLevel: text("competition_level"),
+  leadPotential: text("lead_potential"),
+  reasoning: text("reasoning"),
+  status: text("status").notNull().default("suggested"),
+  aiJobId: integer("ai_job_id"),
+  postId: integer("post_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTopicSchema = createInsertSchema(topics).omit({
+  id: true,
+  createdAt: true,
+  aiJobId: true,
+  postId: true,
+  status: true,
+});
+
+export type InsertTopic = z.infer<typeof insertTopicSchema>;
+export type Topic = typeof topics.$inferSelect;
+export const topicStatuses = ["suggested", "generating", "generated", "archived"] as const;
+
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -100,6 +128,9 @@ export const posts = pgTable("posts", {
   seoDescription: text("seo_description"),
   seoKeywords: text("seo_keywords").array().default(sql`'{}'::text[]`),
   researchJobId: integer("research_job_id"),
+  topicId: integer("topic_id"),
+  readCount: integer("read_count").notNull().default(0),
+  shareCount: integer("share_count").notNull().default(0),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
