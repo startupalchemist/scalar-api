@@ -12,6 +12,13 @@ import FAQ from "@/pages/faq";
 import Contact from "@/pages/contact";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import HailDamageRepairDallas from "@/pages/hail-damage-repair-dallas";
+import PaintlessDentRepairDallas from "@/pages/paintless-dent-repair-dallas";
+import InsuranceClaimAssistance from "@/pages/insurance-claim-assistance";
+import StormDamageRestoration from "@/pages/storm-damage-restoration";
+import FreeLoanerVehicles from "@/pages/free-loaner-vehicles";
+import PickupAndDeliveryService from "@/pages/pickup-and-delivery-service";
+import FortyEightHourGuarantee from "@/pages/forty-eight-hour-guarantee";
 
 function Router() {
   return (
@@ -22,6 +29,13 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
+      <Route path="/hail-damage-repair-dallas" component={HailDamageRepairDallas} />
+      <Route path="/paintless-dent-repair-dallas" component={PaintlessDentRepairDallas} />
+      <Route path="/insurance-claim-assistance" component={InsuranceClaimAssistance} />
+      <Route path="/storm-damage-restoration" component={StormDamageRestoration} />
+      <Route path="/free-loaner-vehicles" component={FreeLoanerVehicles} />
+      <Route path="/pickup-and-delivery-service" component={PickupAndDeliveryService} />
+      <Route path="/48-hour-completion-guarantee" component={FortyEightHourGuarantee} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+.prose-dent h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #F5F5F7;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose-dent h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #F5F5F7;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-dent p {
+  color: rgba(179, 179, 184, 0.8);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.prose-dent ul,
+.prose-dent ol {
+  color: rgba(179, 179, 184, 0.7);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.prose-dent li {
+  margin-bottom: 0.5rem;
+}
+
+.prose-dent ul li::marker {
+  color: #FF192C;
+}
+
+.prose-dent strong {
+  color: #F5F5F7;
+  font-weight: 600;
+}
+
 :root {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
