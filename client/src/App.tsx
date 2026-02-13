@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/lib/auth";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Home from "@/pages/home";
@@ -14,7 +15,9 @@ const About = lazy(() => import("@/pages/about"));
 const FAQ = lazy(() => import("@/pages/faq"));
 const Contact = lazy(() => import("@/pages/contact"));
 const Admin = lazy(() => import("@/pages/admin"));
+const Login = lazy(() => import("@/pages/login"));
 const Blog = lazy(() => import("@/pages/blog"));
+const BlogPost = lazy(() => import("@/pages/blog-post"));
 
 const HailDamageRepairDallas = lazy(() => import("@/pages/hail-damage-repair-dallas"));
 const PaintlessDentRepairDallas = lazy(() => import("@/pages/paintless-dent-repair-dallas"));
@@ -73,7 +76,9 @@ function Router() {
         <Route path="/faq" component={FAQ} />
         <Route path="/contact" component={Contact} />
         <Route path="/admin" component={Admin} />
+        <Route path="/login" component={Login} />
         <Route path="/blog" component={Blog} />
+        <Route path="/blog/:slug" component={BlogPost} />
 
         <Route path="/hail-damage-repair-dallas" component={HailDamageRepairDallas} />
         <Route path="/paintless-dent-repair-dallas" component={PaintlessDentRepairDallas} />
@@ -124,13 +129,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="grain-overlay" />
-        <Header />
-        <main>
-          <Router />
-        </main>
-        <Footer />
-        <Toaster />
+        <AuthProvider>
+          <div className="grain-overlay" />
+          <Header />
+          <main>
+            <Router />
+          </main>
+          <Footer />
+          <Toaster />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

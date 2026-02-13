@@ -1,12 +1,15 @@
 # Dent Society - Precision Restoration Lab
 
 ## Overview
-Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal.
+Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access.
 
 ## Tech Stack
 - Frontend: React + Vite + Tailwind CSS + wouter routing
 - Backend: Express.js + Node.js
 - Database: PostgreSQL with Drizzle ORM
+- Auth: Session-based with httpOnly cookies (bcrypt + 7-day sessions)
+- AI: OpenAI (gpt-5.2) via Replit AI Integrations for article generation
+- Email: Resend integration for newsletter delivery
 - Font: Manrope (Google Fonts)
 
 ## Architecture
@@ -14,6 +17,8 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - No sidebar layout - traditional header/footer navigation
 - CRM-style lead management in /admin
 - Contact form submits to /api/leads
+- Session-based auth with role middleware (root/admin/editor)
+- Root user seeded on startup: admin@dentsociety.com / admin123
 
 ## Pages
 - / - Homepage (hero, car transform scroll, guarantee, process, CTA)
@@ -21,16 +26,49 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - /about - Company narrative
 - /faq - Expandable FAQ
 - /contact - Lead capture form
-- /admin - Lead management dashboard
+- /blog - Public blog index (shows published posts)
+- /blog/:slug - Individual blog post page
+- /login - Admin login
+- /admin - Admin dashboard (5 tabs: Dashboard, Leads, Blog, Newsletter, Users)
+- 39 SEO pages (pillar, location, insurance, comparison, fleet, storm)
 
 ## Database Schema
-- `leads` table: id (serial), name, phone, email, vehicle, insurance, message, status, created_at
+- `leads` table: id, name, phone, email, vehicle, insurance, message, status, loanerRequested, pickupRequested, insuranceApproved, insuranceApprovalTimestamp, createdAt
+- `users` table: id, name, email, passwordHash, role (root/admin/editor), createdAt
+- `sessions` table: id, userId, token, expiresAt
+- `posts` table: id, title, slug, content, excerpt, tags[], seoTitle, seoDescription, featuredImage, status (draft/published), authorId, publishedAt, createdAt, updatedAt
+- `subscribers` table: id, name, email, status (active/unsubscribed), unsubscribeToken, createdAt
+- `newsletters` table: id, subject, htmlContent, status (draft/sent), sentAt, recipientCount, createdAt
+- `ai_jobs` table: id, type, input, output, status, createdAt
 
 ## API Endpoints
+### Public
 - POST /api/leads - Create new lead
-- GET /api/leads - List all leads
-- GET /api/leads/:id - Get single lead
-- PATCH /api/leads/:id - Update lead status
+- POST /api/subscribers - Subscribe to newsletter
+- GET /api/posts - List posts (optional ?status=published)
+- GET /api/posts/:idOrSlug - Get single post
+- GET /api/unsubscribe/:token - Unsubscribe from newsletter
+
+### Auth
+- POST /api/auth/login - Login
+- POST /api/auth/logout - Logout
+- GET /api/auth/me - Current user
+
+### Admin (auth required)
+- GET /api/leads - List all leads (root/admin)
+- PATCH /api/leads/:id - Update lead (root/admin)
+- POST /api/posts - Create post (root/admin/editor)
+- PATCH /api/posts/:id - Update post (root/admin/editor)
+- DELETE /api/posts/:id - Delete post (root/admin)
+- POST /api/ai/generate-article - AI article generation (root/admin/editor)
+- GET /api/subscribers - List subscribers (root/admin)
+- DELETE /api/subscribers/:id - Delete subscriber (root/admin)
+- POST /api/newsletters - Create newsletter (root/admin)
+- POST /api/newsletters/:id/send - Send newsletter (root/admin)
+- GET /api/users - List users (root only)
+- POST /api/users - Create user (root only)
+- DELETE /api/users/:id - Delete user (root only)
+- GET /api/stats - Dashboard stats (root/admin)
 
 ## Brand Guidelines
 - Font: Manrope, uppercase dominant headlines

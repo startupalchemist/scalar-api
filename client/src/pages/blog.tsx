@@ -1,7 +1,24 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+
+interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  tags: string[];
+  publishedAt: string | null;
+  createdAt: string;
+}
 
 export default function Blog() {
+  const { data: posts, isLoading } = useQuery<Post[]>({
+    queryKey: ["/api/posts", "published"],
+    queryFn: () => fetch("/api/posts?status=published").then(r => r.json()),
+  });
+
   return (
     <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
       <script
@@ -30,17 +47,60 @@ export default function Blog() {
           </p>
         </div>
 
-        <div className="text-center py-20" data-testid="blog-empty-state">
-          <p className="text-[#B3B3B8]/50 text-sm mb-6">Articles coming soon. Check back for expert insights on hail damage repair and insurance coordination.</p>
-          <Link href="/contact">
-            <Button
-              className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
-              data-testid="button-blog-cta"
-            >
-              Start My Repair
-            </Button>
-          </Link>
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" />
+          </div>
+        ) : posts && posts.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="blog-post-grid">
+            {posts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.slug}`}>
+                <article
+                  className="p-6 rounded-md bg-[#141416] border border-white/5 hover-elevate cursor-pointer h-full flex flex-col"
+                  data-testid={`card-blog-post-${post.id}`}
+                >
+                  <p className="text-xs text-[#B3B3B8]/60 uppercase tracking-[0.15em] mb-3">
+                    {post.publishedAt
+                      ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                      : ""}
+                  </p>
+                  <h2 className="text-lg font-bold text-[#F5F5F7] leading-snug mb-3" data-testid={`text-post-title-${post.id}`}>
+                    {post.title}
+                  </h2>
+                  {post.excerpt && (
+                    <p className="text-sm text-[#B3B3B8] leading-relaxed mb-4 flex-1">
+                      {post.excerpt}
+                    </p>
+                  )}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-auto">
+                      {post.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[10px] uppercase tracking-[0.15em] text-[#FF192C]/70 bg-[#FF192C]/5 px-2 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20" data-testid="blog-empty-state">
+            <p className="text-[#B3B3B8]/50 text-sm mb-6">Articles coming soon. Check back for expert insights on hail damage repair and insurance coordination.</p>
+            <Link href="/contact">
+              <Button
+                className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
+                data-testid="button-blog-cta"
+              >
+                Start My Repair
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <div className="mt-16 p-6 rounded-md bg-[#141416] border border-white/5">
           <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Explore</h3>
