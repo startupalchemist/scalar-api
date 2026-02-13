@@ -114,9 +114,16 @@ export default function Footer() {
           <p className="text-[#B3B3B8]/40 text-xs tracking-wide">
             {new Date().getFullYear()} Dent Society. All rights reserved.
           </p>
-          <p className="text-[#B3B3B8]/30 text-xs tracking-wide">
-            Engineered, not improvised.
-          </p>
+          <div className="flex items-center gap-6">
+            <Link href="/login">
+              <span className="text-[#B3B3B8]/30 hover:text-[#B3B3B8]/60 text-xs tracking-wide transition-colors duration-300 cursor-pointer" data-testid="link-footer-login">
+                Admin
+              </span>
+            </Link>
+            <p className="text-[#B3B3B8]/30 text-xs tracking-wide">
+              Engineered, not improvised.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
