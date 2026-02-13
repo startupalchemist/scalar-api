@@ -22,7 +22,7 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - Role hierarchy: root (webmaster, protected) > admin (can manage users except root) > editor
 
 ## Pages
-- / - Homepage (hero, car transform scroll, guarantee, process, CTA)
+- / - Homepage (hero "After the storm", pinned scroll car reveal with Impact Level counter, contour sweep, guarantee, process, CTA)
 - /services - Service offerings
 - /about - Company narrative
 - /faq - Expandable FAQ

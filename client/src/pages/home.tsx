@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Shield, Clock, FileCheck, Wrench, Car, Sparkles, KeyRound } from "lucide-react";
+import { Shield, Clock, FileCheck, Wrench, Car, Sparkles, KeyRound } from "lucide-react";
 import damagedCar from "@assets/IMG_4071_1770967683032.jpeg";
 import cleanCar from "@assets/IMG_4072_1770967683031.jpeg";
 
@@ -15,53 +15,80 @@ function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden" data-testid="section-hero">
-      <div className="absolute inset-0 bg-[#0B0B0D]" />
-      <div className="absolute inset-0 spotlight-gradient" />
+      <div className="absolute inset-0 bg-[#141416]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#141416] via-[#111113] to-[#0B0B0D]" />
 
-      <div className={`relative z-10 text-center px-6 max-w-4xl mx-auto transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+      <div className={`relative z-10 text-center px-6 max-w-4xl mx-auto transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
         <h1
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight text-[#F5F5F7] leading-[0.95]"
           data-testid="text-hero-headline"
         >
-          Hail Happens.
+          After the storm.
         </h1>
-        <p className="mt-6 text-lg sm:text-xl text-[#B3B3B8] font-light tracking-wide max-w-lg mx-auto">
-          We remove the evidence.
-        </p>
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-8 space-y-1">
+          <p className="text-xl sm:text-2xl md:text-3xl text-[#B3B3B8] font-light tracking-wide">
+            Hail happens.
+          </p>
+          <p className="text-xl sm:text-2xl md:text-3xl text-[#F5F5F7] font-medium tracking-wide">
+            We correct it.
+          </p>
+        </div>
+        <div className="mt-6 space-y-1">
+          <p className="text-sm text-[#B3B3B8]/60 tracking-wide">
+            Precision paintless dent repair.
+          </p>
+          <p className="text-sm text-[#B3B3B8]/60 tracking-wide">
+            Insurance handled. Complimentary loaner available.
+          </p>
+        </div>
+        <div className="mt-10">
           <Link href="/contact">
             <Button
               className="bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold px-10"
-              data-testid="button-start-repair-hero"
+              data-testid="button-assessment-hero"
             >
-              Start My Repair
+              Get My Assessment
             </Button>
           </Link>
+          <p className="mt-4 text-xs text-[#B3B3B8]/40 tracking-wide">
+            AI-powered prequalification. Takes about a minute.
+          </p>
         </div>
-        <p className="mt-6 text-xs text-[#B3B3B8]/50 tracking-wide">
-          48-hour completion begins after insurance approval.
-        </p>
-      </div>
-
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-        <ChevronDown className="w-5 h-5 text-[#B3B3B8]/30" />
       </div>
     </section>
   );
 }
 
+function TransitionHeadline() {
+  return (
+    <div className="py-16 lg:py-24 text-center" data-testid="section-transition">
+      <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+        Impact is measurable.
+      </p>
+    </div>
+  );
+}
+
+const CAR_SVG_PATH = "M 80,170 C 60,170 40,160 30,145 L 20,120 C 15,105 20,90 30,80 L 60,60 C 75,50 100,45 130,42 L 200,38 C 240,36 280,38 310,42 L 370,50 C 390,55 405,65 415,80 L 440,110 C 450,125 450,145 440,160 L 430,170 C 420,175 400,178 380,178 L 350,178 C 340,165 325,155 308,155 C 291,155 276,165 266,178 L 194,178 C 184,165 169,155 152,155 C 135,155 120,165 110,178 L 80,170 Z";
+
 function TransformSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<"scrolling" | "restored" | "sweep" | "cta" | "done">("scrolling");
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const lockedRef = useRef(false);
+  const scrollYRef = useRef(0);
+  const [sweepKey, setSweepKey] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
+      if (lockedRef.current) return;
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const containerHeight = containerRef.current.offsetHeight;
       const viewportHeight = window.innerHeight;
       const scrollableDistance = containerHeight - viewportHeight;
+      if (scrollableDistance <= 0) return;
       const scrolled = -rect.top;
       const p = Math.max(0, Math.min(1, scrolled / scrollableDistance));
       setProgress(p);
@@ -71,57 +98,176 @@ function TransformSection() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const clearAllTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  }, []);
+
+  const lockScroll = useCallback(() => {
+    if (lockedRef.current) return;
+    lockedRef.current = true;
+    scrollYRef.current = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollYRef.current}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflow = "hidden";
+  }, []);
+
+  const unlockScroll = useCallback(() => {
+    if (!lockedRef.current) return;
+    lockedRef.current = false;
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.overflow = "";
+    window.scrollTo(0, scrollYRef.current);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      unlockScroll();
+      clearAllTimers();
+    };
+  }, [unlockScroll, clearAllTimers]);
+
+  useEffect(() => {
+    if (progress >= 0.98 && phase === "scrolling") {
+      lockScroll();
+      setPhase("restored");
+      const t1 = setTimeout(() => {
+        setPhase("sweep");
+        setSweepKey((k) => k + 1);
+        const t2 = setTimeout(() => {
+          setPhase("cta");
+          const t3 = setTimeout(() => {
+            setPhase("done");
+            unlockScroll();
+          }, 1500);
+          timersRef.current.push(t3);
+        }, 1200);
+        timersRef.current.push(t2);
+      }, 800);
+      timersRef.current.push(t1);
+    }
+    if (progress < 0.85 && phase !== "scrolling") {
+      setPhase("scrolling");
+      clearAllTimers();
+      unlockScroll();
+    }
+  }, [progress, phase, lockScroll, unlockScroll, clearAllTimers]);
+
+  const impactLevel = Math.round(100 - progress * 100);
+  const rotation = progress * 20;
+  const showRestored = phase !== "scrolling";
+  const showSweep = phase === "sweep" || phase === "cta" || phase === "done";
+  const showCta = phase === "cta" || phase === "done";
+
   return (
     <section
       ref={containerRef}
       className="relative"
-      style={{ height: "250vh" }}
+      style={{ height: "300vh" }}
       data-testid="section-transform"
     >
-      <div ref={stickyRef} className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col">
-        <div className="text-center py-6 sm:py-8 lg:py-12 flex-shrink-0 z-10">
-          <h2
-            className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-3"
-            data-testid="text-transform-label"
-          >
-            Erase the Storm
-          </h2>
-          <p className="text-2xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
-            Damage In. Perfection Out.
-          </p>
-        </div>
-
+      <div className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col bg-[#0B0B0D]">
         <div className="relative flex-1 w-full">
-          <img
-            src={damagedCar}
-            alt="Storm damaged vehicle"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ opacity: 1 - progress }}
-            data-testid="img-damaged-car"
-          />
-          <img
-            src={cleanCar}
-            alt="Restored vehicle"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            style={{ opacity: progress }}
-            data-testid="img-clean-car"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0D] via-transparent to-transparent opacity-60" style={{ height: "15%" }} />
-
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-            <div
-              className="h-full bg-[#FF192C] transition-all duration-100"
-              style={{ width: `${progress * 100}%` }}
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              transform: `perspective(1200px) rotateY(${rotation}deg)`,
+              transition: "transform 0.15s ease-out",
+            }}
+          >
+            <img
+              src={damagedCar}
+              alt="Storm damaged vehicle"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              style={{ opacity: 1 - progress }}
+              data-testid="img-damaged-car"
+            />
+            <img
+              src={cleanCar}
+              alt="Restored vehicle"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              style={{ opacity: progress }}
+              data-testid="img-clean-car"
             />
           </div>
 
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0D] via-transparent to-transparent opacity-40" style={{ height: "20%" }} />
+
+          {showSweep && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <svg
+                key={sweepKey}
+                viewBox="0 0 460 220"
+                className="w-[80%] max-w-[700px] h-auto contour-sweep"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d={CAR_SVG_PATH}
+                  stroke="#FF192C"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  className="contour-path"
+                />
+              </svg>
+            </div>
+          )}
+
+          <div className="absolute top-8 left-8 sm:top-12 sm:left-12 z-10" data-testid="overlay-impact-level">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#B3B3B8]/60 font-semibold mb-1">
+              Impact Level
+            </p>
+            <p
+              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#F5F5F7]/90 tabular-nums leading-none"
+              data-testid="text-impact-counter"
+            >
+              {impactLevel}%
+            </p>
+          </div>
+
           <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 transition-opacity duration-500 z-10"
-            style={{ opacity: progress < 0.05 ? 1 : 0 }}
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-700"
+            style={{ opacity: showRestored ? 1 : 0 }}
           >
-            <p className="text-[#B3B3B8]/60 text-sm tracking-wide text-center">
-              Scroll to reveal the restoration
+            <p
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#F5F5F7] uppercase tracking-tight"
+              data-testid="text-restored"
+            >
+              Restored.
+            </p>
+          </div>
+
+          <div
+            className="absolute bottom-12 sm:bottom-16 left-0 right-0 flex flex-col items-center z-10 transition-opacity duration-700"
+            style={{ opacity: showCta ? 1 : 0, pointerEvents: showCta ? "auto" : "none" }}
+          >
+            <Link href="/contact">
+              <Button
+                className="bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold px-10"
+                data-testid="button-assessment-transform"
+              >
+                Get My Assessment
+              </Button>
+            </Link>
+            <p className="mt-3 text-xs text-[#B3B3B8]/40 tracking-wide">
+              Takes about a minute.
+            </p>
+          </div>
+
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 transition-opacity duration-500 z-10"
+            style={{ opacity: progress < 0.05 ? 0.7 : 0 }}
+          >
+            <p className="text-[#B3B3B8]/50 text-xs tracking-wide text-center uppercase">
+              Scroll to begin
             </p>
           </div>
         </div>
@@ -131,55 +277,21 @@ function TransformSection() {
 }
 
 function GuaranteeSection() {
-  const [open, setOpen] = useState(false);
-
   return (
     <section className="relative py-24 lg:py-40" data-testid="section-guarantee">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FF192C]/[0.03] to-transparent" />
       <div className="relative max-w-3xl mx-auto px-6 lg:px-10 text-center">
         <h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#F5F5F7] uppercase tracking-tight"
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#FF192C] uppercase tracking-tight"
           data-testid="text-guarantee-headline"
         >
           48 Hours.
         </h2>
-        <p className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#FF192C] uppercase tracking-tight mt-2">
+        <p className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#F5F5F7] uppercase tracking-tight mt-2">
           Or $300.
         </p>
-        <p className="mt-8 text-[#B3B3B8] text-lg leading-relaxed max-w-xl mx-auto">
-          If your vehicle is not completed within 48 hours of documented insurance approval, we pay you $300.
+        <p className="mt-10 text-[#B3B3B8]/50 text-sm tracking-wide">
+          Completion window begins after insurance approval.
         </p>
-        <p className="mt-4 text-[#B3B3B8]/50 text-sm">
-          Clock begins upon insurer authorization.
-        </p>
-
-        <div className="mt-12">
-          <button
-            onClick={() => setOpen(!open)}
-            className="text-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold cursor-pointer transition-opacity hover:opacity-80"
-            data-testid="button-how-it-works"
-          >
-            {open ? "Close" : "How It Works"}
-          </button>
-
-          {open && (
-            <div className="mt-8 text-left max-w-md mx-auto space-y-4" data-testid="drawer-how-it-works">
-              {[
-                { num: "01", text: "Insurance approves repair" },
-                { num: "02", text: "Vehicle is in our possession" },
-                { num: "03", text: "48-hour clock begins" },
-                { num: "04", text: "If exceeded, $300 paid to you" },
-              ].map((step) => (
-                <div key={step.num} className="flex items-start gap-4 py-3 border-b border-white/5">
-                  <span className="text-[#FF192C] text-xs font-bold tracking-wider mt-0.5">
-                    {step.num}
-                  </span>
-                  <span className="text-[#B3B3B8] text-sm">{step.text}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </section>
   );
@@ -304,9 +416,9 @@ function CtaSection() {
           <Link href="/contact">
             <Button
               className="bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold px-10"
-              data-testid="button-start-repair-cta"
+              data-testid="button-assessment-cta"
             >
-              Start My Repair
+              Get My Assessment
             </Button>
           </Link>
         </div>
@@ -319,6 +431,7 @@ export default function Home() {
   return (
     <div className="bg-[#0B0B0D] min-h-screen">
       <HeroSection />
+      <TransitionHeadline />
       <TransformSection />
       <GuaranteeSection />
       <ProcessSection />
