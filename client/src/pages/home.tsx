@@ -132,7 +132,7 @@ function TransformSection() {
   }, [unlockScroll, clearAllTimers]);
 
   useEffect(() => {
-    if (progress >= 0.98 && phase === "scrolling") {
+    if (progress >= 0.72 && phase === "scrolling") {
       lockScroll();
       setPhase("restored");
       const t1 = setTimeout(() => {
@@ -143,23 +143,24 @@ function TransformSection() {
           const t3 = setTimeout(() => {
             setPhase("done");
             unlockScroll();
-          }, 1500);
+          }, 2500);
           timersRef.current.push(t3);
         }, 1200);
         timersRef.current.push(t2);
       }, 800);
       timersRef.current.push(t1);
     }
-    if (progress < 0.85 && phase !== "scrolling") {
+    if (progress < 0.6 && phase !== "scrolling") {
       setPhase("scrolling");
       clearAllTimers();
       unlockScroll();
     }
   }, [progress, phase, lockScroll, unlockScroll, clearAllTimers]);
 
-  const impactLevel = phase !== "scrolling" ? 0 : Math.round(100 - progress * 100);
+  const displayProgress = Math.min(1, progress / 0.72);
+  const impactLevel = phase !== "scrolling" ? 0 : Math.round(100 - displayProgress * 100);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-  const rotation = progress * (isMobile ? 8 : 20);
+  const rotation = displayProgress * (isMobile ? 8 : 20);
   const showRestored = phase !== "scrolling";
   const showSweep = phase === "sweep" || phase === "cta" || phase === "done";
   const showCta = phase === "cta" || phase === "done";
@@ -168,7 +169,7 @@ function TransformSection() {
     <section
       ref={containerRef}
       className="relative"
-      style={{ height: "300vh" }}
+      style={{ height: "400vh" }}
       data-testid="section-transform"
     >
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col bg-[#0B0B0D]">
@@ -188,14 +189,14 @@ function TransformSection() {
               src={damagedCar}
               alt="Storm damaged vehicle"
               className="absolute inset-0 w-full h-full object-cover sm:object-center object-[center_30%]"
-              style={{ opacity: 1 - progress }}
+              style={{ opacity: 1 - displayProgress }}
               data-testid="img-damaged-car"
             />
             <img
               src={cleanCar}
               alt="Restored vehicle"
               className="absolute inset-0 w-full h-full object-cover sm:object-center object-[center_30%]"
-              style={{ opacity: progress }}
+              style={{ opacity: displayProgress }}
               data-testid="img-clean-car"
             />
           </div>
