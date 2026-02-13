@@ -157,7 +157,7 @@ function TransformSection() {
     }
   }, [progress, phase, lockScroll, unlockScroll, clearAllTimers]);
 
-  const impactLevel = Math.round(100 - progress * 100);
+  const impactLevel = phase !== "scrolling" ? 0 : Math.round(100 - progress * 100);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   const rotation = progress * (isMobile ? 8 : 20);
   const showRestored = phase !== "scrolling";
