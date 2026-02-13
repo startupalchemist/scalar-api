@@ -98,6 +98,8 @@ export const posts = pgTable("posts", {
   tags: text("tags").array().default(sql`'{}'::text[]`),
   seoTitle: text("seo_title"),
   seoDescription: text("seo_description"),
+  seoKeywords: text("seo_keywords").array().default(sql`'{}'::text[]`),
+  researchJobId: integer("research_job_id"),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -113,7 +115,7 @@ export const insertPostSchema = createInsertSchema(posts).omit({
 export type InsertPost = z.infer<typeof insertPostSchema>;
 export type Post = typeof posts.$inferSelect;
 
-export const postStatuses = ["draft", "published"] as const;
+export const postStatuses = ["draft", "queued", "published"] as const;
 
 export const subscribers = pgTable("subscribers", {
   id: serial("id").primaryKey(),
@@ -165,6 +167,31 @@ export const aiJobs = pgTable("ai_jobs", {
 });
 
 export type AiJob = typeof aiJobs.$inferSelect;
+
+export const backlinks = pgTable("backlinks", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  platform: text("platform").notNull(),
+  url: text("url").notNull(),
+  utmSource: text("utm_source").notNull(),
+  utmMedium: text("utm_medium").notNull().default("referral"),
+  utmCampaign: text("utm_campaign").notNull(),
+  shortCode: text("short_code").notNull().unique(),
+  clicks: integer("clicks").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Backlink = typeof backlinks.$inferSelect;
+
+export const backlinkClicks = pgTable("backlink_clicks", {
+  id: serial("id").primaryKey(),
+  backlinkId: integer("backlink_id").notNull().references(() => backlinks.id, { onDelete: "cascade" }),
+  referrer: text("referrer"),
+  userAgent: text("user_agent"),
+  clickedAt: timestamp("clicked_at").defaultNow().notNull(),
+});
+
+export type BacklinkClick = typeof backlinkClicks.$inferSelect;
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),

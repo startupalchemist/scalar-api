@@ -27,6 +27,14 @@ import {
   LogOut,
   Eye,
   EyeOff,
+  Search,
+  Link2,
+  ExternalLink,
+  Copy,
+  Zap,
+  Globe,
+  BookOpen,
+  X,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Lead, Post, Subscriber, Newsletter } from "@shared/schema";
@@ -152,6 +160,7 @@ export default function Admin() {
             setAiTopic={setAiTopic}
             showAiForm={showAiForm}
             setShowAiForm={setShowAiForm}
+            user={user}
           />
         )}
         {activeTab === "newsletter" && (
@@ -189,6 +198,17 @@ function DashboardTab() {
     queryKey: ["/api/stats"],
   });
 
+  const { data: backlinkAnalytics = [] } = useQuery<{ platform: string; clicks: number; backlinkCount: number }[]>({
+    queryKey: ["/api/backlinks/analytics"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/backlinks/analytics", { credentials: "include" });
+        if (!res.ok) return [];
+        return res.json();
+      } catch { return []; }
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -204,23 +224,62 @@ function DashboardTab() {
     { label: "Newsletters Sent", value: stats?.newsletters?.sent ?? 0, icon: Send },
   ];
 
+  const totalClicks = backlinkAnalytics.reduce((sum, a) => sum + a.clicks, 0);
+  const totalBacklinks = backlinkAnalytics.reduce((sum, a) => sum + a.backlinkCount, 0);
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {metrics.map((m, i) => (
-        <div
-          key={i}
-          className="p-6 rounded-md bg-[#141416] border border-white/5"
-          data-testid={`stat-${m.label.toLowerCase().replace(/\s+/g, "-")}`}
-        >
-          <m.icon className="w-5 h-5 text-[#B3B3B8]/50 mb-3" />
-          <div className="text-3xl font-bold text-[#F5F5F7]" data-testid={`value-${m.label.toLowerCase().replace(/\s+/g, "-")}`}>
-            {m.value}
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((m, i) => (
+          <div
+            key={i}
+            className="p-6 rounded-md bg-[#141416] border border-white/5"
+            data-testid={`stat-${m.label.toLowerCase().replace(/\s+/g, "-")}`}
+          >
+            <m.icon className="w-5 h-5 text-[#B3B3B8]/50 mb-3" />
+            <div className="text-3xl font-bold text-[#F5F5F7]" data-testid={`value-${m.label.toLowerCase().replace(/\s+/g, "-")}`}>
+              {m.value}
+            </div>
+            <div className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider mt-1">
+              {m.label}
+            </div>
           </div>
-          <div className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider mt-1">
-            {m.label}
+        ))}
+      </div>
+
+      {(totalBacklinks > 0 || backlinkAnalytics.length > 0) && (
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4">Backlink Performance</p>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="stat-total-backlinks">
+              <Globe className="w-5 h-5 text-[#B3B3B8]/50 mb-3" />
+              <div className="text-3xl font-bold text-[#F5F5F7]">{totalBacklinks}</div>
+              <div className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider mt-1">Total Backlinks</div>
+            </div>
+            <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="stat-total-clicks">
+              <ExternalLink className="w-5 h-5 text-[#B3B3B8]/50 mb-3" />
+              <div className="text-3xl font-bold text-[#F5F5F7]">{totalClicks}</div>
+              <div className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider mt-1">Total Clicks</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {backlinkAnalytics.map((a) => (
+              <div key={a.platform} className="p-4 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-3" data-testid={`analytics-platform-${a.platform}`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[#F5F5F7] text-sm font-semibold">{a.platform}</span>
+                  <Badge className="bg-[#FF192C]/20 text-[#FF192C] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
+                    {a.backlinkCount} {a.backlinkCount === 1 ? "link" : "links"}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-[#F5F5F7]">{a.clicks}</span>
+                  <span className="text-xs text-[#B3B3B8]/50">clicks</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -310,6 +369,91 @@ function LeadsTab({ toast }: { toast: any }) {
   );
 }
 
+function escapeHtml(str: string) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function renderMarkdown(md: string) {
+  let html = escapeHtml(md);
+  html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-[#F5F5F7] mt-6 mb-2">$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-[#F5F5F7] mt-8 mb-3">$1</h2>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#F5F5F7]">$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/\n\n/g, '</p><p class="text-[#B3B3B8] leading-relaxed mb-4">');
+  html = '<p class="text-[#B3B3B8] leading-relaxed mb-4">' + html + '</p>';
+  return html;
+}
+
+function ArticlePreviewModal({ post, onClose }: { post: Post; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center overflow-y-auto py-10"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      data-testid="modal-preview-overlay"
+    >
+      <div className="w-full max-w-3xl mx-4 bg-[#141416] border border-white/5 rounded-md p-8 relative" data-testid="modal-preview-content">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4"
+          onClick={onClose}
+          data-testid="button-close-preview"
+        >
+          <X className="w-5 h-5 text-[#B3B3B8]" />
+        </Button>
+
+        <h1 className="text-2xl font-bold text-[#F5F5F7] mb-4 pr-10" data-testid="text-preview-title">{post.title}</h1>
+
+        {post.excerpt && (
+          <p className="text-[#B3B3B8] italic mb-6 border-l-2 border-[#FF192C] pl-4" data-testid="text-preview-excerpt">{post.excerpt}</p>
+        )}
+
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6" data-testid="tags-preview">
+            {post.tags.map((tag, i) => (
+              <Badge key={i} className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate">{tag}</Badge>
+            ))}
+          </div>
+        )}
+
+        <div
+          className="mb-8"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content || "") }}
+          data-testid="content-preview"
+        />
+
+        <div className="border-t border-white/5 pt-6 space-y-3">
+          <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">SEO Metadata</p>
+          {post.seoTitle && (
+            <div>
+              <span className="text-xs text-[#B3B3B8]/50">SEO Title:</span>
+              <p className="text-sm text-[#F5F5F7]" data-testid="text-preview-seo-title">{post.seoTitle}</p>
+            </div>
+          )}
+          {post.seoDescription && (
+            <div>
+              <span className="text-xs text-[#B3B3B8]/50">SEO Description:</span>
+              <p className="text-sm text-[#F5F5F7]" data-testid="text-preview-seo-description">{post.seoDescription}</p>
+            </div>
+          )}
+          {post.seoKeywords && post.seoKeywords.length > 0 && (
+            <div>
+              <span className="text-xs text-[#B3B3B8]/50">SEO Keywords:</span>
+              <div className="flex flex-wrap gap-2 mt-1" data-testid="tags-preview-seo-keywords">
+                {post.seoKeywords.map((kw, i) => (
+                  <Badge key={i} className="text-xs bg-blue-500/10 text-blue-400 border-0 no-default-hover-elevate no-default-active-elevate">{kw}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type BlogSubTab = "all" | "research" | "queue" | "backlinks";
+
 function BlogTab({
   toast,
   showNewPost,
@@ -320,6 +464,7 @@ function BlogTab({
   setAiTopic,
   showAiForm,
   setShowAiForm,
+  user,
 }: {
   toast: any;
   showNewPost: boolean;
@@ -330,6 +475,82 @@ function BlogTab({
   setAiTopic: (v: string) => void;
   showAiForm: boolean;
   setShowAiForm: (v: boolean) => void;
+  user: { id: number; name: string; email: string; role: string };
+}) {
+  const [blogSubTab, setBlogSubTab] = useState<BlogSubTab>("all");
+  const [previewPost, setPreviewPost] = useState<Post | null>(null);
+
+  const subTabs: { key: BlogSubTab; label: string; icon: typeof BookOpen; adminOnly?: boolean }[] = [
+    { key: "all", label: "All Posts", icon: BookOpen },
+    { key: "research", label: "Research Agent", icon: Zap },
+    { key: "queue", label: "Publisher Queue", icon: FileText },
+    { key: "backlinks", label: "Backlinks", icon: Link2, adminOnly: true },
+  ];
+
+  const visibleSubTabs = subTabs.filter(t => !t.adminOnly || user.role === "root" || user.role === "admin");
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-white/5 pb-4">
+        {visibleSubTabs.map((tab) => (
+          <Button
+            key={tab.key}
+            variant={blogSubTab === tab.key ? "default" : "ghost"}
+            className={blogSubTab === tab.key ? "bg-[#FF192C] text-white" : "text-[#B3B3B8]"}
+            onClick={() => setBlogSubTab(tab.key)}
+            data-testid={`subtab-${tab.key}`}
+          >
+            <tab.icon className="w-4 h-4 mr-2" />
+            {tab.label}
+          </Button>
+        ))}
+      </div>
+
+      {blogSubTab === "all" && (
+        <AllPostsSubTab
+          toast={toast}
+          showNewPost={showNewPost}
+          setShowNewPost={setShowNewPost}
+          postForm={postForm}
+          setPostForm={setPostForm}
+          aiTopic={aiTopic}
+          setAiTopic={setAiTopic}
+          showAiForm={showAiForm}
+          setShowAiForm={setShowAiForm}
+          onPreview={setPreviewPost}
+        />
+      )}
+      {blogSubTab === "research" && <ResearchAgentSubTab toast={toast} onPreview={setPreviewPost} />}
+      {blogSubTab === "queue" && <PublisherQueueSubTab toast={toast} onPreview={setPreviewPost} />}
+      {blogSubTab === "backlinks" && <BacklinksSubTab toast={toast} />}
+
+      {previewPost && <ArticlePreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
+    </div>
+  );
+}
+
+function AllPostsSubTab({
+  toast,
+  showNewPost,
+  setShowNewPost,
+  postForm,
+  setPostForm,
+  aiTopic,
+  setAiTopic,
+  showAiForm,
+  setShowAiForm,
+  onPreview,
+}: {
+  toast: any;
+  showNewPost: boolean;
+  setShowNewPost: (v: boolean) => void;
+  postForm: any;
+  setPostForm: (v: any) => void;
+  aiTopic: string;
+  setAiTopic: (v: string) => void;
+  showAiForm: boolean;
+  setShowAiForm: (v: boolean) => void;
+  onPreview: (post: Post) => void;
 }) {
   const { data: posts = [], isLoading } = useQuery<Post[]>({
     queryKey: ["/api/posts"],
@@ -391,6 +612,12 @@ function BlogTab({
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
+
+  const statusBadgeClass = (status: string) => {
+    if (status === "published") return "bg-green-500/20 text-green-400";
+    if (status === "queued") return "bg-blue-500/20 text-blue-400";
+    return "bg-yellow-500/20 text-yellow-400";
+  };
 
   if (isLoading) {
     return (
@@ -498,7 +725,7 @@ function BlogTab({
                     title: postForm.title,
                     content: postForm.content,
                     excerpt: postForm.excerpt || null,
-                    tags: postForm.tags ? postForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                    tags: postForm.tags ? postForm.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
                     seoTitle: postForm.seoTitle || null,
                     seoDescription: postForm.seoDescription || null,
                   });
@@ -531,7 +758,7 @@ function BlogTab({
                   {post.title}
                 </span>
                 <Badge
-                  className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${post.status === "published" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}
+                  className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${statusBadgeClass(post.status)}`}
                   data-testid={`badge-post-status-${post.id}`}
                 >
                   {post.status}
@@ -542,6 +769,14 @@ function BlogTab({
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onPreview(post)}
+                data-testid={`button-preview-post-${post.id}`}
+              >
+                <Eye className="w-4 h-4 text-[#B3B3B8]" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -574,6 +809,422 @@ function BlogTab({
           <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-posts">No posts yet.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+function ResearchAgentSubTab({ toast, onPreview }: { toast: any; onPreview: (post: Post) => void }) {
+  const { data: researchJobs = [], isLoading } = useQuery<any[]>({
+    queryKey: ["/api/ai/research-jobs"],
+  });
+
+  const { data: allPosts = [] } = useQuery<Post[]>({
+    queryKey: ["/api/posts"],
+  });
+
+  const launchResearch = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/ai/research");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai/research-jobs"] });
+      toast({ title: "Research agent launched" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const jobStatusBadge = (status: string) => {
+    if (status === "completed") return "bg-green-500/20 text-green-400";
+    if (status === "research_complete") return "bg-blue-500/20 text-blue-400";
+    if (status === "failed") return "bg-red-500/20 text-red-400";
+    return "bg-yellow-500/20 text-yellow-400";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-research" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <Button
+          onClick={() => launchResearch.mutate()}
+          disabled={launchResearch.isPending}
+          className="bg-[#FF192C] text-white"
+          data-testid="button-launch-research"
+        >
+          {launchResearch.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+          Launch Research Agent
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {researchJobs.map((job: any) => {
+          let output: any = null;
+          try { output = job.output ? JSON.parse(job.output) : null; } catch {}
+
+          return (
+            <div key={job.id} className="p-5 rounded-md bg-[#141416] border border-white/5" data-testid={`card-research-job-${job.id}`}>
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[#F5F5F7] font-semibold text-sm">Research Job #{job.id}</span>
+                  <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${jobStatusBadge(job.status)}`} data-testid={`badge-research-status-${job.id}`}>
+                    {job.status}
+                  </Badge>
+                </div>
+                <span className="text-xs text-[#B3B3B8]/40">
+                  {new Date(job.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              </div>
+
+              {output?.research?.marketInsights && (
+                <div className="mb-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Market Insights</p>
+                  <p className="text-sm text-[#B3B3B8] leading-relaxed" data-testid={`text-market-insights-${job.id}`}>{output.research.marketInsights}</p>
+                </div>
+              )}
+
+              {output?.generatedArticles && output.generatedArticles.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-2">Generated Articles</p>
+                  <div className="space-y-2">
+                    {output.generatedArticles.map((article: any, i: number) => {
+                      const fullPost = allPosts.find((p) => p.id === article.postId);
+                      return (
+                        <div key={i} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-md bg-[#0B0B0D] border border-white/5">
+                          <span className="text-sm text-[#F5F5F7]" data-testid={`text-research-article-${article.postId}`}>{article.title}</span>
+                          {fullPost && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onPreview(fullPost)}
+                              data-testid={`button-preview-research-article-${article.postId}`}
+                            >
+                              <Eye className="w-4 h-4 text-[#B3B3B8]" />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {researchJobs.length === 0 && (
+          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-research-jobs">No research jobs yet.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PublisherQueueSubTab({ toast, onPreview }: { toast: any; onPreview: (post: Post) => void }) {
+  const { data: queuedPosts = [], isLoading } = useQuery<Post[]>({
+    queryKey: ["/api/posts", "queue"],
+    queryFn: async () => {
+      const res = await fetch("/api/posts/queue", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch queue");
+      return res.json();
+    },
+  });
+
+  const publishPost = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("POST", `/api/posts/${id}/publish`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      toast({ title: "Post published" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const discardPost = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/posts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      toast({ title: "Post discarded" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-queue" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-4" data-testid="text-queue-count">
+        {queuedPosts.length} queued articles
+      </p>
+      <div className="space-y-3">
+        {queuedPosts.map((post) => (
+          <div
+            key={post.id}
+            className="p-5 rounded-md bg-[#141416] border border-white/5"
+            data-testid={`card-queue-post-${post.id}`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[#F5F5F7] font-semibold text-sm mb-1" data-testid={`text-queue-title-${post.id}`}>{post.title}</h3>
+                {post.excerpt && <p className="text-xs text-[#B3B3B8] mb-2" data-testid={`text-queue-excerpt-${post.id}`}>{post.excerpt}</p>}
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {post.tags.map((tag, i) => (
+                      <Badge key={i} className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate">{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+                {(post.seoTitle || post.seoDescription) && (
+                  <div className="text-xs text-[#B3B3B8]/40 space-y-1">
+                    {post.seoTitle && <p>SEO: {post.seoTitle}</p>}
+                    {post.seoDescription && <p>{post.seoDescription}</p>}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onPreview(post)}
+                  data-testid={`button-preview-queue-${post.id}`}
+                >
+                  <Eye className="w-4 h-4 text-[#B3B3B8]" />
+                </Button>
+                <Button
+                  onClick={() => publishPost.mutate(post.id)}
+                  disabled={publishPost.isPending}
+                  className="bg-[#FF192C] text-white"
+                  data-testid={`button-publish-${post.id}`}
+                >
+                  {publishPost.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Globe className="w-4 h-4 mr-2" />}
+                  Publish
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="text-red-400"
+                  onClick={() => discardPost.mutate(post.id)}
+                  disabled={discardPost.isPending}
+                  data-testid={`button-discard-${post.id}`}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Discard
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {queuedPosts.length === 0 && (
+          <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-queued">No queued articles.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BacklinksSubTab({ toast }: { toast: any }) {
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [platformInput, setPlatformInput] = useState("");
+  const [platforms, setPlatforms] = useState<any[]>([]);
+
+  const { data: publishedPosts = [] } = useQuery<Post[]>({
+    queryKey: ["/api/posts"],
+  });
+
+  const filteredPosts = publishedPosts.filter((p) => p.status === "published");
+
+  const { data: backlinks = [], isLoading: backlinksLoading } = useQuery<any[]>({
+    queryKey: ["/api/backlinks", selectedPostId],
+    queryFn: async () => {
+      if (!selectedPostId) return [];
+      const res = await fetch(`/api/backlinks?postId=${selectedPostId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch backlinks");
+      return res.json();
+    },
+    enabled: !!selectedPostId,
+  });
+
+  const researchPlatforms = useMutation({
+    mutationFn: async (postId: number) => {
+      const res = await apiRequest("POST", "/api/ai/backlink-research", { postId });
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      setPlatforms(data.platforms || []);
+      toast({ title: "Platform research complete" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const generateBacklink = useMutation({
+    mutationFn: async ({ postId, platform }: { postId: number; platform: string }) => {
+      const res = await apiRequest("POST", "/api/backlinks/generate", { postId, platform });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/backlinks", selectedPostId] });
+      toast({ title: "Backlink generated" });
+      setPlatformInput("");
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Copied to clipboard" });
+  };
+
+  const authorityBadge = (authority: string) => {
+    if (authority === "high") return "bg-green-500/20 text-green-400";
+    if (authority === "medium") return "bg-yellow-500/20 text-yellow-400";
+    return "bg-red-500/20 text-red-400";
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">Select Published Post</p>
+        <Select
+          value={selectedPostId?.toString() || ""}
+          onValueChange={(val) => { setSelectedPostId(parseInt(val)); setPlatforms([]); }}
+        >
+          <SelectTrigger className="w-full max-w-md bg-[#0B0B0D] border-white/10 text-[#F5F5F7]" data-testid="select-backlink-post">
+            <SelectValue placeholder="Choose a published post..." />
+          </SelectTrigger>
+          <SelectContent className="bg-[#141416] border-white/10 max-h-[300px]">
+            {filteredPosts.map((post) => (
+              <SelectItem key={post.id} value={post.id.toString()} className="text-[#F5F5F7] text-xs">
+                {post.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {selectedPostId && (
+        <>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <Button
+              onClick={() => researchPlatforms.mutate(selectedPostId)}
+              disabled={researchPlatforms.isPending}
+              className="bg-[#FF192C] text-white"
+              data-testid="button-research-platforms"
+            >
+              {researchPlatforms.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+              Research Platforms
+            </Button>
+          </div>
+
+          {platforms.length > 0 && (
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">Recommended Platforms</p>
+              <div className="space-y-2">
+                {platforms.map((p: any, i: number) => (
+                  <div key={i} className="p-4 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-start justify-between gap-3" data-testid={`card-platform-${i}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-[#F5F5F7] font-semibold text-sm">{p.platform}</span>
+                        <Badge className={`text-xs border-0 no-default-hover-elevate no-default-active-elevate ${authorityBadge(p.authority)}`}>{p.authority}</Badge>
+                        <Badge className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate">{p.type}</Badge>
+                      </div>
+                      <p className="text-xs text-[#B3B3B8]">{p.relevance}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">Generate Backlink</p>
+            <div className="flex flex-wrap gap-3">
+              <Input
+                placeholder="Platform name..."
+                value={platformInput}
+                onChange={(e) => setPlatformInput(e.target.value)}
+                className="flex-1 min-w-[200px] bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
+                data-testid="input-backlink-platform"
+              />
+              <Button
+                onClick={() => platformInput.trim() && generateBacklink.mutate({ postId: selectedPostId, platform: platformInput.trim() })}
+                disabled={generateBacklink.isPending || !platformInput.trim()}
+                className="bg-[#FF192C] text-white"
+                data-testid="button-generate-backlink"
+              >
+                {generateBacklink.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Link2 className="w-4 h-4 mr-2" />}
+                Generate
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">Existing Backlinks</p>
+            {backlinksLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-5 h-5 text-[#FF192C] animate-spin" data-testid="loader-backlinks" />
+              </div>
+            ) : backlinks.length === 0 ? (
+              <p className="text-center py-8 text-[#B3B3B8]/50 text-sm" data-testid="text-no-backlinks">No backlinks yet for this post.</p>
+            ) : (
+              <div className="space-y-2">
+                {backlinks.map((bl: any) => (
+                  <div key={bl.id} className="p-4 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-3" data-testid={`card-backlink-${bl.id}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <Globe className="w-4 h-4 text-[#B3B3B8]/50" />
+                        <span className="text-[#F5F5F7] font-semibold text-sm" data-testid={`text-backlink-platform-${bl.id}`}>{bl.platform}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-[#B3B3B8] truncate max-w-[300px]" data-testid={`text-backlink-url-${bl.id}`}>{bl.url}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => copyToClipboard(bl.url)}
+                          data-testid={`button-copy-backlink-${bl.id}`}
+                        >
+                          <Copy className="w-3 h-3 text-[#B3B3B8]" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="text-xs bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate" data-testid={`badge-clicks-${bl.id}`}>
+                        {bl.clicks} clicks
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {filteredPosts.length === 0 && (
+        <p className="text-center py-12 text-[#B3B3B8]/50 text-sm" data-testid="text-no-published-posts">No published posts available for backlink research.</p>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -7,9 +7,11 @@ import {
   type Subscriber, type InsertSubscriber,
   type Newsletter, type InsertNewsletter,
   type AiJob,
+  type Backlink,
+  type BacklinkClick,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   createLead(lead: InsertLead): Promise<Lead>;
@@ -50,7 +52,17 @@ export interface IStorage {
 
   createAiJob(job: { type: string; input: string }): Promise<AiJob>;
   getAiJobs(): Promise<AiJob[]>;
+  getAiJobsByType(type: string): Promise<AiJob[]>;
   updateAiJob(id: number, data: Partial<AiJob>): Promise<AiJob | undefined>;
+
+  createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink>;
+  getBacklinksByPostId(postId: number): Promise<Backlink[]>;
+  getBacklinkByShortCode(shortCode: string): Promise<Backlink | undefined>;
+  getAllBacklinks(): Promise<Backlink[]>;
+  incrementBacklinkClicks(id: number): Promise<void>;
+  createBacklinkClick(data: { backlinkId: number; referrer: string | null; userAgent: string | null }): Promise<BacklinkClick>;
+  getBacklinkClicksByBacklinkId(backlinkId: number): Promise<BacklinkClick[]>;
+  getBacklinkAnalytics(): Promise<{ platform: string; clicks: number; backlinkCount: number }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -190,8 +202,48 @@ export class DatabaseStorage implements IStorage {
   async getAiJobs(): Promise<AiJob[]> {
     return db.select().from(aiJobs).orderBy(desc(aiJobs.createdAt));
   }
+  async getAiJobsByType(type: string): Promise<AiJob[]> {
+    return db.select().from(aiJobs).where(eq(aiJobs.type, type)).orderBy(desc(aiJobs.createdAt));
+  }
   async updateAiJob(id: number, data: Partial<AiJob>): Promise<AiJob | undefined> {
     const [result] = await db.update(aiJobs).set(data).where(eq(aiJobs.id, id)).returning();
+    return result;
+  }
+
+  async createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink> {
+    const [result] = await db.insert(backlinks).values(data).returning();
+    return result;
+  }
+  async getBacklinksByPostId(postId: number): Promise<Backlink[]> {
+    return db.select().from(backlinks).where(eq(backlinks.postId, postId)).orderBy(desc(backlinks.createdAt));
+  }
+  async getBacklinkByShortCode(shortCode: string): Promise<Backlink | undefined> {
+    const [result] = await db.select().from(backlinks).where(eq(backlinks.shortCode, shortCode));
+    return result;
+  }
+  async getAllBacklinks(): Promise<Backlink[]> {
+    return db.select().from(backlinks).orderBy(desc(backlinks.createdAt));
+  }
+  async incrementBacklinkClicks(id: number): Promise<void> {
+    await db.update(backlinks).set({ clicks: sql`${backlinks.clicks} + 1` }).where(eq(backlinks.id, id));
+  }
+  async createBacklinkClick(data: { backlinkId: number; referrer: string | null; userAgent: string | null }): Promise<BacklinkClick> {
+    const [result] = await db.insert(backlinkClicks).values(data).returning();
+    return result;
+  }
+  async getBacklinkClicksByBacklinkId(backlinkId: number): Promise<BacklinkClick[]> {
+    return db.select().from(backlinkClicks).where(eq(backlinkClicks.backlinkId, backlinkId)).orderBy(desc(backlinkClicks.clickedAt));
+  }
+  async getBacklinkAnalytics(): Promise<{ platform: string; clicks: number; backlinkCount: number }[]> {
+    const result = await db
+      .select({
+        platform: backlinks.platform,
+        clicks: sql<number>`sum(${backlinks.clicks})::int`,
+        backlinkCount: sql<number>`count(*)::int`,
+      })
+      .from(backlinks)
+      .groupBy(backlinks.platform)
+      .orderBy(sql`sum(${backlinks.clicks}) desc`);
     return result;
   }
 }

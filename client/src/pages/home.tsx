@@ -75,18 +75,18 @@ function TransformSection() {
     <section
       ref={containerRef}
       className="relative"
-      style={{ height: "300vh" }}
+      style={{ height: "250vh" }}
       data-testid="section-transform"
     >
-      <div ref={stickyRef} className="sticky top-0 h-screen w-full overflow-hidden flex flex-col">
-        <div className="text-center py-8 lg:py-12 flex-shrink-0 z-10">
+      <div ref={stickyRef} className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col">
+        <div className="text-center py-6 sm:py-8 lg:py-12 flex-shrink-0 z-10">
           <h2
             className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-3"
             data-testid="text-transform-label"
           >
             Erase the Storm
           </h2>
-          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+          <p className="text-2xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
             Damage In. Perfection Out.
           </p>
         </div>

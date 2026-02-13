@@ -275,7 +275,7 @@ export async function registerRoutes(
     try {
       const id = parseInt(req.params.id);
       const updates: Record<string, any> = {};
-      const fields = ["title", "content", "excerpt", "tags", "seoTitle", "seoDescription", "status", "featuredImage"];
+      const fields = ["title", "content", "excerpt", "tags", "seoTitle", "seoDescription", "seoKeywords", "status", "featuredImage"];
       for (const f of fields) {
         if (req.body[f] !== undefined) updates[f] = req.body[f];
       }
@@ -382,6 +382,7 @@ Respond in this exact JSON format:
         tags: article.tags || [],
         seoTitle: article.seoTitle || null,
         seoDescription: article.seoDescription || null,
+        seoKeywords: article.seoKeywords || [],
         status: "draft",
         featuredImage: null,
         publishedAt: null,
@@ -401,6 +402,351 @@ Respond in this exact JSON format:
       res.json(jobs);
     } catch {
       res.status(500).json({ message: "Failed to fetch AI jobs" });
+    }
+  });
+
+  // ─── Research Agent: Competitive Research + 5 Article Generation ──
+
+  app.post("/api/ai/research", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const job = await storage.createAiJob({
+        type: "research",
+        input: JSON.stringify({ triggeredBy: req.user!.email }),
+      });
+
+      res.json({ jobId: job.id, status: "processing" });
+
+      (async () => {
+        try {
+          const researchPrompt = `You are an expert SEO strategist and content marketing researcher for Dent Society, a premium paintless dent repair (PDR) and hail damage restoration company in Dallas-Fort Worth, Texas.
+
+Conduct thorough competitive and market research for the PDR and hail damage repair industry. Analyze:
+1. What topics competitors are ranking for
+2. High-volume, low-competition keywords in the PDR/hail repair space
+3. Seasonal search trends (storm season, hail events)
+4. Customer pain points and frequently asked questions
+5. Local SEO opportunities in Dallas-Fort Worth
+
+Then identify 5 highly effective article topics that will:
+- Drive organic search traffic
+- Convert readers into leads
+- Target different aspects of PDR and hail repair
+- Include location-specific angles where relevant
+- Cover informational, commercial, and transactional intent
+
+For each article topic provide:
+- title: compelling headline
+- topic: detailed description of what to cover
+- targetKeywords: array of 5-8 target keywords/phrases
+- searchIntent: "informational" | "commercial" | "transactional"
+- estimatedSearchVolume: "high" | "medium" | "low"
+- competitionLevel: "high" | "medium" | "low"
+- leadPotential: brief explanation of how this drives leads
+
+Respond in JSON format:
+{
+  "marketInsights": "Brief summary of competitive landscape and opportunities",
+  "articles": [
+    {
+      "title": "...",
+      "topic": "...",
+      "targetKeywords": ["..."],
+      "searchIntent": "...",
+      "estimatedSearchVolume": "...",
+      "competitionLevel": "...",
+      "leadPotential": "..."
+    }
+  ]
+}`;
+
+          const researchResponse = await openai.chat.completions.create({
+            model: "gpt-5.2",
+            messages: [{ role: "user", content: researchPrompt }],
+            response_format: { type: "json_object" },
+            max_completion_tokens: 4096,
+          });
+
+          const researchRaw = researchResponse.choices[0]?.message?.content || "{}";
+          let research;
+          try {
+            research = JSON.parse(researchRaw);
+          } catch {
+            research = { marketInsights: "", articles: [] };
+          }
+
+          await storage.updateAiJob(job.id, { output: JSON.stringify({ phase: "research_complete", research }), status: "research_complete" });
+
+          const articlesData = research.articles || [];
+          const generatedArticles: any[] = [];
+
+          for (const articlePlan of articlesData.slice(0, 5)) {
+            const articlePrompt = `You are an expert automotive content writer for Dent Society, a precision hail damage repair company in Dallas, TX.
+
+Write a comprehensive, SEO-optimized blog article based on this research:
+Topic: ${articlePlan.title}
+Description: ${articlePlan.topic}
+Target Keywords: ${(articlePlan.targetKeywords || []).join(", ")}
+Search Intent: ${articlePlan.searchIntent}
+
+Rules:
+- Write in a controlled, confident tone. No exclamation points. No sales hype.
+- Naturally incorporate target keywords throughout the content
+- Use substantive, factual content with specific details about PDR techniques, insurance processes, and storm damage
+- Target Dallas-Fort Worth market when relevant
+- Structure with H2 and H3 headings using markdown
+- Minimum 1000 words
+- Include internal linking suggestions (use placeholder URLs like /services, /contact, /insurance-claim-assistance)
+- End with a subtle call-to-action that encourages contacting Dent Society
+
+Respond in JSON format:
+{
+  "title": "Article Title",
+  "excerpt": "2 sentence excerpt for search results",
+  "content": "Full markdown article content",
+  "tags": ["tag1", "tag2", "tag3"],
+  "seoTitle": "SEO page title (60 chars max)",
+  "seoDescription": "Meta description (155 chars max)",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+}`;
+
+            try {
+              const articleResponse = await openai.chat.completions.create({
+                model: "gpt-5.2",
+                messages: [{ role: "user", content: articlePrompt }],
+                response_format: { type: "json_object" },
+                max_completion_tokens: 8192,
+              });
+
+              const articleRaw = articleResponse.choices[0]?.message?.content || "{}";
+              let article;
+              try {
+                article = JSON.parse(articleRaw);
+              } catch {
+                article = { title: articlePlan.title, content: articleRaw, excerpt: "", tags: [], seoTitle: "", seoDescription: "", seoKeywords: [] };
+              }
+
+              let slug = slugify(article.title || articlePlan.title);
+              const existingSlug = await storage.getPostBySlug(slug);
+              if (existingSlug) slug = slug + "-" + Date.now().toString(36);
+
+              const post = await storage.createPost({
+                title: article.title || articlePlan.title,
+                slug,
+                content: article.content || "",
+                excerpt: article.excerpt || null,
+                tags: article.tags || [],
+                seoTitle: article.seoTitle || null,
+                seoDescription: article.seoDescription || null,
+                seoKeywords: article.seoKeywords || [],
+                status: "queued",
+                featuredImage: null,
+                publishedAt: null,
+                researchJobId: job.id,
+                authorId: req.user!.id,
+              });
+
+              generatedArticles.push({ postId: post.id, title: post.title, slug: post.slug });
+            } catch (e: any) {
+              console.error("Failed to generate article:", articlePlan.title, e?.message);
+            }
+          }
+
+          await storage.updateAiJob(job.id, {
+            output: JSON.stringify({ research, generatedArticles }),
+            status: "completed",
+          });
+        } catch (e: any) {
+          console.error("Research agent error:", e?.message);
+          await storage.updateAiJob(job.id, { output: JSON.stringify({ error: e?.message }), status: "failed" });
+        }
+      })();
+    } catch (error: any) {
+      console.error("Research agent error:", error);
+      res.status(500).json({ message: "Failed to start research agent", error: error?.message });
+    }
+  });
+
+  app.get("/api/ai/research/:id", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const jobs = await storage.getAiJobs();
+      const job = jobs.find(j => j.id === id && j.type === "research");
+      if (!job) return res.status(404).json({ message: "Research job not found" });
+
+      const queuedPosts = await storage.getPosts("queued");
+      const relatedPosts = queuedPosts.filter(p => (p as any).researchJobId === job.id);
+
+      res.json({ job, queuedArticles: relatedPosts });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch research job" });
+    }
+  });
+
+  app.get("/api/ai/research-jobs", authMiddleware, requireRole("root", "admin", "editor"), async (_req, res) => {
+    try {
+      const jobs = await storage.getAiJobsByType("research");
+      res.json(jobs);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch research jobs" });
+    }
+  });
+
+  // ─── Publisher Queue ────────────────────────────────────────────
+
+  app.get("/api/posts/queue", authMiddleware, requireRole("root", "admin", "editor"), async (_req, res) => {
+    try {
+      const queued = await storage.getPosts("queued");
+      res.json(queued);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch queue" });
+    }
+  });
+
+  app.post("/api/posts/:id/publish", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const post = await storage.getPostById(id);
+      if (!post) return res.status(404).json({ message: "Post not found" });
+      const updated = await storage.updatePost(id, { status: "published", publishedAt: new Date() });
+      res.json(updated);
+    } catch {
+      res.status(500).json({ message: "Failed to publish post" });
+    }
+  });
+
+  // ─── Backlink Agent ─────────────────────────────────────────────
+
+  app.post("/api/ai/backlink-research", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { postId } = req.body;
+      if (!postId) return res.status(400).json({ message: "Post ID required" });
+
+      const post = await storage.getPostById(postId);
+      if (!post) return res.status(404).json({ message: "Post not found" });
+
+      const prompt = `You are an expert SEO link building strategist. Analyze this blog article and recommend the 8 most effective platforms/websites to distribute it for maximum backlink value and organic traffic.
+
+Article Title: ${post.title}
+Article Topic: ${post.excerpt || post.title}
+Tags: ${(post.tags || []).join(", ")}
+
+For each platform, provide:
+- platform: name of the platform/website
+- type: "social" | "forum" | "directory" | "guest-post" | "aggregator" | "community"
+- authority: "high" | "medium" | "low" (domain authority estimate)
+- relevance: brief explanation of why this platform is effective for this content
+- suggestedAction: what specifically to do on this platform (e.g., "Submit to relevant subreddit", "Share with industry hashtags")
+
+Respond in JSON format:
+{
+  "platforms": [
+    {
+      "platform": "...",
+      "type": "...",
+      "authority": "...",
+      "relevance": "...",
+      "suggestedAction": "..."
+    }
+  ]
+}`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5.2",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 2048,
+      });
+
+      const raw = response.choices[0]?.message?.content || "{}";
+      let result;
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        result = { platforms: [] };
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Backlink research error:", error);
+      res.status(500).json({ message: "Failed to research backlink platforms" });
+    }
+  });
+
+  app.post("/api/backlinks/generate", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { postId, platform } = req.body;
+      if (!postId || !platform) return res.status(400).json({ message: "Post ID and platform required" });
+
+      const post = await storage.getPostById(postId);
+      if (!post) return res.status(404).json({ message: "Post not found" });
+
+      const shortCode = crypto.randomBytes(4).toString("hex");
+      const utmSource = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const utmCampaign = post.slug;
+
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : process.env.REPLIT_DEPLOYMENT_URL
+          ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+          : "";
+
+      const articleUrl = `${baseUrl}/blog/${post.slug}?utm_source=${utmSource}&utm_medium=referral&utm_campaign=${utmCampaign}`;
+
+      const backlink = await storage.createBacklink({
+        postId,
+        platform,
+        url: articleUrl,
+        utmSource,
+        utmMedium: "referral",
+        utmCampaign,
+        shortCode,
+      });
+
+      const trackingUrl = `${baseUrl}/r/${shortCode}`;
+
+      res.json({ backlink, trackingUrl, articleUrl });
+    } catch (error: any) {
+      console.error("Backlink generation error:", error);
+      res.status(500).json({ message: "Failed to generate backlink" });
+    }
+  });
+
+  app.get("/api/backlinks", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const postId = req.query.postId ? parseInt(req.query.postId as string) : undefined;
+      const links = postId ? await storage.getBacklinksByPostId(postId) : await storage.getAllBacklinks();
+      res.json(links);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch backlinks" });
+    }
+  });
+
+  app.get("/api/backlinks/analytics", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const analytics = await storage.getBacklinkAnalytics();
+      res.json(analytics);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // ─── Backlink Click Tracking Redirect ───────────────────────────
+
+  app.get("/r/:shortCode", async (req, res) => {
+    try {
+      const backlink = await storage.getBacklinkByShortCode(req.params.shortCode);
+      if (!backlink) return res.status(404).send("Not found");
+
+      await storage.incrementBacklinkClicks(backlink.id);
+      await storage.createBacklinkClick({
+        backlinkId: backlink.id,
+        referrer: req.headers.referer || null,
+        userAgent: req.headers["user-agent"] || null,
+      });
+
+      res.redirect(301, backlink.url);
+    } catch {
+      res.status(500).send("Error");
     }
   });
 

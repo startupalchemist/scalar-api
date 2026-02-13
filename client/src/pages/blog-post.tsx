@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ interface Post {
   tags: string[];
   seoTitle: string | null;
   seoDescription: string | null;
+  seoKeywords: string[] | null;
   publishedAt: string | null;
   createdAt: string;
 }
@@ -49,6 +51,45 @@ export default function BlogPost() {
     enabled: !!slug,
   });
 
+  useEffect(() => {
+    if (!post) return;
+    document.title = post.seoTitle || `${post.title} | Dent Society`;
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
+      el.content = content;
+    };
+    const setOg = (prop: string, content: string) => {
+      let el = document.querySelector(`meta[property="${prop}"]`) as HTMLMetaElement | null;
+      if (!el) { el = document.createElement("meta"); el.setAttribute("property", prop); document.head.appendChild(el); }
+      el.content = content;
+    };
+    const desc = post.seoDescription || post.excerpt || "";
+    if (desc) setMeta("description", desc);
+    if (post.seoKeywords?.length) setMeta("keywords", post.seoKeywords.join(", "));
+    setOg("og:title", post.seoTitle || post.title);
+    setOg("og:description", post.excerpt || post.seoDescription || "");
+    setOg("og:type", "article");
+    setOg("og:url", window.location.href);
+
+    let ldEl = document.querySelector('script[data-blog-ld]') as HTMLScriptElement | null;
+    if (!ldEl) { ldEl = document.createElement("script"); ldEl.type = "application/ld+json"; ldEl.setAttribute("data-blog-ld", "true"); document.head.appendChild(ldEl); }
+    ldEl.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.excerpt || post.seoDescription || "",
+      datePublished: post.publishedAt,
+      ...(post.seoKeywords?.length ? { keywords: post.seoKeywords.join(", ") } : {}),
+      publisher: { "@type": "Organization", name: "Dent Society" },
+    });
+
+    return () => {
+      document.title = "Dent Society";
+      document.querySelector('script[data-blog-ld]')?.remove();
+    };
+  }, [post]);
+
   if (isLoading) {
     return (
       <div className="bg-[#0B0B0D] min-h-screen pt-24 flex items-center justify-center">
@@ -75,28 +116,6 @@ export default function BlogPost() {
 
   return (
     <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
-      {post.seoTitle && (
-        <title>{post.seoTitle}</title>
-      )}
-      {post.seoDescription && (
-        <meta name="description" content={post.seoDescription} />
-      )}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            headline: post.title,
-            description: post.excerpt || post.seoDescription || "",
-            datePublished: post.publishedAt,
-            publisher: {
-              "@type": "Organization",
-              name: "Dent Society",
-            },
-          }),
-        }}
-      />
 
       <article className="max-w-3xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <Link href="/blog">
