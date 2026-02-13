@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "What if GEICO's estimate does not cover the full cost of my hail repair?",
     a: "Initial estimates from GEICO adjusters may not reflect the complete scope of damage, particularly after major storm events. When Dent Society identifies additional damage beyond the initial estimate, we file a supplement through the ARX system with detailed documentation including panel-by-panel photos and revised damage counts. GEICO's supplement review team typically processes these requests within five to eight business days.",
   },
-  {
-    q: "Does GEICO provide rental car coverage during hail repair?",
-    a: "Rental reimbursement depends on your specific GEICO policy. If your policy includes this coverage, GEICO will reimburse rental or loaner vehicle costs during the repair period. Regardless of your policy coverage, Dent Society provides a complimentary loaner vehicle to all hail repair clients, so transportation is never a concern while your vehicle is being repaired.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function GeicoHailDamageRepairPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="GEICO Hail Damage Repair"
+      badge="GEICO"
+      title="GEICO Hail Damage Repair in Dallas"
       subtitle="Dent Society coordinates directly with GEICO adjusters and their ARX system to manage your hail damage claim from inspection through completed repair."
       faq={faq}
       internalLinks={internalLinks}

@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import cleanCar from "@assets/IMG_4072_1770967683031.jpeg";
 
 const stats = [
@@ -84,6 +86,35 @@ export default function About() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="mt-16 p-6 rounded-md bg-[#141416] border border-white/5">
+          <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Learn More</h3>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Hail Damage Repair", href: "/hail-damage-repair-dallas" },
+              { label: "Insurance Coordination", href: "/insurance-claim-assistance" },
+              { label: "48-Hour Guarantee", href: "/48-hour-completion-guarantee" },
+              { label: "Our Process", href: "/paintless-dent-repair-dallas" },
+            ].map((link) => (
+              <Link key={link.href} href={link.href}>
+                <span className="text-xs text-[#FF192C] hover:text-[#FF192C]/80 transition-colors cursor-pointer">
+                  {link.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link href="/contact">
+            <Button
+              className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-10"
+              data-testid="button-about-cta"
+            >
+              Start My Repair
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

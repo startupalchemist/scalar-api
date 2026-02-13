@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "What happens if State Farm's initial estimate is lower than the actual repair cost?",
     a: "This is common. Initial adjuster estimates frequently undercount dents or underestimate repair complexity, particularly after large storm events when adjusters are processing high claim volumes. When Dent Society identifies additional damage beyond the initial estimate, we prepare and submit a detailed supplement with photographic documentation. State Farm has an established supplement review process, and approvals are typically processed within five to ten business days.",
   },
-  {
-    q: "Does State Farm cover paintless dent repair for hail damage?",
-    a: "Yes. State Farm recognizes paintless dent repair as the preferred method for hail damage when the paint surface is intact. PDR is less expensive than conventional body shop repair, which benefits both the policyholder and the carrier. State Farm adjusters regularly write estimates that specify PDR as the approved repair method for qualifying hail damage.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function StateFarmHailClaimsPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="State Farm Hail Damage Claims"
+      badge="State Farm"
+      title="State Farm Hail Damage Claims in Dallas"
       subtitle="How Dent Society coordinates with State Farm to streamline your hail damage claim from initial inspection through completed repair."
       faq={faq}
       internalLinks={internalLinks}

@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "Can Dent Society work with my insurance company in Plano?",
     a: "Dent Society coordinates directly with all major insurance carriers in Texas. We handle the entire claim process including initial documentation, adjuster communication, supplement filing, and payment reconciliation. You are not required to manage any aspect of the claim yourself.",
   },
-  {
-    q: "Is there a cost for the loaner vehicle during my hail repair?",
-    a: "No. Dent Society provides complimentary loaner vehicles at no charge to every hail repair client. This service is not contingent on your insurance policy including rental reimbursement. You will have a vehicle to drive for the full duration of the repair.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "Dallas Hail Damage Repair Services", href: "/hail-damage-repair-dallas" },
+  { label: "Dallas PDR Specialists", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "Paintless Dent Repair in Dallas", href: "/paintless-dent-repair-dallas" },
@@ -143,7 +139,7 @@ export default function PlanoHailRepair() {
         Plano is home to a significant population of discerning vehicle owners who expect repair quality that matches the caliber of their cars. Dent Society's approach is built for this standard. Our technicians are trained to factory-level PDR standards, our insurance coordination eliminates the administrative burden of the claim process, and our loaner vehicle program ensures zero disruption to your schedule. From the initial damage assessment through final quality inspection, every step is handled with the precision and professionalism that Plano residents expect.
       </p>
       <p>
-        Whether your vehicle was damaged in a parking structure at Legacy West, in a driveway off Custer Road, or in an open lot along the George Bush Turnpike corridor, Dent Society delivers the same result: a vehicle restored to its pre-storm condition, on time, and without compromise.
+        Whether your vehicle was damaged in a parking structure at Legacy West, along the Parker Road corridor, or in an open lot near the George Bush Turnpike, Dent Society delivers the same result: a vehicle restored to its pre-storm condition, on time, and without compromise.
       </p>
     </SEOPageLayout>
   );

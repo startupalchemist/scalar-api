@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "Do I get a loaner car while my vehicle is being repaired?",
     a: "Yes. Dent Society provides complimentary loaner vehicles to every hail repair client at no charge. This service is not contingent on rental coverage in your insurance policy.",
   },
-  {
-    q: "Can large hail dents be fixed with paintless dent repair?",
-    a: "PDR can correct dents across a wide range of sizes and depths as long as the paint surface remains intact. This includes damage from hailstones up to three inches or larger in many cases. Only dents where the paint has cracked or chipped require conventional repair methods on those specific panels.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "DFW Hail Damage Repair", href: "/hail-damage-repair-dallas" },
+  { label: "Professional Hail Repair in DFW", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "PDR vs. Body Shop", href: "/pdr-vs-body-shop" },

@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "Do I need to file the insurance claim myself?",
     a: "No. Dent Society manages the entire claim process for Fort Worth clients. We document the damage, coordinate with your carrier's adjuster, file supplements when the initial estimate does not cover the full repair, and handle all follow-up communication through final payment.",
   },
-  {
-    q: "Is the loaner vehicle really free?",
-    a: "Yes. Dent Society provides complimentary loaner vehicles at no cost to the client. This service does not require rental coverage on your insurance policy and is available to every hail repair client while their vehicle is in our facility.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "Hail Damage Repair in Dallas-Fort Worth", href: "/hail-damage-repair-dallas" },
+  { label: "DFW Hail Damage Specialists", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "Storm Damage Restoration", href: "/storm-damage-restoration" },

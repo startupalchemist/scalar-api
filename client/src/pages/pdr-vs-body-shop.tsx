@@ -43,7 +43,9 @@ const faq: FAQItem[] = [
 const internalLinks: InternalLink[] = [
   { label: "Hail Damage Repair in Dallas", href: "/hail-damage-repair-dallas" },
   { label: "Paintless Dent Repair in Dallas", href: "/paintless-dent-repair-dallas" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
+  { label: "Hail Repair in Plano", href: "/hail-repair-plano" },
+  { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
 ];
 
 const schema = {
@@ -67,7 +69,7 @@ export default function PdrVsBodyShop() {
   return (
     <SEOPageLayout
       badge="Comparison"
-      title="PDR vs Body Shop"
+      title="PDR vs Body Shop: Which Is Right for Hail Damage"
       subtitle="A detailed comparison of paintless dent repair and traditional body shop methods for hail damage, examining cost, quality, timeline, and long-term value."
       faq={faq}
       internalLinks={internalLinks}
@@ -83,7 +85,7 @@ export default function PdrVsBodyShop() {
       </p>
 
       <h2>Side-by-Side Comparison</h2>
-      <ComparisonTable headers={["PDR", "Body Shop"]} rows={comparisonRows} />
+      <ComparisonTable headers={["Paintless Dent Repair", "Traditional Body Shop"]} rows={comparisonRows} />
 
       <h2>How PDR Works</h2>
       <p>

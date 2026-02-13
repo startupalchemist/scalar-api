@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "Does Allstate cover paintless dent repair?",
     a: "Yes. Allstate recognizes paintless dent repair as the appropriate method for hail damage when the vehicle's paint surface is undamaged. PDR is typically less costly and less invasive than conventional body shop repair, which benefits both the policyholder and the carrier. Allstate adjusters regularly authorize PDR for qualifying hail damage.",
   },
-  {
-    q: "Will I have transportation while my car is being repaired through Allstate?",
-    a: "If your Allstate policy includes rental reimbursement coverage, the carrier will cover a rental vehicle during the repair period. Dent Society also provides a complimentary loaner vehicle to all hail repair clients regardless of policy coverage, ensuring you have reliable transportation throughout the repair process.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function AllstateHailClaimsPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="Allstate Hail Damage Claims"
+      badge="Allstate"
+      title="Allstate Hail Damage Claims in Dallas"
       subtitle="Dent Society works directly with Allstate adjusters to coordinate your hail damage repair, from QuickFoto Claim submission through final supplement approval."
       faq={faq}
       internalLinks={internalLinks}

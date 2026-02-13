@@ -25,7 +25,7 @@ const faq: FAQItem[] = [
 ];
 
 const links: InternalLink[] = [
-  { label: "Dallas-Fort Worth Hail Damage Repair", href: "/hail-damage-repair-dallas" },
+  { label: "Dallas Hail Repair Experts", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "Paintless Dent Repair in Dallas", href: "/paintless-dent-repair-dallas" },
@@ -86,7 +86,7 @@ export default function DentonHailRepair() {
     >
       <h2>Hail Damage in Denton</h2>
       <p>
-        Denton occupies a unique position at the northern boundary of the Dallas-Fort Worth metroplex, where the terrain transitions from the Blackland Prairie into the rolling hills of the eastern Cross Timbers. This geographic transition zone creates localized atmospheric effects that can intensify thunderstorm development, particularly during the spring months when warm, moist Gulf air collides with cooler, drier air moving southward. The result is a hail season that runs from March through June and regularly produces damaging stones across the city and surrounding Denton County.
+        Denton, the county seat of Denton County, occupies a unique position at the northern boundary of the Dallas-Fort Worth metroplex, where the terrain transitions from the Blackland Prairie into the rolling hills of the eastern Cross Timbers. This geographic transition zone creates localized atmospheric effects that can intensify thunderstorm development, particularly during the spring months when warm, moist Gulf air collides with cooler, drier air moving southward. The result is a hail season that runs from March through June and regularly produces damaging stones across the city and surrounding Denton County.
       </p>
       <p>
         The city's two major universities, the University of North Texas and Texas Woman's University, contribute a substantial student vehicle population that is largely parked in open surface lots. These lots, spread across both campuses, offer virtually no protection from hail. A single storm cell passing over the UNT campus can damage hundreds of vehicles in minutes. The same is true for vehicles parked near the TWU campus along Bell Avenue and in the neighborhoods between the two schools.

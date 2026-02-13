@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "Does Dent Society work with all insurance companies?",
     a: "Dent Society coordinates with all major insurance carriers operating in Texas, including State Farm, USAA, Allstate, Geico, Progressive, Liberty Mutual, Farmers, and others. We manage the complete claim process regardless of which carrier insures the vehicle.",
   },
-  {
-    q: "Is the loaner vehicle included at no extra cost?",
-    a: "Yes. Complimentary loaner vehicles are provided to every hail repair client at no charge. This service does not require rental coverage on your insurance policy.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "DFW Hail Damage Repair Services", href: "/hail-damage-repair-dallas" },
+  { label: "Hail Damage Repair Specialists", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "Storm Damage Restoration", href: "/storm-damage-restoration" },
@@ -93,7 +89,7 @@ export default function IrvingHailRepair() {
         Irving occupies a strategic position in the DFW metroplex, bordered by Dallas to the east, Fort Worth to the west, and DFW International Airport to the north. This central location means Irving receives storm activity from virtually every direction as weather systems move across the metroplex. The city's diverse landscape, from the gleaming corporate towers and luxury apartments of Las Colinas to the established residential neighborhoods of south Irving and the Valley Ranch community in the north, all face consistent hail exposure during the March-through-June storm season.
       </p>
       <p>
-        Las Colinas is one of the largest mixed-use urban developments in the Southwest, home to major corporate headquarters, high-rise residential buildings, and thousands of daily commuters. While some parking in Las Colinas is structured, a substantial portion of the vehicle population parks in surface lots adjacent to office buildings, restaurants, and retail centers along O'Connor Road, Las Colinas Boulevard, and the waterfront area. These vehicles are fully exposed during daytime storm events, which frequently arrive during afternoon business hours.
+        Las Colinas is one of the largest mixed-use urban developments in the Southwest, home to major corporate headquarters, high-rise residential buildings, and thousands of daily commuters. While some parking in Las Colinas is structured, a substantial portion of the vehicle population parks in surface lots adjacent to office buildings, restaurants, and entertainment venues like the Toyota Music Factory along O'Connor Road, Las Colinas Boulevard, and the waterfront area. These vehicles are fully exposed during daytime storm events, which frequently arrive during afternoon business hours.
       </p>
       <p>
         Irving's proximity to DFW International Airport adds another dimension to the city's hail exposure. The airport's surrounding commercial zone, with rental car lots, employee parking areas, and hotel guest parking, contains one of the highest concentrations of exposed vehicles in the entire metroplex. While Dent Society's primary service area focuses on privately owned vehicles, the airport proximity illustrates the scale of hail impact in the Irving corridor. Residential neighborhoods in south Irving, with older housing stock and limited garage coverage, are also heavily affected during significant hail events.

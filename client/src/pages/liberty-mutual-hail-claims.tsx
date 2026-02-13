@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "How does Dent Society communicate with Liberty Mutual during the claim?",
     a: "Dent Society communicates directly with Liberty Mutual's adjuster and supplement review teams throughout the entire repair process. We submit all documentation through their preferred channels, respond promptly to information requests, and monitor each claim file for timely processing. Our clients receive regular status updates while we manage the administrative coordination.",
   },
-  {
-    q: "Will I have a vehicle to drive during my Liberty Mutual hail repair?",
-    a: "If your Liberty Mutual policy includes rental reimbursement coverage, the carrier will cover rental vehicle costs during the repair period. Dent Society also provides a complimentary loaner vehicle to all hail repair clients regardless of policy coverage, so you will have transportation whether or not your policy includes rental benefits.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function LibertyMutualHailClaimsPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="Liberty Mutual Hail Damage Claims"
+      badge="Liberty Mutual"
+      title="Liberty Mutual Hail Claims in Dallas"
       subtitle="Dent Society coordinates directly with Liberty Mutual adjusters to manage your hail damage claim from initial inspection through completed repair."
       faq={faq}
       internalLinks={internalLinks}

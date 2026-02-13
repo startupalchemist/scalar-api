@@ -43,8 +43,9 @@ const faq: FAQItem[] = [
 
 const internalLinks: InternalLink[] = [
   { label: "Hail Damage Repair in Dallas", href: "/hail-damage-repair-dallas" },
-  { label: "Paintless Dent Repair in Dallas", href: "/paintless-dent-repair-dallas" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
+  { label: "Hail Repair in Frisco", href: "/hail-repair-frisco" },
+  { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
 ];
 
 const schema = {
@@ -68,7 +69,7 @@ export default function HailRepairVsRepaint() {
   return (
     <SEOPageLayout
       badge="Comparison"
-      title="Hail Repair vs Full Repaint"
+      title="Hail Repair vs Repaint: Preserving Your Vehicle"
       subtitle="Understanding the critical differences between paintless dent repair and full-panel repaint for hail-damaged vehicles, and why factory finish preservation matters."
       faq={faq}
       internalLinks={internalLinks}
@@ -84,7 +85,7 @@ export default function HailRepairVsRepaint() {
       </p>
 
       <h2>Method Comparison</h2>
-      <ComparisonTable headers={["Hail Repair (PDR)", "Full Repaint"]} rows={comparisonRows} />
+      <ComparisonTable headers={["PDR Hail Repair", "Full Repaint"]} rows={comparisonRows} />
 
       <h2>Why Factory Paint Matters</h2>
       <p>

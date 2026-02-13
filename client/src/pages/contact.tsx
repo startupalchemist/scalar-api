@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertLeadSchema } from "@shared/schema";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Link } from "wouter";
 
 const contactSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Name is required"),
@@ -267,6 +268,29 @@ export default function Contact() {
                 </form>
               </Form>
             )}
+          </div>
+        </div>
+
+        <div className="mt-16 p-6 rounded-md bg-[#141416] border border-white/5">
+          <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Service Areas</h3>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: "Dallas", href: "/hail-repair-dallas" },
+              { label: "Plano", href: "/hail-repair-plano" },
+              { label: "Frisco", href: "/hail-repair-frisco" },
+              { label: "Fort Worth", href: "/hail-repair-fort-worth" },
+              { label: "Arlington", href: "/hail-repair-arlington" },
+              { label: "Denton", href: "/hail-repair-denton" },
+              { label: "McKinney", href: "/hail-repair-mckinney" },
+              { label: "Irving", href: "/hail-repair-irving" },
+              { label: "Garland", href: "/hail-repair-garland" },
+            ].map((link) => (
+              <Link key={link.href} href={link.href}>
+                <span className="text-xs text-[#FF192C] hover:text-[#FF192C]/80 transition-colors cursor-pointer" data-testid={`link-area-${link.label.toLowerCase()}`}>
+                  {link.label}
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

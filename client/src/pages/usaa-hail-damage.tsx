@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "Does USAA cover paintless dent repair for hail damage?",
     a: "Yes. USAA recognizes paintless dent repair as the standard method for hail damage when the paint surface remains intact. PDR preserves the vehicle's factory finish and is less costly than conventional repair, which USAA's adjusters take into account when writing estimates. USAA routinely authorizes PDR for qualifying hail damage claims.",
   },
-  {
-    q: "Will I have transportation during my USAA hail damage repair?",
-    a: "If your USAA policy includes rental reimbursement coverage, the carrier will cover a rental vehicle during the repair period. Dent Society also provides a complimentary loaner vehicle to all hail repair clients regardless of rental coverage on your policy. You will have transportation available throughout the repair process.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function UsaaHailDamagePage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="USAA Hail Damage Claims"
+      badge="USAA"
+      title="USAA Hail Damage Repair in Dallas"
       subtitle="Dent Society provides hail damage repair and full claim coordination for USAA members throughout the Dallas-Fort Worth area."
       faq={faq}
       internalLinks={internalLinks}

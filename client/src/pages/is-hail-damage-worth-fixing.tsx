@@ -30,9 +30,9 @@ const faq: FAQItem[] = [
 
 const internalLinks: InternalLink[] = [
   { label: "Hail Damage Repair in Dallas", href: "/hail-damage-repair-dallas" },
-  { label: "How Hail Affects Resale Value", href: "/how-hail-affects-resale-value" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Hail Repair in Fort Worth", href: "/hail-repair-fort-worth" },
+  { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
 ];
 
 const schema = {

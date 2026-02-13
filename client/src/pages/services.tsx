@@ -7,31 +7,37 @@ const services = [
     icon: Droplets,
     title: "Hail Damage Repair",
     desc: "Paintless dent repair for storm-impacted vehicles. Factory finish preserved. No filler. No repaint. Complimentary loaner vehicles available. Pickup and delivery coordinated around your schedule.",
+    href: "/hail-damage-repair-dallas",
   },
   {
     icon: Zap,
     title: "Paintless Dent Removal",
     desc: "Precision PDR for door dings, minor dents, and creases. Metal memory restored to original form.",
+    href: "/paintless-dent-repair-dallas",
   },
   {
     icon: Shield,
     title: "Insurance Coordination",
     desc: "We handle the paperwork. Direct insurer communication. Supplements filed. Approvals accelerated.",
+    href: "/insurance-claim-assistance",
   },
   {
     icon: Car,
     title: "Fleet Services",
     desc: "Volume accounts for dealerships, rental agencies, and corporate fleets. Priority scheduling available.",
+    href: "/fleet-hail-repair",
   },
   {
     icon: FileCheck,
-    title: "Free Inspection",
-    desc: "Comprehensive damage assessment. Itemized repair plan. No obligation. No pressure.",
+    title: "Free Loaner Vehicles",
+    desc: "Complimentary loaner vehicles for the duration of your repair. No rental fees. No paperwork hassle.",
+    href: "/free-loaner-vehicles",
   },
   {
     icon: Gauge,
     title: "48-Hour Guarantee",
     desc: "Completed within 48 hours of insurance approval or we pay you $300. Documented. Enforced.",
+    href: "/48-hour-completion-guarantee",
   },
 ];
 
@@ -57,21 +63,25 @@ export default function Services() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => (
-            <div
-              key={i}
-              className="group p-8 rounded-md bg-[#141416] border border-white/5 transition-all duration-500"
-              data-testid={`card-service-${i}`}
-            >
-              <div className="w-12 h-12 rounded-md bg-[#FF192C]/10 flex items-center justify-center mb-6">
-                <service.icon className="w-6 h-6 text-[#FF192C]" />
+            <Link key={i} href={service.href}>
+              <div
+                className="group p-8 rounded-md bg-[#141416] border border-white/5 transition-all duration-500 cursor-pointer hover:border-[#FF192C]/20 h-full"
+                data-testid={`card-service-${i}`}
+              >
+                <div className="w-12 h-12 rounded-md bg-[#FF192C]/10 flex items-center justify-center mb-6">
+                  <service.icon className="w-6 h-6 text-[#FF192C]" />
+                </div>
+                <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7] mb-4">
+                  {service.title}
+                </h3>
+                <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">
+                  {service.desc}
+                </p>
+                <span className="mt-4 inline-block text-xs text-[#FF192C] uppercase tracking-[0.1em] font-semibold group-hover:translate-x-1 transition-transform">
+                  Learn More
+                </span>
               </div>
-              <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7] mb-4">
-                {service.title}
-              </h3>
-              <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">
-                {service.desc}
-              </p>
-            </div>
+            </Link>
           ))}
         </div>
 

@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "What areas of Dallas do you serve for hail repair?",
     a: "We serve every neighborhood in Dallas proper, including Uptown, Park Cities, Lake Highlands, Preston Hollow, Oak Lawn, Deep Ellum, Lakewood, White Rock, Far North Dallas, and the Design District. We also offer pickup and delivery service throughout the city.",
   },
-  {
-    q: "What if my insurance estimate does not cover the full repair cost?",
-    a: "Initial insurance estimates frequently understate the actual damage. Dent Society prepares and submits detailed supplement documentation, including high-resolution photography and panel-by-panel dent maps, to your carrier. Our supplement approval rate is consistently high because our documentation meets carrier-compliance standards.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "Hail Damage Repair Dallas", href: "/hail-damage-repair-dallas" },
+  { label: "Professional Hail Repair in Dallas", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "PDR vs. Body Shop", href: "/pdr-vs-body-shop" },
@@ -93,7 +89,7 @@ export default function DallasHailRepair() {
         Dallas sits at the heart of one of the most hail-active corridors in the United States. The city's position in North Texas, where warm, humid air from the Gulf of Mexico meets cold fronts sweeping down from the Great Plains, creates atmospheric instability that fuels powerful supercell thunderstorms from March through June each year. These storms routinely produce hailstones ranging from one inch to three inches in diameter, and in severe outbreak years, stones the size of softballs have been documented across the metroplex.
       </p>
       <p>
-        For Dallas residents, hail damage to vehicles is a recurring reality. Whether you park in Uptown, commute through the Mixmaster interchange, or keep your car in a driveway in Lake Highlands, exposure to hail is essentially unavoidable during storm season. The neighborhoods of Preston Hollow, Park Cities, Lakewood, and Far North Dallas have all experienced significant hail events in recent years, and the frequency of damaging storms shows no sign of declining.
+        For Dallas residents, hail damage to vehicles is a recurring reality. Whether you park in Uptown, commute through the Mixmaster interchange, or keep your car in a driveway in Lake Highlands, exposure to hail is essentially unavoidable during storm season. The neighborhoods of Highland Park, Oak Lawn, Deep Ellum, Lakewood, and Far North Dallas have all experienced significant hail events in recent years, and the frequency of damaging storms shows no sign of declining.
       </p>
       <p>
         The cosmetic and structural effects of hail impact vary depending on stone size, wind speed, and the angle of impact. Smaller hail creates shallow dimples across horizontal surfaces like hoods, roofs, and trunk lids. Larger stones can crack paint, shatter windshields, and produce deep depressions that compromise panel integrity. In every case, the damage reduces your vehicle's appearance and resale value if left unaddressed.

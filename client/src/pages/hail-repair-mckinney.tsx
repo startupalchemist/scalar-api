@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "How does Dent Society handle insurance for McKinney hail claims?",
     a: "We manage the complete claim process, from initial damage documentation through supplement filing and final payment reconciliation. Our team communicates directly with your carrier's adjusters and handles all administrative tasks so you do not have to.",
   },
-  {
-    q: "Is there a charge for the loaner vehicle?",
-    a: "No. Loaner vehicles are provided free of charge to every hail repair client. This service does not depend on rental coverage in your insurance policy.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "Hail Damage Repair in the DFW Area", href: "/hail-damage-repair-dallas" },
+  { label: "Dallas PDR and Hail Repair", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "48-Hour Completion Guarantee", href: "/48-hour-completion-guarantee" },
@@ -96,7 +92,7 @@ export default function McKinneyHailRepair() {
         The city's position in northern Collin County places it along one of the most active storm tracks in the DFW metroplex. Supercell thunderstorms that develop along the dryline frequently track northeast through the region, passing directly over McKinney before continuing into Collin and Hunt counties. These storms can produce hailstones ranging from one inch to over three inches in diameter, and the damage they leave behind affects thousands of vehicles per event.
       </p>
       <p>
-        McKinney's historic downtown square, which has become a destination for dining, shopping, and weekend markets, presents a particular exposure point. Visitors and residents park along the streets and in surface lots surrounding the square, leaving vehicles exposed to afternoon and evening storm cells that develop during the warmest months. The Craig Ranch area, with its blend of residential neighborhoods, commercial space, and the TPC Craig Ranch golf course, is another zone where outdoor-parked vehicles are common and hail exposure is high.
+        McKinney's historic downtown square, which has become a destination for dining, shopping, and weekend markets, presents a particular exposure point. Adriatica Village, the European-inspired mixed-use development along Lake Adriatica, adds another neighborhood where residents and visitors park in open-air settings. Visitors and residents park along the streets and in surface lots surrounding the square, leaving vehicles exposed to afternoon and evening storm cells that develop during the warmest months. The Craig Ranch area, with its blend of residential neighborhoods, commercial space, and the TPC Craig Ranch golf course, is another zone where outdoor-parked vehicles are common and hail exposure is high.
       </p>
 
       <h2>Paintless Dent Repair for McKinney Vehicles</h2>

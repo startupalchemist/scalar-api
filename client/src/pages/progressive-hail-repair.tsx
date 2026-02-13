@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "Does Progressive cover paintless dent repair?",
     a: "Yes. Progressive recognizes paintless dent repair as the standard repair method for hail damage when the vehicle's paint surface is intact. PDR costs less than conventional body shop repair and preserves the vehicle's factory finish, making it the preferred approach for both the carrier and the vehicle owner.",
   },
-  {
-    q: "Will I have a car to drive while Progressive processes my hail claim?",
-    a: "If your Progressive policy includes rental reimbursement, the carrier will cover rental vehicle costs during the repair period. Dent Society provides a complimentary loaner vehicle to all hail repair clients regardless of policy coverage, so you will have transportation even if your policy does not include rental benefits.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function ProgressiveHailRepairPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="Progressive Hail Damage Repair"
+      badge="Progressive"
+      title="Progressive Hail Repair Claims in Dallas"
       subtitle="Dent Society coordinates with Progressive's digital claims tools and adjuster teams to manage your hail damage repair efficiently from start to finish."
       faq={faq}
       internalLinks={internalLinks}

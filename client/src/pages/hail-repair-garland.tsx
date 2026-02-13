@@ -22,14 +22,10 @@ const faq: FAQItem[] = [
     q: "Does Dent Society handle the insurance claim for me?",
     a: "Yes. We manage the complete claim process from damage documentation through supplement filing and final payment. You do not need to communicate with your carrier's adjuster or track the claim status. There is no additional charge for this coordination.",
   },
-  {
-    q: "What if my vehicle has both hail damage and pre-existing dents?",
-    a: "Our damage assessment under controlled LED lighting distinguishes between hail damage and pre-existing damage. Only hail-related dents are included in the insurance claim. We document both types clearly so that the claim representation is accurate and carrier-compliant.",
-  },
 ];
 
 const links: InternalLink[] = [
-  { label: "Dallas Hail Damage Repair", href: "/hail-damage-repair-dallas" },
+  { label: "Professional Dallas Hail Restoration", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "Paintless Dent Repair in Dallas", href: "/paintless-dent-repair-dallas" },
@@ -93,7 +89,7 @@ export default function GarlandHailRepair() {
         Garland anchors the eastern side of the Dallas-Fort Worth metroplex, stretching from the neighborhoods near Lake Ray Hubbard to the city's western boundary with Dallas and Richardson. This eastern position gives Garland a distinctive hail profile. Storm systems moving west to east across the metroplex often reach Garland after producing damage in Dallas, sometimes arriving with significant remaining energy and hail mass. Conversely, storms that develop along outflow boundaries in the eastern suburbs can produce localized hail events centered directly over Garland.
       </p>
       <p>
-        The Firewheel area in northern Garland, anchored by the Firewheel Town Center and its surrounding residential communities, represents one of the city's highest vehicle-exposure zones. The Town Center's large surface parking lots and the nearby subdivisions along Brand Road and Lavon Drive feature significant outdoor parking with limited covered options. When a storm cell tracks across this area, hundreds of vehicles can sustain damage in a single event.
+        Downtown Garland has experienced renewed investment in recent years, and the revitalized square area draws visitors whose vehicles park along the streets and in open lots. The Firewheel area in northern Garland, anchored by the Firewheel Town Center and its surrounding residential communities, represents one of the city's highest vehicle-exposure zones. The Town Center's large surface parking lots and the nearby subdivisions along Brand Road and Lavon Drive feature significant outdoor parking with limited covered options. When a storm cell tracks across this area, hundreds of vehicles can sustain damage in a single event.
       </p>
       <p>
         Eastern Garland, closer to Lake Ray Hubbard, experiences additional exposure from storms that develop over the lake's open water surface. The thermal contrast between the lake and the surrounding land can influence storm behavior, sometimes intensifying cells as they approach the eastern neighborhoods. The communities along Bobtown Road, Duck Creek, and the areas surrounding Garland's southeastern border with Rowlett are frequently affected during the March-through-June storm season.

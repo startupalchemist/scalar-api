@@ -25,7 +25,7 @@ const faq: FAQItem[] = [
 ];
 
 const links: InternalLink[] = [
-  { label: "Dallas Hail Repair Services", href: "/hail-damage-repair-dallas" },
+  { label: "Professional Hail Damage Repair", href: "/hail-damage-repair-dallas" },
   { label: "Insurance Claim Assistance", href: "/insurance-claim-assistance" },
   { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
   { label: "48-Hour Completion Guarantee", href: "/48-hour-completion-guarantee" },
@@ -89,7 +89,7 @@ export default function FriscoHailRepair() {
         Frisco is one of the fastest-growing cities in the United States, and its rapid expansion across northern Collin and Denton counties has placed an increasing number of vehicles in the path of North Texas hail storms. The city's population has surged past 200,000 residents, bringing with it a corresponding rise in the number of cars, trucks, and SUVs parked in driveways, apartment complexes, and commercial lots throughout the community. When supercell thunderstorms develop along the dryline each spring, Frisco's broad geographic footprint means a significant portion of the city can be impacted in a single event.
       </p>
       <p>
-        The hail corridor that affects Frisco typically follows storm tracks moving from southwest to northeast, crossing the Dallas North Tollway and sweeping through neighborhoods from Stonebriar Centre and the retail corridors along Preston Road to the newer master-planned communities in western Frisco near Phillips Creek Ranch and Hollyhock. The Stonebriar area, with its concentration of open-air parking, is particularly vulnerable during daytime storms when shoppers and office workers leave vehicles exposed.
+        The hail corridor that affects Frisco typically follows storm tracks moving from southwest to northeast, crossing the Dallas North Tollway and sweeping through neighborhoods from Stonebriar Centre and The Star in Frisco, home of the Dallas Cowboys headquarters, to the newer master-planned communities in western Frisco near Phillips Creek Ranch and Hollyhock. The Stonebriar area, with its concentration of open-air parking, is particularly vulnerable during daytime storms when shoppers and office workers leave vehicles exposed.
       </p>
       <p>
         Frisco's newer housing developments, many of which feature three-car garages, might seem to offer protection. In practice, however, many homeowners park at least one vehicle outside, and hail events that strike during business hours catch vehicles at offices, schools, and retail locations across the city. The reality for Frisco residents is that hail damage is not a rare event but a seasonal expectation.

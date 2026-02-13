@@ -22,10 +22,6 @@ const faq: FAQItem[] = [
     q: "Does Farmers cover paintless dent repair for hail damage?",
     a: "Yes. Farmers recognizes paintless dent repair as the appropriate method for hail damage when the vehicle's paint is intact. PDR is less invasive and typically less expensive than conventional body repair, which makes it the preferred approach for the carrier. Farmers adjusters regularly authorize PDR for qualifying hail damage.",
   },
-  {
-    q: "Will Farmers pay for a rental car while my vehicle is being repaired?",
-    a: "Rental coverage depends on your specific Farmers policy. If your policy includes rental reimbursement, Farmers will cover a rental vehicle during the repair period. Dent Society provides a complimentary loaner vehicle to all hail repair clients regardless of rental coverage, ensuring you have transportation throughout the process.",
-  },
 ];
 
 const internalLinks: InternalLink[] = [
@@ -51,8 +47,8 @@ const schema = {
 export default function FarmersHailClaimsPage() {
   return (
     <SEOPageLayout
-      badge="Insurance"
-      title="Farmers Insurance Hail Damage Claims"
+      badge="Farmers"
+      title="Farmers Insurance Hail Claims in Dallas"
       subtitle="Dent Society coordinates with Farmers Insurance adjusters and their HelpPoint program to manage your hail damage repair from first notice of loss through completion."
       faq={faq}
       internalLinks={internalLinks}
