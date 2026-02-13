@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import logoMark from "@assets/Asset_6_1770967674840.png";
+import startupAlchemistLogo from "@assets/5C50E7C9-6986-4FB2-B8DC-A8BAA3D8D0D1_1771005924017.png";
 
 const serviceLinks = [
   { label: "Hail Damage Repair", href: "/hail-damage-repair-dallas" },
@@ -110,18 +111,26 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[#B3B3B8]/40 text-xs tracking-wide">
-            {new Date().getFullYear()} Dent Society. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <Link href="/login">
-              <span className="text-[#B3B3B8]/30 hover:text-[#B3B3B8]/60 text-xs tracking-wide transition-colors duration-300 cursor-pointer" data-testid="link-footer-login">
-                Admin
-              </span>
-            </Link>
-            <p className="text-[#B3B3B8]/30 text-xs tracking-wide">
-              Engineered, not improvised.
+        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-[#B3B3B8]/40 text-xs tracking-wide">
+              {new Date().getFullYear()} Dent Society. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <Link href="/login">
+                <span className="text-[#B3B3B8]/30 hover:text-[#B3B3B8]/60 text-xs tracking-wide transition-colors duration-300 cursor-pointer" data-testid="link-footer-login">
+                  Admin
+                </span>
+              </Link>
+              <p className="text-[#B3B3B8]/30 text-xs tracking-wide">
+                Engineered, not improvised.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <img src={startupAlchemistLogo} alt="Startup Alchemist" className="h-4 w-4 opacity-30 invert" />
+            <p className="text-[#B3B3B8]/30 text-[10px] tracking-wide">
+              Site designed & maintained by Startup Alchemist
             </p>
           </div>
         </div>
