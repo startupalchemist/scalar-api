@@ -93,7 +93,7 @@ export default function Admin() {
     { key: "leads", label: "Leads", icon: Users },
     { key: "blog", label: "Blog", icon: FileText },
     { key: "newsletter", label: "Newsletter", icon: Mail },
-    ...(user.role === "root" ? [{ key: "users" as TabKey, label: "Users", icon: Users }] : []),
+    ...(user.role === "root" || user.role === "admin" ? [{ key: "users" as TabKey, label: "Users", icon: Users }] : []),
   ];
 
   return (
@@ -163,7 +163,7 @@ export default function Admin() {
             setNlContent={setNlContent}
           />
         )}
-        {activeTab === "users" && user.role === "root" && (
+        {activeTab === "users" && (user.role === "root" || user.role === "admin") && (
           <UsersTab
             toast={toast}
             showAddUser={showAddUser}
@@ -171,6 +171,7 @@ export default function Admin() {
             userForm={userForm}
             setUserForm={setUserForm}
             currentUserId={user.id}
+            currentUserRole={user.role}
           />
         )}
       </div>
@@ -777,6 +778,7 @@ function UsersTab({
   userForm,
   setUserForm,
   currentUserId,
+  currentUserRole,
 }: {
   toast: any;
   showAddUser: boolean;
@@ -784,7 +786,9 @@ function UsersTab({
   userForm: { name: string; email: string; password: string; role: string };
   setUserForm: (v: any) => void;
   currentUserId: number;
+  currentUserRole: string;
 }) {
+  const isRoot = currentUserRole === "root";
   const { data: users = [], isLoading } = useQuery<{ id: number; name: string; email: string; role: string; createdAt: string }[]>({
     queryKey: ["/api/users"],
   });
@@ -868,7 +872,7 @@ function UsersTab({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-[#141416] border-white/10">
-              <SelectItem value="root" className="text-[#F5F5F7]">Root</SelectItem>
+              {isRoot && <SelectItem value="root" className="text-[#F5F5F7]">Root</SelectItem>}
               <SelectItem value="admin" className="text-[#F5F5F7]">Admin</SelectItem>
               <SelectItem value="editor" className="text-[#F5F5F7]">Editor</SelectItem>
             </SelectContent>
@@ -907,7 +911,7 @@ function UsersTab({
                 {u.role}
               </Badge>
             </div>
-            {u.id !== currentUserId && (
+            {Number(u.id) !== Number(currentUserId) && (isRoot || u.role !== "root") && (
               <Button
                 variant="ghost"
                 size="icon"

@@ -18,7 +18,8 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - CRM-style lead management in /admin
 - Contact form submits to /api/leads
 - Session-based auth with role middleware (root/admin/editor)
-- Root user seeded on startup: admin@dentsociety.com / admin123
+- Root user (webmaster) seeded on startup: startupalchemist@consultant.com
+- Role hierarchy: root (webmaster, protected) > admin (can manage users except root) > editor
 
 ## Pages
 - / - Homepage (hero, car transform scroll, guarantee, process, CTA)

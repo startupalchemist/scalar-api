@@ -56,7 +56,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
-                placeholder="admin@dentsociety.com"
+                placeholder="email@example.com"
                 data-testid="input-login-email"
                 required
               />

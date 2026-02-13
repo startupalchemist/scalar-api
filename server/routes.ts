@@ -59,9 +59,9 @@ export async function registerRoutes(
     res.json({ id: u.id, name: u.name, email: u.email, role: u.role });
   });
 
-  // ─── User Management (root only) ──────────────────────────────
+  // ─── User Management (root + admin, with root protection) ───
 
-  app.get("/api/users", authMiddleware, requireRole("root"), async (_req, res) => {
+  app.get("/api/users", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
     try {
       const users = await storage.getUsers();
       res.json(users.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt })));
@@ -70,11 +70,14 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/users", authMiddleware, requireRole("root"), async (req, res) => {
+  app.post("/api/users", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {
       const { name, email, password, role } = req.body;
       if (!name || !email || !password) {
         return res.status(400).json({ message: "Name, email, and password required" });
+      }
+      if (role === "root" && req.user!.role !== "root") {
+        return res.status(403).json({ message: "Only the webmaster can create root users" });
       }
       const existing = await storage.getUserByEmail(email);
       if (existing) {
@@ -88,11 +91,45 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/users/:id", authMiddleware, requireRole("root"), async (req, res) => {
+  app.patch("/api/users/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(req.params.id as string);
+      const target = await storage.getUserById(id);
+      if (!target) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (target.role === "root" && req.user!.role !== "root") {
+        return res.status(403).json({ message: "Cannot modify webmaster account" });
+      }
+      if (req.body.role === "root" && req.user!.role !== "root") {
+        return res.status(403).json({ message: "Only the webmaster can assign root role" });
+      }
+      const updates: Record<string, any> = {};
+      if (req.body.role) updates.role = req.body.role;
+      if (req.body.name) updates.name = req.body.name;
+
+      const user = await storage.updateUser(id, updates);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+    } catch {
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/users/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id as string);
       if (req.user!.id === id) {
         return res.status(400).json({ message: "Cannot delete yourself" });
+      }
+      const target = await storage.getUserById(id);
+      if (!target) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (target.role === "root" && req.user!.role !== "root") {
+        return res.status(403).json({ message: "Cannot delete webmaster account" });
       }
       await storage.deleteUser(id);
       res.json({ message: "User deleted" });
