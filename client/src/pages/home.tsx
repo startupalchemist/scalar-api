@@ -209,12 +209,12 @@ function TransformSection() {
             </div>
           )}
 
-          <div className="absolute top-8 left-8 sm:top-12 sm:left-12 z-10" data-testid="overlay-impact-level">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#B3B3B8]/60 font-semibold mb-1">
+          <div className="absolute top-20 left-4 sm:top-12 sm:left-12 z-10" data-testid="overlay-impact-level">
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#B3B3B8]/80 font-semibold mb-1">
               Impact Level
             </p>
             <p
-              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#F5F5F7]/90 tabular-nums leading-none"
+              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-[#F5F5F7] tabular-nums leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
               data-testid="text-impact-counter"
             >
               {impactLevel}%
