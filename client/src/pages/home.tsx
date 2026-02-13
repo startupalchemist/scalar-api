@@ -1,0 +1,280 @@
+import { useState, useEffect, useRef } from "react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Shield, Clock, FileCheck, Wrench } from "lucide-react";
+import damagedCar from "@assets/IMG_4071_1770967683032.jpeg";
+import cleanCar from "@assets/IMG_4072_1770967683031.jpeg";
+
+function HeroSection() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" data-testid="section-hero">
+      <div className="absolute inset-0 bg-[#0B0B0D]" />
+      <div className="absolute inset-0 spotlight-gradient" />
+
+      <div className={`relative z-10 text-center px-6 max-w-4xl mx-auto transition-all duration-1000 ease-out ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+        <h1
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold uppercase tracking-tight text-[#F5F5F7] leading-[0.95]"
+          data-testid="text-hero-headline"
+        >
+          Hail Happens.
+        </h1>
+        <p className="mt-6 text-lg sm:text-xl text-[#B3B3B8] font-light tracking-wide max-w-lg mx-auto">
+          We remove the evidence.
+        </p>
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link href="/contact">
+            <Button
+              className="bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold px-10"
+              data-testid="button-start-repair-hero"
+            >
+              Start My Repair
+            </Button>
+          </Link>
+        </div>
+        <p className="mt-6 text-xs text-[#B3B3B8]/50 tracking-wide">
+          48-hour completion begins after insurance approval.
+        </p>
+      </div>
+
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+        <ChevronDown className="w-5 h-5 text-[#B3B3B8]/30" />
+      </div>
+    </section>
+  );
+}
+
+function TransformSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const sectionHeight = sectionRef.current.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const scrolled = viewportHeight - rect.top;
+      const total = sectionHeight + viewportHeight;
+      const p = Math.max(0, Math.min(1, scrolled / total));
+      setProgress(p);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative py-24 lg:py-40"
+      data-testid="section-transform"
+    >
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="text-center mb-16 lg:mb-24">
+          <h2
+            className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4"
+            data-testid="text-transform-label"
+          >
+            Erase the Storm
+          </h2>
+          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+            Before. After. Done.
+          </p>
+        </div>
+
+        <div className="relative max-w-4xl mx-auto rounded-md overflow-hidden">
+          <div className="relative aspect-video">
+            <img
+              src={damagedCar}
+              alt="Storm damaged vehicle"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: 1 - progress }}
+              data-testid="img-damaged-car"
+            />
+            <img
+              src={cleanCar}
+              alt="Restored vehicle"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: progress }}
+              data-testid="img-clean-car"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent opacity-60" />
+
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+              <div
+                className="h-full bg-[#FF192C] transition-all duration-100"
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center mt-12 text-[#B3B3B8]/60 text-sm tracking-wide">
+          Scroll to reveal the restoration
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GuaranteeSection() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="relative py-24 lg:py-40" data-testid="section-guarantee">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FF192C]/[0.03] to-transparent" />
+      <div className="relative max-w-3xl mx-auto px-6 lg:px-10 text-center">
+        <h2
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#F5F5F7] uppercase tracking-tight"
+          data-testid="text-guarantee-headline"
+        >
+          48 Hours.
+        </h2>
+        <p className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#FF192C] uppercase tracking-tight mt-2">
+          Or $300.
+        </p>
+        <p className="mt-8 text-[#B3B3B8] text-lg leading-relaxed max-w-xl mx-auto">
+          If your vehicle is not completed within 48 hours of documented insurance approval, we pay you $300.
+        </p>
+        <p className="mt-4 text-[#B3B3B8]/50 text-sm">
+          Clock begins upon insurer authorization.
+        </p>
+
+        <div className="mt-12">
+          <button
+            onClick={() => setOpen(!open)}
+            className="text-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold cursor-pointer transition-opacity hover:opacity-80"
+            data-testid="button-how-it-works"
+          >
+            {open ? "Close" : "How It Works"}
+          </button>
+
+          {open && (
+            <div className="mt-8 text-left max-w-md mx-auto space-y-4" data-testid="drawer-how-it-works">
+              {[
+                { num: "01", text: "Insurance approves repair" },
+                { num: "02", text: "Vehicle is in our possession" },
+                { num: "03", text: "48-hour clock begins" },
+                { num: "04", text: "If exceeded, $300 paid to you" },
+              ].map((step) => (
+                <div key={step.num} className="flex items-start gap-4 py-3 border-b border-white/5">
+                  <span className="text-[#FF192C] text-xs font-bold tracking-wider mt-0.5">
+                    {step.num}
+                  </span>
+                  <span className="text-[#B3B3B8] text-sm">{step.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProcessSection() {
+  const steps = [
+    {
+      icon: FileCheck,
+      title: "File Your Claim",
+      desc: "We coordinate directly with your insurance carrier.",
+    },
+    {
+      icon: Clock,
+      title: "Drop Off",
+      desc: "Bring your vehicle in. The clock starts after approval.",
+    },
+    {
+      icon: Wrench,
+      title: "Precision Repair",
+      desc: "Our technicians restore every surface to factory spec.",
+    },
+    {
+      icon: Shield,
+      title: "Quality Control",
+      desc: "If it's not perfect, we fix it. No exceptions.",
+    },
+  ];
+
+  return (
+    <section className="py-24 lg:py-40" data-testid="section-process">
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        <div className="text-center mb-16 lg:mb-24">
+          <h2 className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">
+            The Process
+          </h2>
+          <p className="text-3xl sm:text-4xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+            Controlled. Precise. Complete.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              className="group relative p-6 lg:p-8 rounded-md bg-[#141416] border border-white/5"
+              data-testid={`card-process-${i}`}
+            >
+              <div className="w-10 h-10 rounded-md bg-[#FF192C]/10 flex items-center justify-center mb-6">
+                <step.icon className="w-5 h-5 text-[#FF192C]" />
+              </div>
+              <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7] mb-3">
+                {step.title}
+              </h3>
+              <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">
+                {step.desc}
+              </p>
+              <div className="absolute top-6 right-6 text-[#B3B3B8]/10 text-2xl font-extrabold">
+                {String(i + 1).padStart(2, "0")}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CtaSection() {
+  return (
+    <section className="py-24 lg:py-32" data-testid="section-cta">
+      <div className="max-w-3xl mx-auto px-6 lg:px-10 text-center">
+        <p className="text-[#B3B3B8]/50 text-sm uppercase tracking-[0.2em] mb-4">
+          You'll leave owing nothing
+        </p>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+          Ready to begin.
+        </h2>
+        <div className="mt-10">
+          <Link href="/contact">
+            <Button
+              className="bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold px-10"
+              data-testid="button-start-repair-cta"
+            >
+              Start My Repair
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function Home() {
+  return (
+    <div className="bg-[#0B0B0D] min-h-screen">
+      <HeroSection />
+      <TransformSection />
+      <GuaranteeSection />
+      <ProcessSection />
+      <CtaSection />
+    </div>
+  );
+}
