@@ -158,7 +158,8 @@ function TransformSection() {
   }, [progress, phase, lockScroll, unlockScroll, clearAllTimers]);
 
   const impactLevel = Math.round(100 - progress * 100);
-  const rotation = progress * 20;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  const rotation = progress * (isMobile ? 8 : 20);
   const showRestored = phase !== "scrolling";
   const showSweep = phase === "sweep" || phase === "cta" || phase === "done";
   const showCta = phase === "cta" || phase === "done";
@@ -173,8 +174,12 @@ function TransformSection() {
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col bg-[#0B0B0D]">
         <div className="relative flex-1 w-full">
           <div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute flex items-center justify-center"
             style={{
+              top: 0,
+              bottom: 0,
+              left: "-15%",
+              right: "-15%",
               transform: `perspective(1200px) rotateY(${rotation}deg)`,
               transition: "transform 0.15s ease-out",
             }}
@@ -182,14 +187,14 @@ function TransformSection() {
             <img
               src={damagedCar}
               alt="Storm damaged vehicle"
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-cover sm:object-center object-[center_30%]"
               style={{ opacity: 1 - progress }}
               data-testid="img-damaged-car"
             />
             <img
               src={cleanCar}
               alt="Restored vehicle"
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-cover sm:object-center object-[center_30%]"
               style={{ opacity: progress }}
               data-testid="img-clean-car"
             />
