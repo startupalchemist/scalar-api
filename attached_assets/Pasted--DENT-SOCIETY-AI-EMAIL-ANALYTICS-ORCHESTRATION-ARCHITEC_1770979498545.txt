@@ -1,0 +1,287 @@
+# DENT SOCIETY – AI + EMAIL + ANALYTICS ORCHESTRATION ARCHITECTURE
+# Replit Native Connector + Direct API Fallback Design
+# Migration-Safe Infrastructure
+
+---
+
+# OBJECTIVE
+
+Build the AI agent system, newsletter system, and analytics insights layer using:
+
+PRIMARY:
+• Replit Native OpenAI Connector
+• Replit Native Resend Connector (email)
+• Replit native DB / storage (if used)
+
+SECONDARY (Fallback for Migration):
+• Direct OpenAI API via API key
+• Direct Resend API via API key
+• Direct SMTP or email provider
+• External Postgres connection
+• External analytics provider
+
+System must automatically switch based on environment variables.
+
+---
+
+# CORE PRINCIPLE
+
+Implement a PROVIDER ABSTRACTION LAYER.
+
+Never call OpenAI or Resend directly from business logic.
+
+All external services must route through:
+
+/lib/providers/aiProvider.js
+/lib/providers/emailProvider.js
+/lib/providers/analyticsProvider.js
+
+This allows swapping connectors without touching application logic.
+
+---
+
+# ENVIRONMENT VARIABLES
+
+Required:
+
+AI_PROVIDER=replit | direct
+EMAIL_PROVIDER=replit | direct
+ANALYTICS_PROVIDER=replit | external
+
+OPENAI_API_KEY=
+RESEND_API_KEY=
+DATABASE_URL=
+ANALYTICS_API_KEY=
+
+If AI_PROVIDER=replit:
+Use Replit native OpenAI connector.
+
+If AI_PROVIDER=direct:
+Use fetch call to https://api.openai.com/v1/chat/completions
+
+Same logic applies for email provider.
+
+---
+
+# AI PROVIDER ABSTRACTION
+
+File:
+/lib/providers/aiProvider.js
+
+Structure:
+
+export async function generateAIResponse(prompt, options) {
+
+  if (process.env.AI_PROVIDER === "replit") {
+    // Use Replit native connector
+    return await replitOpenAI.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      ...options
+    });
+  }
+
+  if (process.env.AI_PROVIDER === "direct") {
+    return await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        ...options
+      })
+    }).then(res => res.json());
+  }
+
+}
+
+All AI agents must use this function.
+
+Never call OpenAI directly elsewhere.
+
+---
+
+# EMAIL PROVIDER ABSTRACTION
+
+File:
+/lib/providers/emailProvider.js
+
+export async function sendEmail(payload) {
+
+  if (process.env.EMAIL_PROVIDER === "replit") {
+    return await replitResend.emails.send(payload);
+  }
+
+  if (process.env.EMAIL_PROVIDER === "direct") {
+    return await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    }).then(res => res.json());
+  }
+
+}
+
+Newsletter publishing and transactional emails must call this function.
+
+---
+
+# BLOG PUBLISH FLOW (ORCHESTRATED)
+
+1. Admin clicks "Generate Article"
+2. Call generateAIResponse()
+3. Save draft to database
+4. Admin clicks "Publish"
+5. Publish to /blog/[slug]
+6. Trigger sendEmail() for newsletter
+7. Insert preview block to homepage feed
+8. Log analytics event
+
+All through provider abstraction.
+
+---
+
+# ANALYTICS PROVIDER ABSTRACTION
+
+File:
+/lib/providers/analyticsProvider.js
+
+If ANALYTICS_PROVIDER=replit:
+Use Replit analytics tools (if available).
+
+If ANALYTICS_PROVIDER=external:
+Send events to:
+• Plausible
+• GA4
+• Custom Postgres analytics table
+
+Structure:
+
+export function logEvent(eventName, data) {
+  // route based on provider
+}
+
+---
+
+# PERFORMANCE DASHBOARD ARCHITECTURE
+
+Dashboard must read from:
+
+• blog_posts table
+• page_views table
+• conversions table
+• traffic_sources table
+
+Metrics displayed:
+
+• Traffic
+• Organic %
+• Bounce Rate
+• Avg Time on Page
+• Scroll Depth
+• CTA Click Rate
+• Conversion Rate
+
+Root-only insights must use:
+
+generateAIResponse() with performance analysis prompt.
+
+Dent Society admins see:
+Metrics only.
+No insights.
+
+---
+
+# ROLE-BASED ACCESS CONTROL
+
+Implement middleware:
+
+/lib/auth/roleMiddleware.js
+
+Roles:
+
+root
+admin
+editor
+
+Root:
+• Full access
+• AI insights
+
+Admin:
+• Blog + CRM + metrics
+• No AI strategic insights
+
+Editor:
+• Draft blog only
+
+Protect routes:
+/admin/users
+/admin/dashboard
+/admin/insights
+
+---
+
+# DATABASE ABSTRACTION
+
+Use:
+
+DATABASE_URL
+
+If deployed on Replit:
+Use built-in DB.
+
+If migrated:
+Use external Postgres via DATABASE_URL.
+
+Never hardcode DB connection.
+
+---
+
+# FUTURE MIGRATION CHECKLIST
+
+When leaving Replit:
+
+1. Set AI_PROVIDER=direct
+2. Set EMAIL_PROVIDER=direct
+3. Set ANALYTICS_PROVIDER=external
+4. Provide OPENAI_API_KEY
+5. Provide RESEND_API_KEY
+6. Provide DATABASE_URL
+7. Deploy to Vercel / AWS / Render
+
+No code rewrite required.
+
+---
+
+# SECURITY RULES
+
+• API keys stored in environment variables only
+• Never expose keys client-side
+• All AI and email calls server-side only
+• Newsletter must support unsubscribe link
+• Rate-limit AI topic generation
+
+---
+
+# FINAL RESULT
+
+System operates using:
+
+Replit native connectors today.
+Direct API endpoints tomorrow.
+
+No vendor lock-in.
+No rebuild required.
+Clean migration path.
+Production-safe architecture.
+
+---
+
+END OF ORCHESTRATION SPEC

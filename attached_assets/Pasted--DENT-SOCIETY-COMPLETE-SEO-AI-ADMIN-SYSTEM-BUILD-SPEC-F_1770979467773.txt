@@ -1,0 +1,452 @@
+# DENT SOCIETY – COMPLETE SEO + AI + ADMIN SYSTEM BUILD SPEC
+# FINAL MASTER HANDOFF FOR REPLIT
+# Organic Traffic Sovereignty Edition
+
+---
+
+# SECTION 1 – SEO STRUCTURAL EXPANSION
+
+GOAL:
+Build a content ecosystem that dominates:
+
+• Hail repair searches
+• PDR searches
+• Insurance claim searches
+• Geo-based searches
+• Comparison searches
+• Fleet/commercial searches
+• Storm-season spikes
+
+Every page must:
+• Minimum 1,000 words (pillar)
+• Minimum 800 words (geo & insurance)
+• Minimum 1,200 words (comparison pages)
+• FAQ section included
+• Internal links to 3 core pillars
+• Conversion CTA mid-page and bottom
+• Meta title + meta description
+• Schema markup
+
+---
+
+# PRIMARY PILLAR PAGES (1,200–1,500 words each)
+
+/hail-damage-repair-dallas  
+/paintless-dent-repair-dallas  
+/insurance-claim-assistance  
+/free-loaner-vehicles  
+/pickup-and-delivery-service  
+/48-hour-completion-guarantee  
+/storm-damage-restoration  
+
+Each must include:
+
+• Intro (150–200 words)
+• Problem explanation
+• Service explanation
+• Process breakdown
+• Insurance coordination
+• Loaner mention
+• Guarantee mention
+• FAQ (5–7 questions)
+• Mid-article CTA
+• Bottom CTA
+
+---
+
+# LOCATION PAGES (MINIMUM 900 WORDS EACH)
+
+Structure template used for all:
+
+/hail-repair-dallas  
+/hail-repair-plano  
+/hail-repair-frisco  
+/hail-repair-fort-worth  
+/hail-repair-arlington  
+/hail-repair-denton  
+/hail-repair-mckinney  
+/hail-repair-irving  
+/hail-repair-garland  
+
+Each page must include:
+
+• City-specific intro
+• Local weather mention
+• Insurance-heavy language
+• Pickup & loaner mention
+• Guarantee mention
+• Embedded map placeholder
+• FAQ
+• Internal links to hail-damage-repair-dallas
+
+---
+
+# INSURANCE CARRIER PAGES (800–1,000 WORDS EACH)
+
+/state-farm-hail-claims  
+/geico-hail-damage-repair  
+/allstate-hail-claims  
+/progressive-hail-repair  
+/usaa-hail-damage  
+/farmers-hail-claims  
+/liberty-mutual-hail-claims  
+
+Each page must include:
+
+• Carrier overview
+• Claim process explanation
+• How Dent Society works with carrier
+• Supplement explanation (fork logic)
+• Timeline expectations
+• Loaner mention
+• CTA
+• FAQ specific to carrier
+
+---
+
+# COMPARISON / HIGH-INTENT PAGES (1,200 WORDS EACH)
+
+/pdr-vs-body-shop  
+/hail-repair-vs-repaint  
+/is-hail-damage-worth-fixing  
+/how-much-does-hail-repair-cost  
+/what-is-insurance-supplement  
+/how-hail-affects-resale-value  
+
+Each must include:
+
+• Comparison table
+• Pros and cons
+• Risk analysis
+• Insurance explanation
+• Conversion CTA
+• FAQ section
+
+---
+
+# FLEET & COMMERCIAL PAGES (1,000+ WORDS EACH)
+
+/fleet-hail-repair  
+/dealership-hail-services  
+/commercial-fleet-pdr  
+/pre-sale-touch-up-services  
+
+Each must include:
+
+• Volume handling
+• Insurance batch coordination
+• Preferred vendor agreements
+• Turnaround commitments
+• Contact CTA
+
+---
+
+# STORM SEASON PAGES (YEARLY)
+
+/dallas-hail-storm-2026  
+/dfw-storm-response  
+
+Structure:
+
+• Recent storm recap
+• Insurance guidance
+• Local claim trends
+• Emergency scheduling CTA
+• Timestamped for SEO freshness
+
+---
+
+# INTERNAL LINKING RULE
+
+Every article/page must link to:
+
+• /hail-damage-repair-dallas
+• /insurance-claim-assistance
+• /contact
+
+Location pages must link to:
+
+• /free-loaner-vehicles
+• /48-hour-completion-guarantee
+
+---
+
+# SECTION 2 – BLOG MANAGEMENT SYSTEM
+
+ROUTE:
+/admin/blog
+
+DATABASE: blog_posts
+
+Fields:
+id
+title
+slug
+meta_title
+meta_description
+excerpt
+content
+author_id
+status
+featured_image
+keywords
+views
+read_time
+created_at
+published_at
+
+STATUS:
+draft
+published
+
+---
+
+# MULTI-AI AGENT SYSTEM
+
+BUTTON: "Get Topics"
+
+AGENT 1 – Competitor Research Agent
+• Analyze top DFW competitors
+• Identify content gaps
+
+AGENT 2 – Trend Agent
+• Pull trending queries for:
+  hail repair
+  PDR
+  storm damage
+  Dallas region
+
+AGENT 3 – Keyword Strategist
+• Generate primary + secondary keywords
+• Suggest SEO title structure
+
+OUTPUT:
+5 Blog Titles + Descriptions
+
+Each includes:
+• SEO Title
+• Meta Description
+• Target Keywords
+• Search Intent
+• "Generate Article" button
+
+---
+
+# ARTICLE GENERATION RULES
+
+When clicked:
+
+Generate:
+• 1,500+ word article
+• H1, H2 structured
+• Keyword placement optimized
+• FAQ section
+• Internal link suggestions
+• Mid-article CTA
+• Bottom CTA
+• Meta tags generated
+
+---
+
+# PUBLISH WORKFLOW
+
+When "Publish Article" clicked:
+
+1. Publish at /blog/[slug]
+2. Send newsletter email
+3. Add preview module to homepage bottom
+
+---
+
+# NEWSLETTER SYSTEM
+
+DATABASE: newsletter_subscribers
+
+Fields:
+id
+email
+created_at
+active
+
+Footer form:
+Email field
+Subscribe button
+
+On publish:
+Send formatted HTML email with CTA.
+
+---
+
+# SECTION 3 – USER MANAGEMENT SYSTEM
+
+ROUTE:
+/admin/users
+
+ROLES:
+
+Root Admin (You)
+• Full access
+• AI strategic insights
+• User management
+• Performance analysis
+
+Dent Society Admin
+• CRM access
+• Blog management
+• Metrics viewing
+• No AI insights
+
+Editor (Optional)
+• Draft blog only
+• No publish rights
+
+---
+
+# SECTION 4 – CRM STRUCTURE
+
+Fields:
+id
+name
+phone
+email
+vehicle
+insurance
+loaner_requested
+pickup_requested
+insurance_approved
+insurance_approval_timestamp
+status
+created_at
+
+Statuses:
+New
+Sale Closed
+Claim Initiated
+RA Signed
+Loaner Assigned
+Vehicle In Shop
+Scoped
+Estimate Sent
+First Look
+Supplement Submitted
+Awaiting Approval
+Approved
+R&I
+PDR
+QC 1
+Reinstall
+QC 2
+Detail
+Ready for Delivery
+Delivered
+Closed
+
+---
+
+# SECTION 5 – PERFORMANCE COCKPIT DASHBOARD
+
+ROUTE:
+/admin/dashboard
+
+Design:
+Sports car cockpit aesthetic.
+Dark UI.
+Red accent gauges.
+
+---
+
+# METRICS DISPLAYED
+
+• Total Traffic
+• Organic %
+• Bounce Rate
+• Avg Time on Page
+• Conversion Rate
+• Top Landing Pages
+• Blog Article Performance
+• Source Breakdown
+• Scroll Depth
+• CTA Click Rate
+
+---
+
+# BLOG METRICS
+
+Per article:
+• Views
+• Time on page
+• Scroll depth
+• Conversion rate
+• Keyword ranking position
+
+---
+
+# AI INSIGHTS (ROOT USER ONLY)
+
+Visible only to Root Admin.
+
+Generate:
+
+• Underperforming page alerts
+• CTR optimization suggestions
+• Keyword expansion ideas
+• Internal linking recommendations
+• High bounce diagnosis
+• Blog refresh suggestions
+
+Dent Society Admin sees:
+Metrics only.
+No strategic suggestions.
+
+---
+
+# SECTION 6 – CONVERSION RULES
+
+Every page must contain:
+
+Mid-page CTA:
+[ Start My Repair ]
+
+Bottom CTA:
+Schedule your inspection today.
+
+No page ends passively.
+
+---
+
+# SECTION 7 – TECHNICAL SEO REQUIREMENTS
+
+Each page must include:
+
+• Unique title tag
+• Unique meta description
+• Structured H1/H2 hierarchy
+• Breadcrumb schema
+• FAQ schema
+• LocalBusiness schema (geo pages)
+• Page speed under 2.5 seconds
+
+---
+
+# FINAL OBJECTIVE
+
+Dent Society should rank for:
+
+• hail repair Dallas
+• PDR Dallas
+• insurance supplement Dallas
+• free loaner hail repair
+• storm damage repair DFW
+• fleet hail repair Texas
+• hail resale value
+• PDR vs body shop
+
+Goal:
+Organic traffic dominance.
+Conversion-focused architecture.
+Operational intelligence.
+Scalable content system.
+
+---
+
+END OF MASTER BUILD SPEC

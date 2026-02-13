@@ -1,0 +1,305 @@
+# DENT SOCIETY – INTERNAL LINK AUTHORITY MAP
+# 39-PAGE STRUCTURED SEO HIERARCHY
+
+---
+
+# CORE AUTHORITY HUBS (THE PAGES THAT RANK FIRST)
+
+These pages receive the MOST internal links.
+
+1. /hail-damage-repair-dallas
+2. /insurance-claim-assistance
+3. /paintless-dent-repair-dallas
+4. /fleet-hail-repair
+
+Everything flows toward these.
+
+---
+
+# TIER STRUCTURE
+
+TIER 1 – PRIMARY HUBS (4 pages)
+
+These pages:
+• Receive links from 30+ pages
+• Link out strategically
+• Anchor high-intent keywords
+
+---
+
+TIER 2 – SUPPORTING AUTHORITY PAGES
+
+• All Location Pages
+• All Insurance Pages
+• All Comparison Pages
+• Storm Pages
+
+These feed authority upward.
+
+---
+
+TIER 3 – BLOG ARTICLES
+
+Blog content feeds:
+
+• Comparison pages
+• Pillar pages
+• Location pages (rotational linking)
+
+---
+
+# LINKING RULES BY PAGE TYPE
+
+---
+
+## 1️⃣ HOMEPAGE
+
+Must link to:
+
+• /hail-damage-repair-dallas (primary anchor text: “hail damage repair in Dallas”)
+• /insurance-claim-assistance
+• /free-loaner-vehicles
+• /48-hour-completion-guarantee
+• 3 rotating blog posts
+
+Purpose:
+Push authority into core revenue page.
+
+---
+
+## 2️⃣ /hail-damage-repair-dallas (MAIN MONEY PAGE)
+
+Must link to:
+
+• /insurance-claim-assistance
+• /paintless-dent-repair-dallas
+• /free-loaner-vehicles
+• /48-hour-completion-guarantee
+• 3 comparison pages
+• 3 location pages (rotating)
+
+This page receives:
+• Links from ALL location pages
+• Links from ALL insurance pages
+• Links from ALL comparison pages
+• Links from blog articles
+
+It is the primary ranking engine.
+
+---
+
+## 3️⃣ LOCATION PAGES (ALL 9)
+
+Each must link to:
+
+• /hail-damage-repair-dallas (exact keyword variant anchor)
+• /insurance-claim-assistance
+• /free-loaner-vehicles
+• One comparison page (rotate)
+• Contact page
+
+Location pages DO NOT link to each other.
+
+Purpose:
+Feed authority upward only.
+
+---
+
+## 4️⃣ INSURANCE CARRIER PAGES (ALL 7)
+
+Each must link to:
+
+• /insurance-claim-assistance
+• /hail-damage-repair-dallas
+• /what-is-insurance-supplement
+• /contact
+
+These pages act as topical clusters around insurance authority.
+
+---
+
+## 5️⃣ COMPARISON PAGES (ALL 6)
+
+Each must link to:
+
+• /hail-damage-repair-dallas
+• /insurance-claim-assistance
+• One location page (rotate)
+• /free-loaner-vehicles
+
+These capture mid-funnel traffic and push it to core pages.
+
+---
+
+## 6️⃣ FLEET / COMMERCIAL PAGES
+
+Each must link to:
+
+• /fleet-hail-repair (primary anchor)
+• /insurance-claim-assistance
+• /contact
+
+All fleet pages push authority to:
+→ /fleet-hail-repair
+
+---
+
+## 7️⃣ STORM PAGES
+
+Each must link to:
+
+• /hail-damage-repair-dallas
+• /insurance-claim-assistance
+• /free-loaner-vehicles
+• /contact
+
+Storm pages feed surge traffic into core money pages.
+
+---
+
+## 8️⃣ BLOG ARTICLES
+
+Every blog article must link to:
+
+• 1 Primary Pillar (always /hail-damage-repair-dallas OR /insurance-claim-assistance)
+• 1 Comparison page
+• 1 Location page
+• 1 CTA link to /contact
+
+Never link blog-to-blog excessively.
+
+Blog authority flows upward.
+
+---
+
+# ANCHOR TEXT STRATEGY
+
+Do NOT use the same exact anchor text every time.
+
+Rotate:
+
+• hail damage repair in Dallas
+• professional hail repair
+• Dallas PDR specialists
+• insurance hail claim assistance
+• paintless dent repair in DFW
+
+Avoid spammy exact repetition.
+
+---
+
+# CANNIBALIZATION PROTECTION RULE
+
+Only ONE page targets:
+
+“hail damage repair Dallas”
+
+That page is:
+/hail-damage-repair-dallas
+
+Location pages target:
+“hail repair Plano”
+“hail repair Frisco”
+etc.
+
+Comparison pages target:
+“PDR vs body shop”
+“hail repair cost”
+etc.
+
+Insurance pages target:
+“State Farm hail repair Dallas”
+etc.
+
+No overlap in primary keyword.
+
+---
+
+# INTERNAL LINK DENSITY RULE
+
+Per 1,000 words:
+Minimum 4 internal links
+Maximum 8 internal links
+
+Avoid:
+Link stuffing
+Footer keyword dumps
+Sitewide repetitive keyword links
+
+---
+
+# SILO STRUCTURE VISUAL
+
+BLOG → Comparison → Pillar  
+Location → Pillar  
+Insurance → Insurance Pillar → Hail Pillar  
+Fleet Pages → Fleet Pillar  
+Storm Pages → Hail Pillar  
+
+Everything eventually routes to:
+
+/hail-damage-repair-dallas
+
+---
+
+# NAVIGATION STRUCTURE
+
+Top Nav Must Include:
+
+• Hail Repair
+• Insurance Help
+• Fleet Services
+• Loaner & Pickup
+• Blog
+• Contact
+
+Location pages are NOT in top nav.
+They exist for search capture only.
+
+---
+
+# FOOTER STRUCTURE
+
+Footer must include:
+
+• Links to all 9 location pages
+• Links to insurance pages
+• Link to comparison hub (can create /resources)
+
+Footer distributes crawl equity.
+
+---
+
+# PERFORMANCE MONITORING RULE
+
+If:
+Two pages rank for same keyword
+
+Then:
+Adjust internal linking to reinforce primary target.
+
+Never allow cannibalization.
+
+---
+
+# FINAL AUTHORITY FLOW
+
+Traffic enters via:
+Location pages
+Insurance pages
+Comparison pages
+Storm pages
+Blog posts
+
+Authority consolidates into:
+1. /hail-damage-repair-dallas
+2. /insurance-claim-assistance
+3. /fleet-hail-repair
+
+Those rank highest.
+
+That is sovereignty.
+
+---
+
+END OF INTERNAL LINK ARCHITECTURE
