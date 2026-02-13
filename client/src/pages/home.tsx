@@ -51,18 +51,19 @@ function HeroSection() {
 }
 
 function TransformSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const sectionHeight = sectionRef.current.offsetHeight;
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const containerHeight = containerRef.current.offsetHeight;
       const viewportHeight = window.innerHeight;
-      const scrolled = viewportHeight - rect.top;
-      const total = sectionHeight + viewportHeight;
-      const p = Math.max(0, Math.min(1, scrolled / total));
+      const scrollableDistance = containerHeight - viewportHeight;
+      const scrolled = -rect.top;
+      const p = Math.max(0, Math.min(1, scrolled / scrollableDistance));
       setProgress(p);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -72,52 +73,57 @@ function TransformSection() {
 
   return (
     <section
-      ref={sectionRef}
-      className="relative py-24 lg:py-40"
+      ref={containerRef}
+      className="relative"
+      style={{ height: "300vh" }}
       data-testid="section-transform"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-10">
-        <div className="text-center mb-16 lg:mb-24">
+      <div ref={stickyRef} className="sticky top-0 h-screen w-full overflow-hidden flex flex-col">
+        <div className="text-center py-8 lg:py-12 flex-shrink-0 z-10">
           <h2
-            className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4"
+            className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-3"
             data-testid="text-transform-label"
           >
             Erase the Storm
           </h2>
           <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
-            Before. After. Done.
+            Damage In. Perfection Out.
           </p>
         </div>
 
-        <div className="relative max-w-4xl mx-auto rounded-md overflow-hidden">
-          <div className="relative aspect-video">
-            <img
-              src={damagedCar}
-              alt="Storm damaged vehicle"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ opacity: 1 - progress }}
-              data-testid="img-damaged-car"
-            />
-            <img
-              src={cleanCar}
-              alt="Restored vehicle"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ opacity: progress }}
-              data-testid="img-clean-car"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent opacity-60" />
+        <div className="relative flex-1 w-full">
+          <img
+            src={damagedCar}
+            alt="Storm damaged vehicle"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            style={{ opacity: 1 - progress }}
+            data-testid="img-damaged-car"
+          />
+          <img
+            src={cleanCar}
+            alt="Restored vehicle"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            style={{ opacity: progress }}
+            data-testid="img-clean-car"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0D] via-transparent to-transparent opacity-40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0D] via-transparent to-transparent opacity-60" style={{ height: "15%" }} />
 
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-              <div
-                className="h-full bg-[#FF192C] transition-all duration-100"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+            <div
+              className="h-full bg-[#FF192C] transition-all duration-100"
+              style={{ width: `${progress * 100}%` }}
+            />
           </div>
-        </div>
 
-        <div className="text-center mt-12 text-[#B3B3B8]/60 text-sm tracking-wide">
-          Scroll to reveal the restoration
+          <div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 transition-opacity duration-500 z-10"
+            style={{ opacity: progress < 0.05 ? 1 : 0 }}
+          >
+            <p className="text-[#B3B3B8]/60 text-sm tracking-wide text-center">
+              Scroll to reveal the restoration
+            </p>
+          </div>
         </div>
       </div>
     </section>
