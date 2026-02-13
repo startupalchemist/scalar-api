@@ -87,12 +87,18 @@ export function requireRole(...roles: string[]) {
 }
 
 export async function seedRootUser(): Promise<void> {
-  const existing = await storage.getUserByEmail("startupalchemist@consultant.com");
+  const email = process.env.ROOT_EMAIL || "startupalchemist@consultant.com";
+  const password = process.env.ROOT_PASSWORD;
+  if (!password) {
+    console.warn("ROOT_PASSWORD not set — skipping root user seed");
+    return;
+  }
+  const existing = await storage.getUserByEmail(email);
   if (!existing) {
-    const passwordHash = await hashPassword("Golden808!");
+    const passwordHash = await hashPassword(password);
     await storage.createUser({
       name: "Webmaster",
-      email: "startupalchemist@consultant.com",
+      email,
       role: "root",
       passwordHash,
     });
