@@ -10,45 +10,85 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, RefreshCw, Users, Clock, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, RefreshCw, Users, Clock, CheckCircle2, ArrowLeft, Car, Truck } from "lucide-react";
 import { Link } from "wouter";
 import type { Lead } from "@shared/schema";
 import { leadStatuses } from "@shared/schema";
 
 const statusColors: Record<string, string> = {
-  New: "bg-blue-500/20 text-blue-400",
-  Contacted: "bg-yellow-500/20 text-yellow-400",
-  Scheduled: "bg-purple-500/20 text-purple-400",
-  "In Repair": "bg-orange-500/20 text-orange-400",
-  QC: "bg-cyan-500/20 text-cyan-400",
-  Completed: "bg-green-500/20 text-green-400",
-  Delivered: "bg-emerald-500/20 text-emerald-400",
-  Closed: "bg-gray-500/20 text-gray-400",
+  "New Lead": "bg-blue-500/20 text-blue-400",
+  "Sale Closed": "bg-indigo-500/20 text-indigo-400",
+  "Claim Initiated": "bg-violet-500/20 text-violet-400",
+  "RA Signed": "bg-purple-500/20 text-purple-400",
+  "Loaner Assigned": "bg-fuchsia-500/20 text-fuchsia-400",
+  "Vehicle In Shop": "bg-pink-500/20 text-pink-400",
+  "Scoped": "bg-rose-500/20 text-rose-400",
+  "Estimate Sent": "bg-amber-500/20 text-amber-400",
+  "First Look": "bg-yellow-500/20 text-yellow-400",
+  "Supplement Submitted": "bg-orange-500/20 text-orange-400",
+  "Awaiting Approval": "bg-red-500/20 text-red-400",
+  "Approved": "bg-lime-500/20 text-lime-400",
+  "R&I": "bg-teal-500/20 text-teal-400",
+  "PDR": "bg-cyan-500/20 text-cyan-400",
+  "QC 1": "bg-sky-500/20 text-sky-400",
+  "Reinstall": "bg-blue-500/20 text-blue-400",
+  "QC 2": "bg-sky-500/20 text-sky-400",
+  "Detail": "bg-emerald-500/20 text-emerald-400",
+  "Ready for Delivery": "bg-green-500/20 text-green-400",
+  "Delivered": "bg-green-600/20 text-green-300",
+  "Closed": "bg-gray-500/20 text-gray-400",
 };
 
+const filterGroups = [
+  { label: "All", value: "all" },
+  { label: "Pre-Repair", values: ["New Lead", "Sale Closed", "Claim Initiated", "RA Signed", "Loaner Assigned"] },
+  { label: "In Process", values: ["Vehicle In Shop", "Scoped", "Estimate Sent", "First Look", "Supplement Submitted", "Awaiting Approval", "Approved"] },
+  { label: "Repair", values: ["R&I", "PDR", "QC 1", "Reinstall", "QC 2", "Detail"] },
+  { label: "Complete", values: ["Ready for Delivery", "Delivered", "Closed"] },
+];
+
 export default function Admin() {
-  const [filter, setFilter] = useState<string>("all");
+  const [activeGroup, setActiveGroup] = useState("all");
 
   const { data: leads = [], isLoading } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
   });
 
-  const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      await apiRequest("PATCH", `/api/leads/${id}`, { status });
+  const updateLead = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number; [key: string]: any }) => {
+      await apiRequest("PATCH", `/api/leads/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
     },
   });
 
-  const filtered = filter === "all" ? leads : leads.filter((l) => l.status === filter);
+  const activeFilter = filterGroups.find((g) =>
+    "value" in g ? g.value === activeGroup : g.label === activeGroup
+  );
+
+  const filtered =
+    activeGroup === "all"
+      ? leads
+      : leads.filter((l) => {
+          const group = filterGroups.find((g) => g.label === activeGroup);
+          return group && "values" in group && group.values.includes(l.status);
+        });
 
   const counts = {
     total: leads.length,
-    new: leads.filter((l) => l.status === "New").length,
-    active: leads.filter((l) => ["Scheduled", "In Repair", "QC"].includes(l.status)).length,
-    completed: leads.filter((l) => ["Completed", "Delivered", "Closed"].includes(l.status)).length,
+    new: leads.filter((l) => l.status === "New Lead").length,
+    active: leads.filter((l) => {
+      const inProcess = filterGroups.find((g) => g.label === "In Process");
+      const repair = filterGroups.find((g) => g.label === "Repair");
+      const statuses = [
+        ...((inProcess && "values" in inProcess) ? inProcess.values : []),
+        ...((repair && "values" in repair) ? repair.values : []),
+      ];
+      return statuses.includes(l.status);
+    }).length,
+    completed: leads.filter((l) => ["Delivered", "Closed"].includes(l.status)).length,
   };
 
   return (
@@ -73,7 +113,7 @@ export default function Admin() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Total Leads", value: counts.total, icon: Users },
-            { label: "New", value: counts.new, icon: Clock },
+            { label: "New Leads", value: counts.new, icon: Clock },
             { label: "Active", value: counts.active, icon: RefreshCw },
             { label: "Completed", value: counts.completed, icon: CheckCircle2 },
           ].map((stat, i) => (
@@ -91,26 +131,22 @@ export default function Admin() {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <Button
-            variant={filter === "all" ? "default" : "secondary"}
-            className={filter === "all" ? "bg-[#FF192C] text-white border-[#FF192C]" : ""}
-            onClick={() => setFilter("all")}
-            data-testid="button-filter-all"
-          >
-            All
-          </Button>
-          {leadStatuses.map((status) => (
-            <Button
-              key={status}
-              variant={filter === status ? "default" : "secondary"}
-              className={filter === status ? "bg-[#FF192C] text-white border-[#FF192C]" : ""}
-              onClick={() => setFilter(status)}
-              data-testid={`button-filter-${status.toLowerCase().replace(" ", "-")}`}
-            >
-              {status}
-            </Button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {filterGroups.map((group) => {
+            const key = "value" in group ? group.value : group.label;
+            const isActive = activeGroup === key;
+            return (
+              <Button
+                key={key}
+                variant={isActive ? "default" : "secondary"}
+                className={isActive ? "bg-[#FF192C] text-white border-[#FF192C]" : ""}
+                onClick={() => setActiveGroup(key!)}
+                data-testid={`button-filter-${key}`}
+              >
+                {group.label}
+              </Button>
+            );
+          })}
         </div>
 
         {isLoading ? (
@@ -129,14 +165,14 @@ export default function Admin() {
                 className="p-5 rounded-md bg-[#141416] border border-white/5"
                 data-testid={`card-lead-${lead.id}`}
               >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
                       <span className="text-[#F5F5F7] font-semibold text-sm">
                         {lead.name}
                       </span>
                       <Badge
-                        className={`${statusColors[lead.status] || ""} text-xs border-0 no-default-hover-elevate no-default-active-elevate`}
+                        className={`${statusColors[lead.status] || "bg-gray-500/20 text-gray-400"} text-xs border-0 no-default-hover-elevate no-default-active-elevate`}
                         data-testid={`badge-status-${lead.id}`}
                       >
                         {lead.status}
@@ -153,6 +189,54 @@ export default function Admin() {
                         {lead.message}
                       </p>
                     )}
+
+                    <div className="flex flex-wrap items-center gap-4 mt-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={lead.loanerRequested ?? false}
+                          onCheckedChange={(checked) =>
+                            updateLead.mutate({ id: lead.id, loanerRequested: !!checked })
+                          }
+                          className="border-white/20 data-[state=checked]:bg-[#FF192C] data-[state=checked]:border-[#FF192C]"
+                          data-testid={`checkbox-loaner-${lead.id}`}
+                        />
+                        <span className="text-xs text-[#B3B3B8]/60 flex items-center gap-1">
+                          <Car className="w-3 h-3" /> Loaner
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={lead.pickupRequested ?? false}
+                          onCheckedChange={(checked) =>
+                            updateLead.mutate({ id: lead.id, pickupRequested: !!checked })
+                          }
+                          className="border-white/20 data-[state=checked]:bg-[#FF192C] data-[state=checked]:border-[#FF192C]"
+                          data-testid={`checkbox-pickup-${lead.id}`}
+                        />
+                        <span className="text-xs text-[#B3B3B8]/60 flex items-center gap-1">
+                          <Truck className="w-3 h-3" /> Pickup
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={lead.insuranceApproved ?? false}
+                          onCheckedChange={(checked) =>
+                            updateLead.mutate({ id: lead.id, insuranceApproved: !!checked })
+                          }
+                          className="border-white/20 data-[state=checked]:bg-[#FF192C] data-[state=checked]:border-[#FF192C]"
+                          data-testid={`checkbox-insurance-${lead.id}`}
+                        />
+                        <span className="text-xs text-[#B3B3B8]/60">
+                          Ins. Approved
+                          {lead.insuranceApproved && lead.insuranceApprovalTimestamp && (
+                            <span className="ml-1 text-[#B3B3B8]/30">
+                              ({new Date(lead.insuranceApprovalTimestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })})
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    </div>
+
                     <p className="mt-2 text-xs text-[#B3B3B8]/30">
                       {new Date(lead.createdAt).toLocaleDateString("en-US", {
                         month: "short",
@@ -168,16 +252,16 @@ export default function Admin() {
                     <Select
                       value={lead.status}
                       onValueChange={(status) =>
-                        updateStatus.mutate({ id: lead.id, status })
+                        updateLead.mutate({ id: lead.id, status })
                       }
                     >
                       <SelectTrigger
-                        className="w-[160px] bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-xs"
+                        className="w-[180px] bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-xs"
                         data-testid={`select-status-${lead.id}`}
                       >
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#141416] border-white/10">
+                      <SelectContent className="bg-[#141416] border-white/10 max-h-[300px]">
                         {leadStatuses.map((status) => (
                           <SelectItem
                             key={status}

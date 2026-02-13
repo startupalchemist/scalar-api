@@ -34,6 +34,18 @@ const faqs = [
     q: "What if my vehicle has severe damage?",
     a: "We assess every vehicle individually. If a repair requires additional time beyond 48 hours due to severity, we communicate that upfront before the clock begins. Transparency first.",
   },
+  {
+    q: "Do you offer loaner vehicles?",
+    a: "Yes. Complimentary loaners are available, and we can deliver one when we pick up your vehicle.",
+  },
+  {
+    q: "Can you pick up my vehicle?",
+    a: "Yes. Pickup and delivery are available based on scheduling.",
+  },
+  {
+    q: "When does the 48-hour clock begin?",
+    a: "Once your insurance formally approves the repair and your vehicle is in our possession.",
+  },
 ];
 
 function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {

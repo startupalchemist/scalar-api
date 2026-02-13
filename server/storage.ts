@@ -6,7 +6,7 @@ export interface IStorage {
   createLead(lead: InsertLead): Promise<Lead>;
   getLeads(): Promise<Lead[]>;
   getLead(id: number): Promise<Lead | undefined>;
-  updateLeadStatus(id: number, status: string): Promise<Lead | undefined>;
+  updateLead(id: number, data: Partial<Lead>): Promise<Lead | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -24,10 +24,10 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async updateLeadStatus(id: number, status: string): Promise<Lead | undefined> {
+  async updateLead(id: number, data: Partial<Lead>): Promise<Lead | undefined> {
     const [result] = await db
       .update(leads)
-      .set({ status })
+      .set(data)
       .where(eq(leads.id, id))
       .returning();
     return result;

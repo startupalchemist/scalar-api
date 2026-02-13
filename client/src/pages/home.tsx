@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Shield, Clock, FileCheck, Wrench } from "lucide-react";
+import { ChevronDown, Shield, Clock, FileCheck, Wrench, Car, Sparkles, KeyRound } from "lucide-react";
 import damagedCar from "@assets/IMG_4071_1770967683032.jpeg";
 import cleanCar from "@assets/IMG_4072_1770967683031.jpeg";
 
@@ -183,23 +183,36 @@ function ProcessSection() {
   const steps = [
     {
       icon: FileCheck,
-      title: "File Your Claim",
-      desc: "We coordinate directly with your insurance carrier.",
+      title: "Claim Coordination",
+      desc: "We contact your insurance carrier. We manage the adjuster. We document everything.",
+      detail: "You won't need to negotiate.",
+      supporting: "You'll never speak to your adjuster twice.",
     },
     {
-      icon: Clock,
-      title: "Drop Off",
-      desc: "Bring your vehicle in. The clock starts after approval.",
+      icon: Car,
+      title: "Pickup & Complimentary Loaner",
+      desc: "Drop off at our facility, or we pick up your vehicle and deliver a complimentary loaner.",
+      detail: "Your schedule stays intact.",
+      highlight: "Complimentary loaner",
     },
     {
       icon: Wrench,
-      title: "Precision Repair",
-      desc: "Our technicians restore every surface to factory spec.",
+      title: "Precision Restoration",
+      desc: "LED precision mapping. Master-level PDR technicians. No fillers. No repaint. No shortcuts.",
+      detail: "Damage is removed. Factory finish preserved.",
     },
     {
-      icon: Shield,
+      icon: Sparkles,
       title: "Quality Control",
-      desc: "If it's not perfect, we fix it. No exceptions.",
+      desc: "Every vehicle passes multi-point inspection under controlled lighting.",
+      detail: "If it's not perfect, it doesn't leave.",
+    },
+    {
+      icon: KeyRound,
+      title: "Delivery & Key Exchange",
+      desc: "Pick up your vehicle or have it delivered back to you. Loaner retrieved at exchange.",
+      detail: "Vehicle returned fully detailed. Warranty issued.",
+      supporting: "You'll know it happened. No one else will.",
     },
   ];
 
@@ -210,30 +223,59 @@ function ProcessSection() {
           <h2 className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">
             The Process
           </h2>
-          <p className="text-3xl sm:text-4xl font-bold text-[#F5F5F7] uppercase tracking-tight">
-            Controlled. Precise. Complete.
+          <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F5F5F7] uppercase tracking-tight">
+            We Handle Everything.
+          </p>
+          <p className="mt-4 text-[#B3B3B8] text-lg">
+            From first call to final key handoff.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="space-y-6 max-w-3xl mx-auto">
           {steps.map((step, i) => (
             <div
               key={i}
               className="group relative p-6 lg:p-8 rounded-md bg-[#141416] border border-white/5"
               data-testid={`card-process-${i}`}
             >
-              <div className="w-10 h-10 rounded-md bg-[#FF192C]/10 flex items-center justify-center mb-6">
-                <step.icon className="w-5 h-5 text-[#FF192C]" />
+              <div className="flex items-start gap-5">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-md bg-[#FF192C]/10 flex items-center justify-center">
+                    <step.icon className="w-5 h-5 text-[#FF192C]" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-[#FF192C] text-xs font-bold tracking-wider">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7]">
+                      {step.title}
+                    </h3>
+                  </div>
+                  <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">
+                    {step.desc}
+                  </p>
+                  {step.detail && (
+                    <p className="mt-3 text-[#F5F5F7] text-sm font-medium">
+                      {step.detail}
+                    </p>
+                  )}
+                  {step.highlight && (
+                    <span className="inline-block mt-3 text-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold">
+                      {step.highlight}
+                    </span>
+                  )}
+                  {step.supporting && (
+                    <p className="mt-3 text-[#B3B3B8]/40 text-xs italic tracking-wide">
+                      "{step.supporting}"
+                    </p>
+                  )}
+                </div>
               </div>
-              <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7] mb-3">
-                {step.title}
-              </h3>
-              <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">
-                {step.desc}
-              </p>
-              <div className="absolute top-6 right-6 text-[#B3B3B8]/10 text-2xl font-extrabold">
-                {String(i + 1).padStart(2, "0")}
-              </div>
+              {i < steps.length - 1 && (
+                <div className="absolute -bottom-3 left-11 w-px h-6 bg-white/5" />
+              )}
             </div>
           ))}
         </div>

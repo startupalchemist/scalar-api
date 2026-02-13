@@ -24,8 +24,8 @@ export async function registerRoutes(
 
   app.get("/api/leads", async (_req, res) => {
     try {
-      const leads = await storage.getLeads();
-      res.json(leads);
+      const allLeads = await storage.getLeads();
+      res.json(allLeads);
     } catch {
       res.status(500).json({ message: "Failed to fetch leads" });
     }
@@ -47,11 +47,33 @@ export async function registerRoutes(
   app.patch("/api/leads/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { status } = req.body;
-      if (!status || !leadStatuses.includes(status)) {
-        return res.status(400).json({ message: "Invalid status" });
+      const updates: Record<string, any> = {};
+
+      if (req.body.status) {
+        if (!leadStatuses.includes(req.body.status)) {
+          return res.status(400).json({ message: "Invalid status" });
+        }
+        updates.status = req.body.status;
       }
-      const lead = await storage.updateLeadStatus(id, status);
+
+      if (typeof req.body.loanerRequested === "boolean") {
+        updates.loanerRequested = req.body.loanerRequested;
+      }
+      if (typeof req.body.pickupRequested === "boolean") {
+        updates.pickupRequested = req.body.pickupRequested;
+      }
+      if (typeof req.body.insuranceApproved === "boolean") {
+        updates.insuranceApproved = req.body.insuranceApproved;
+        if (req.body.insuranceApproved) {
+          updates.insuranceApprovalTimestamp = new Date();
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update" });
+      }
+
+      const lead = await storage.updateLead(id, updates);
       if (!lead) {
         return res.status(404).json({ message: "Lead not found" });
       }

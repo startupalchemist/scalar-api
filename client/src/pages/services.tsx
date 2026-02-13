@@ -6,7 +6,7 @@ const services = [
   {
     icon: Droplets,
     title: "Hail Damage Repair",
-    desc: "Paintless dent repair for storm-impacted vehicles. Factory finish preserved. No filler. No repaint.",
+    desc: "Paintless dent repair for storm-impacted vehicles. Factory finish preserved. No filler. No repaint. Complimentary loaner vehicles available. Pickup and delivery coordinated around your schedule.",
   },
   {
     icon: Zap,
