@@ -213,23 +213,36 @@
   background: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(355 100% 55% / 0.06) 0%, transparent 60%);
 }
 
-@keyframes contour-draw {
-  from {
-    stroke-dashoffset: 1600;
+@keyframes scan-down {
+  0% {
+    top: 5%;
+    opacity: 0;
   }
-  to {
-    stroke-dashoffset: 0;
+  5% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 85%;
+    opacity: 0;
   }
 }
 
-.contour-path {
-  stroke-dasharray: 1600;
-  stroke-dashoffset: 1600;
-  animation: contour-draw 1.2s ease-in-out forwards;
+.scan-sweep {
+  overflow: hidden;
 }
 
-.contour-sweep {
-  opacity: 0.7;
+.scan-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #FF192C 15%, #FF192C 85%, transparent 100%);
+  box-shadow: 0 0 20px 4px rgba(255, 25, 44, 0.4), 0 0 60px 8px rgba(255, 25, 44, 0.15);
+  animation: scan-down 1.2s ease-in-out forwards;
+  top: 5%;
 }
 
 @layer utilities {

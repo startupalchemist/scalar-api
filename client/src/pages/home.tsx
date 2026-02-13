@@ -69,7 +69,6 @@ function TransitionHeadline() {
   );
 }
 
-const CAR_SVG_PATH = "M 80,170 C 60,170 40,160 30,145 L 20,120 C 15,105 20,90 30,80 L 60,60 C 75,50 100,45 130,42 L 200,38 C 240,36 280,38 310,42 L 370,50 C 390,55 405,65 415,80 L 440,110 C 450,125 450,145 440,160 L 430,170 C 420,175 400,178 380,178 L 350,178 C 340,165 325,155 308,155 C 291,155 276,165 266,178 L 194,178 C 184,165 169,155 152,155 C 135,155 120,165 110,178 L 80,170 Z";
 
 function TransformSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -200,24 +199,8 @@ function TransformSection() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0D] via-transparent to-transparent opacity-40" style={{ height: "20%" }} />
 
           {showSweep && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-              <svg
-                key={sweepKey}
-                viewBox="0 0 460 220"
-                className="w-[80%] max-w-[700px] h-auto contour-sweep"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d={CAR_SVG_PATH}
-                  stroke="#FF192C"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  className="contour-path"
-                />
-              </svg>
+            <div key={sweepKey} className="absolute inset-0 pointer-events-none z-20 scan-sweep" data-testid="scan-sweep">
+              <div className="scan-line" />
             </div>
           )}
 
