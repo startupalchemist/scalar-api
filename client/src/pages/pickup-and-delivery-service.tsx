@@ -12,11 +12,11 @@ const faqItems: FAQItem[] = [
   },
   {
     q: "How is my vehicle transported to your facility?",
-    a: "Your vehicle is transported on a covered flatbed carrier operated by our trained logistics team. We do not drive client vehicles on public roads to our facility. Flatbed transport eliminates any risk of additional road damage, debris impact, or mileage accumulation during transit. Your vehicle arrives at our shop in the same condition it left your location."
+    a: "Your vehicle is transported by our trained logistics team using secure, professional methods designed to protect your vehicle throughout the process. We take every precaution to eliminate risk of additional damage during transit. Your vehicle arrives at our shop in the same condition it left your location."
   },
   {
     q: "Can I schedule pickup and delivery for a specific time?",
-    a: "Yes. We schedule pickups within defined time windows, typically in two-hour blocks, to accommodate your availability. Morning, midday, and afternoon windows are available Monday through Saturday. Our logistics coordinator will work with you to identify a time that fits your schedule, and you will receive a confirmation call or text 24 hours in advance."
+    a: "Yes. Pickup and delivery is available Monday through Friday, 9:00 AM to 6:00 PM, with Saturday appointments available by arrangement. Our logistics coordinator will work with you to identify a time that fits your schedule, and you will receive a confirmation call or text 24 hours in advance. If you need a pickup outside of standard hours, just let us know — we will make it work."
   },
   {
     q: "What if I am not available at the scheduled pickup time?",
@@ -35,7 +35,7 @@ const schema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "Dent Society",
-  "description": "Vehicle pickup and delivery service for hail damage repair in the Dallas-Fort Worth metroplex. Complimentary flatbed transport and loaner vehicle coordination.",
+  "description": "Vehicle pickup and delivery service for hail damage repair in the Dallas-Fort Worth metroplex. Complimentary vehicle transport and loaner vehicle coordination.",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Dallas",
@@ -62,7 +62,7 @@ export default function PickupAndDeliveryService() {
     <SEOPageLayout
       badge="Pickup & Delivery"
       title="Vehicle Pickup and Delivery Service"
-      subtitle="We come to you. Complimentary flatbed transport throughout the Dallas-Fort Worth metroplex, coordinated with your loaner vehicle."
+      subtitle="We come to you. Complimentary vehicle transport throughout the Dallas-Fort Worth metroplex, coordinated with your loaner vehicle."
       faq={faqItems}
       internalLinks={internalLinks}
       midCTA={false}
@@ -105,7 +105,7 @@ export default function PickupAndDeliveryService() {
         Scheduling a pickup is straightforward. Once your repair appointment is confirmed — either through our online form, by phone, or through your insurance adjuster — our logistics coordinator contacts you to arrange the vehicle collection. You select a date and time window that works for your schedule, and we handle the rest.
       </p>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">
-        Pickup windows are available Monday through Saturday and are offered in two-hour blocks: morning (8:00–10:00 AM), midday (11:00 AM–1:00 PM), and afternoon (2:00–4:00 PM). You receive a confirmation communication 24 hours before your scheduled pickup, and our driver contacts you approximately 30 minutes before arrival.
+        Pickup and delivery windows are available Monday through Friday, 9:00 AM to 6:00 PM, with Saturday appointments available by arrangement. You receive a confirmation communication 24 hours before your scheduled pickup, and our driver contacts you approximately 30 minutes before arrival. Work non-traditional hours or need a pickup outside of our standard window? Reach out and let us know — we are happy to coordinate a time that fits your schedule.
       </p>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">
         The delivery process follows the same structure. When your repair is complete, we contact you to schedule the return window. Your vehicle is delivered to the same location it was collected from, or to an alternate address if you prefer. The delivery appointment includes a brief walk-around so you can inspect the completed repair before signing off.
@@ -115,13 +115,13 @@ export default function PickupAndDeliveryService() {
         Vehicle Security During Transport
       </h2>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">
-        We understand that entrusting your vehicle to someone else requires confidence in their process. Every vehicle collected by Dent Society is transported on a covered flatbed carrier — not driven on public roads. This method of transport offers several important protections:
+        We understand that entrusting your vehicle to someone else requires confidence in their process. Every vehicle collected by Dent Society is transported using secure, professional methods with every precaution taken to protect it throughout the journey. Our approach offers several important protections:
       </p>
       <ul className="list-disc list-inside text-[#B3B3B8] text-sm leading-relaxed mb-6 space-y-2">
-        <li>Zero additional mileage accumulated on your odometer</li>
+        <li>Minimal to zero additional mileage accumulated on your odometer</li>
         <li>No exposure to road debris, gravel, or secondary weather events during transit</li>
-        <li>Secure tie-down systems that prevent any movement during transport</li>
-        <li>Full insurance coverage on every vehicle from the moment it is loaded until it is returned</li>
+        <li>Secure handling that prevents any damage during transport</li>
+        <li>Full insurance coverage on every vehicle from the moment it leaves your location until it is returned</li>
       </ul>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">
         A detailed vehicle condition report is completed at the point of pickup, including photographs of all panels, the interior, and the current odometer reading. This report is shared with you digitally and serves as a baseline record throughout the repair and transport process. The same documentation is completed at delivery so you have a complete chain of custody for your vehicle.
@@ -154,7 +154,7 @@ export default function PickupAndDeliveryService() {
         <li>The current mileage, fuel level, and any pre-existing conditions are documented</li>
         <li>You review and sign the pickup authorization digitally on a tablet</li>
         <li>If applicable, the loaner vehicle is presented and the loaner agreement is signed</li>
-        <li>Your vehicle is loaded onto the covered flatbed carrier and secured for transport</li>
+        <li>Your vehicle is prepared and secured for transport to our facility</li>
         <li>You receive a digital copy of all documentation via email within minutes</li>
       </ul>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">

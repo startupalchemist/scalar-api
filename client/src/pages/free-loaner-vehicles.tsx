@@ -109,7 +109,7 @@ export default function FreeLoanerVehicles() {
         For clients in the Dallas-Fort Worth metroplex who prefer not to drive to our facility, we coordinate the entire vehicle exchange remotely. A member of our logistics team contacts you 24 hours before your scheduled appointment to confirm timing, location, and any special instructions. On the day of pickup, our driver arrives with the loaner vehicle at the agreed-upon time and location.
       </p>
       <p className="text-[#B3B3B8] text-sm leading-relaxed mb-4">
-        You conduct a brief walk-around of the loaner, sign the loaner agreement on a tablet, and hand over your vehicle keys. The entire exchange typically takes less than ten minutes. Your vehicle is then transported to our facility on a covered flatbed carrier, ensuring it arrives without exposure to additional road debris or weather conditions.
+        You conduct a brief walk-around of the loaner, sign the loaner agreement on a tablet, and hand over your vehicle keys. The entire exchange typically takes less than ten minutes. Your vehicle is then safely transported to our facility, ensuring it arrives without exposure to additional road debris or weather conditions.
       </p>
 
       <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight mb-4 mt-10">

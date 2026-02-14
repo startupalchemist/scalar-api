@@ -342,6 +342,7 @@ Rules:
 - Use substantive, factual content. Include specific details about PDR techniques, insurance processes, and storm damage.
 - Target Dallas-Fort Worth market when relevant.
 - Structure with H2 and H3 headings using markdown.
+- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact). Do NOT output raw URLs or bare paths.
 - Include a compelling excerpt (2 sentences max).
 - Suggest 3-5 relevant tags.
 - Suggest an SEO title (60 chars max) and meta description (155 chars max).
@@ -567,7 +568,7 @@ Rules:
 - Target Dallas-Fort Worth market when relevant
 - Structure with H2 and H3 headings using markdown
 - Minimum 1000 words
-- Include internal linking suggestions (use placeholder URLs like /services, /contact, /insurance-claim-assistance)
+- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact), [insurance claim assistance](/insurance-claim-assistance). Do NOT output raw URLs or bare paths.
 - End with a subtle call-to-action that encourages contacting Dent Society
 
 Respond in JSON format:
@@ -702,10 +703,10 @@ Respond in JSON:
             }
           }
 
-          const baseUrl = process.env.REPLIT_DEV_DOMAIN
-            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-            : process.env.REPLIT_DEPLOYMENT_URL
-              ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+          const baseUrl = process.env.REPLIT_DEPLOYMENT_URL
+            ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+            : process.env.REPLIT_DEV_DOMAIN
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}`
               : "";
 
           const backlinkPlatforms = ["Reddit", "LinkedIn", "Twitter", "Medium", "Hacker News"];
@@ -875,10 +876,10 @@ Respond in JSON format:
       const utmSource = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const utmCampaign = post.slug;
 
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : process.env.REPLIT_DEPLOYMENT_URL
-          ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+      const baseUrl = process.env.REPLIT_DEPLOYMENT_URL
+        ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+        : process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
           : "";
 
       const articleUrl = `${baseUrl}/blog/${post.slug}?utm_source=${utmSource}&utm_medium=referral&utm_campaign=${utmCampaign}`;

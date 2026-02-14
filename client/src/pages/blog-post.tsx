@@ -32,7 +32,69 @@ function escapeHtml(text: string): string {
 }
 
 function renderMarkdown(content: string): string {
-  const safe = escapeHtml(content);
+  const linkPlaceholders: { placeholder: string; html: string }[] = [];
+  let idx = 0;
+
+  let processed = content
+    .replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, (_match, text, href) => {
+      const placeholder = `%%LINK_${idx++}%%`;
+      const safeText = escapeHtml(text.trim());
+      const safeHref = escapeHtml(href.trim());
+      linkPlaceholders.push({
+        placeholder,
+        html: `<a href="${safeHref}" class="text-[#FF192C] hover:text-[#FF192C]/80 underline underline-offset-2 transition-colors">${safeText}</a>`
+      });
+      return placeholder;
+    })
+    .replace(/(?:^|(?<=\s))(\/[a-z][a-z0-9-]*(?:\/[a-z0-9-]+)*)(?=[\s.,;:)]|$)/gm, (match) => {
+      const placeholder = `%%LINK_${idx++}%%`;
+      const label = match.replace(/^\//, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      linkPlaceholders.push({
+        placeholder,
+        html: `<a href="${escapeHtml(match)}" class="text-[#FF192C] hover:text-[#FF192C]/80 underline underline-offset-2 transition-colors">${escapeHtml(label)}</a>`
+      });
+      return placeholder;
+    });
+
+  let bulletPlaceholders: { placeholder: string; html: string }[] = [];
+  let bIdx = 0;
+  processed = processed.replace(/^[-*] (.+)$/gm, (_match, item) => {
+    const placeholder = `%%BULLET_${bIdx++}%%`;
+    bulletPlaceholders.push({
+      placeholder,
+      html: `<li class="text-[#B3B3B8] leading-relaxed">${escapeHtml(item)}</li>`
+    });
+    return placeholder;
+  });
+
+  let safe = escapeHtml(processed);
+
+  for (const { placeholder, html } of linkPlaceholders) {
+    safe = safe.replace(placeholder, html);
+  }
+
+  let inList = false;
+  const lines = safe.split('\n');
+  const outputLines: string[] = [];
+  for (const line of lines) {
+    const bulletMatch = bulletPlaceholders.find(b => line.includes(b.placeholder));
+    if (bulletMatch) {
+      if (!inList) {
+        outputLines.push('<ul class="list-disc list-inside text-[#B3B3B8] text-sm leading-relaxed mb-4 space-y-1 ml-2">');
+        inList = true;
+      }
+      outputLines.push(line.replace(bulletMatch.placeholder, bulletMatch.html));
+    } else {
+      if (inList) {
+        outputLines.push('</ul>');
+        inList = false;
+      }
+      outputLines.push(line);
+    }
+  }
+  if (inList) outputLines.push('</ul>');
+  safe = outputLines.join('\n');
+
   return safe
     .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-[#F5F5F7] mt-8 mb-3">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-[#F5F5F7] mt-10 mb-4">$1</h2>')
