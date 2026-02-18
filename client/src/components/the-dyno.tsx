@@ -268,8 +268,8 @@ export default function TheDyno() {
             Performance Instrument Cluster
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:gap-8">
-            <div className="hidden lg:flex flex-col gap-3">
+          <div className="flex items-end justify-center gap-2 lg:gap-3">
+            <div className="hidden lg:flex flex-col gap-2 shrink-0">
               <VerticalBar value={d.totalReads} max={Math.max(d.totalReads, 100)} label="Reads" displayValue={String(d.totalReads)} color="#3B82F6" />
               <VerticalBar value={d.totalShares} max={Math.max(d.totalShares, 50)} label="Shares" displayValue={String(d.totalShares)} color="#8B5CF6" />
             </div>
@@ -280,7 +280,7 @@ export default function TheDyno() {
               label="Pipeline"
               unit="ACTIVE"
               displayValue={String(d.fuel)}
-              size={150}
+              size={120}
               color="#22C55E"
               warningZone={0.9}
               tickCount={8}
@@ -290,26 +290,24 @@ export default function TheDyno() {
               value={d.rpm}
               max={d.rpmMax}
               label="Traffic"
-              unit="LEADS / 30D"
+              unit="LEADS/30D"
               displayValue={String(d.rpm)}
-              size={200}
+              size={150}
               color="#FF192C"
               warningZone={0.8}
             />
 
-            <div className="flex flex-col items-center">
-              <GaugeSVG
-                value={d.speed}
-                max={100}
-                label="Conversion"
-                unit="CLOSE RATE"
-                displayValue={`${d.speed}%`}
-                size={220}
-                color="#F59E0B"
-                warningZone={0.95}
-                tickCount={10}
-              />
-            </div>
+            <GaugeSVG
+              value={d.speed}
+              max={100}
+              label="Conversion"
+              unit="CLOSE RATE"
+              displayValue={`${d.speed}%`}
+              size={170}
+              color="#F59E0B"
+              warningZone={0.95}
+              tickCount={10}
+            />
 
             <GaugeSVG
               value={d.temp}
@@ -317,7 +315,7 @@ export default function TheDyno() {
               label="Sentiment"
               unit={`${d.tempRaw}/5 AVG`}
               displayValue={d.tempRaw > 0 ? String(d.tempRaw) : "—"}
-              size={200}
+              size={150}
               color={d.temp > 80 ? "#22C55E" : d.temp > 50 ? "#F59E0B" : "#FF192C"}
               warningZone={0.2}
             />
@@ -326,15 +324,15 @@ export default function TheDyno() {
               value={d.boost}
               max={100}
               label="CTA Rate"
-              unit="UTM TRACKED"
+              unit="UTM"
               displayValue={`${d.boost}%`}
-              size={150}
+              size={120}
               color="#3B82F6"
               warningZone={0.95}
               tickCount={8}
             />
 
-            <div className="hidden lg:flex flex-col gap-3">
+            <div className="hidden lg:flex flex-col gap-2 shrink-0">
               <VerticalBar value={d.totalClicks} max={Math.max(d.totalClicks, 50)} label="Clicks" displayValue={String(d.totalClicks)} color="#F59E0B" />
               <VerticalBar value={d.totalBacklinks} max={Math.max(d.totalBacklinks, 20)} label="Links" displayValue={String(d.totalBacklinks)} color="#22C55E" />
             </div>
