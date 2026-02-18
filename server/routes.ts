@@ -1,12 +1,62 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLeadSchema, leadStatuses } from "@shared/schema";
+import { insertLeadSchema, insertWebhookSchema, leadStatuses, webhookEvents } from "@shared/schema";
 import { z } from "zod";
 import { authMiddleware, requireRole, hashPassword, verifyPassword, createSession, destroySession } from "./auth";
 import crypto from "crypto";
 import OpenAI from "openai";
 import { getResendClient } from "./resend";
+
+async function fireWebhooks(event: string, payload: Record<string, any>) {
+  try {
+    const hooks = await storage.getActiveWebhooksForEvent(event);
+    for (const hook of hooks) {
+      const body = JSON.stringify({ event, data: payload, timestamp: new Date().toISOString() });
+      const signature = crypto.createHmac("sha256", hook.secret).update(body).digest("hex");
+      const start = Date.now();
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const resp = await fetch(hook.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Webhook-Signature": signature,
+            "X-Webhook-Event": event,
+          },
+          body,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        const duration = Date.now() - start;
+        const respText = await resp.text().catch(() => "");
+        await storage.createWebhookLog({
+          webhookId: hook.id,
+          event,
+          payload: body,
+          statusCode: resp.status,
+          response: respText.substring(0, 2000),
+          success: resp.ok,
+          duration,
+        });
+      } catch (e: any) {
+        const duration = Date.now() - start;
+        await storage.createWebhookLog({
+          webhookId: hook.id,
+          event,
+          payload: body,
+          statusCode: 0,
+          response: e?.message || "Connection failed",
+          success: false,
+          duration,
+        });
+      }
+    }
+  } catch (e: any) {
+    console.error("Webhook dispatch error:", e?.message);
+  }
+}
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
@@ -145,6 +195,7 @@ export async function registerRoutes(
       const data = insertLeadSchema.parse(req.body);
       const lead = await storage.createLead(data);
       res.status(201).json(lead);
+      fireWebhooks("lead.created", { id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, vehicle: lead.vehicle, insurance: lead.insurance, message: lead.message, status: lead.status, createdAt: lead.createdAt });
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -210,6 +261,7 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Lead not found" });
       }
       res.json(lead);
+      fireWebhooks("lead.updated", { id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, vehicle: lead.vehicle, status: lead.status, changes: Object.keys(updates) });
     } catch {
       res.status(500).json({ message: "Failed to update lead" });
     }
@@ -661,6 +713,7 @@ Respond in JSON format:
 
       const updated = await storage.updatePost(id, { status: "published", publishedAt: new Date() });
       res.json(updated);
+      fireWebhooks("post.published", { id: post.id, title: post.title, slug: post.slug, excerpt: post.excerpt, tags: post.tags, publishedAt: new Date().toISOString() });
 
       (async () => {
         try {
@@ -959,8 +1012,9 @@ Respond in JSON format:
         return res.json({ message: "Already subscribed" });
       }
       const unsubscribeToken = crypto.randomBytes(32).toString("hex");
-      await storage.createSubscriber({ name: name || null, email, unsubscribeToken });
+      const sub = await storage.createSubscriber({ name: name || null, email, unsubscribeToken });
       res.status(201).json({ message: "Subscribed" });
+      fireWebhooks("subscriber.created", { id: sub.id, email: sub.email, name: sub.name, createdAt: sub.createdAt });
     } catch {
       res.status(500).json({ message: "Failed to subscribe" });
     }
@@ -1071,6 +1125,129 @@ Respond in JSON format:
     } catch {
       res.status(500).json({ message: "Failed to send newsletter" });
     }
+  });
+
+  // ─── Webhook Integration Routes ──────────────────────────────
+
+  app.get("/api/webhooks", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const hooks = await storage.getWebhooks();
+      res.json(hooks);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch webhooks" });
+    }
+  });
+
+  app.post("/api/webhooks", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const data = insertWebhookSchema.parse({
+        ...req.body,
+        secret: req.body.secret || crypto.randomBytes(32).toString("hex"),
+      });
+      const hook = await storage.createWebhook(data);
+      res.status(201).json(hook);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create webhook" });
+    }
+  });
+
+  app.patch("/api/webhooks/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates: Record<string, any> = {};
+      if (req.body.name !== undefined) updates.name = req.body.name;
+      if (req.body.url !== undefined) updates.url = req.body.url;
+      if (req.body.events !== undefined) updates.events = req.body.events;
+      if (typeof req.body.active === "boolean") updates.active = req.body.active;
+      if (req.body.secret !== undefined) updates.secret = req.body.secret;
+
+      const hook = await storage.updateWebhook(id, updates);
+      if (!hook) return res.status(404).json({ message: "Webhook not found" });
+      res.json(hook);
+    } catch {
+      res.status(500).json({ message: "Failed to update webhook" });
+    }
+  });
+
+  app.delete("/api/webhooks/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteWebhook(id);
+      res.json({ message: "Webhook deleted" });
+    } catch {
+      res.status(500).json({ message: "Failed to delete webhook" });
+    }
+  });
+
+  app.post("/api/webhooks/:id/test", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const hook = await storage.getWebhookById(id);
+      if (!hook) return res.status(404).json({ message: "Webhook not found" });
+
+      const testPayload = {
+        event: "webhook.test",
+        data: { message: "This is a test webhook delivery from Dent Society CRM", timestamp: new Date().toISOString() },
+        timestamp: new Date().toISOString(),
+      };
+      const body = JSON.stringify(testPayload);
+      const signature = crypto.createHmac("sha256", hook.secret).update(body).digest("hex");
+      const start = Date.now();
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const resp = await fetch(hook.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Webhook-Signature": signature, "X-Webhook-Event": "webhook.test" },
+          body,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        const duration = Date.now() - start;
+        const respText = await resp.text().catch(() => "");
+        const log = await storage.createWebhookLog({
+          webhookId: hook.id,
+          event: "webhook.test",
+          payload: body,
+          statusCode: resp.status,
+          response: respText.substring(0, 2000),
+          success: resp.ok,
+          duration,
+        });
+        res.json({ success: resp.ok, statusCode: resp.status, duration, log });
+      } catch (e: any) {
+        const duration = Date.now() - start;
+        const log = await storage.createWebhookLog({
+          webhookId: hook.id,
+          event: "webhook.test",
+          payload: body,
+          statusCode: 0,
+          response: e?.message || "Connection failed",
+          success: false,
+          duration,
+        });
+        res.json({ success: false, statusCode: 0, duration, error: e?.message, log });
+      }
+    } catch {
+      res.status(500).json({ message: "Failed to test webhook" });
+    }
+  });
+
+  app.get("/api/webhooks/logs", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const webhookId = req.query.webhookId ? parseInt(req.query.webhookId as string) : undefined;
+      const logs = await storage.getWebhookLogs(webhookId);
+      res.json(logs);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch webhook logs" });
+    }
+  });
+
+  app.get("/api/webhooks/events", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    res.json(webhookEvents);
   });
 
   // ─── Dashboard Stats ──────────────────────────────────────────
