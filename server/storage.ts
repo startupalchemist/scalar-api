@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs, ratings, settings,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -12,6 +12,8 @@ import {
   type Topic,
   type Webhook, type InsertWebhook,
   type WebhookLog,
+  type Rating,
+  type Setting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -83,6 +85,15 @@ export interface IStorage {
   createBacklinkClick(data: { backlinkId: number; referrer: string | null; userAgent: string | null }): Promise<BacklinkClick>;
   getBacklinkClicksByBacklinkId(backlinkId: number): Promise<BacklinkClick[]>;
   getBacklinkAnalytics(): Promise<{ platform: string; clicks: number; backlinkCount: number }[]>;
+
+  createRating(data: { leadId: number | null; score: number; token: string; channel?: string }): Promise<Rating>;
+  getRatingByToken(token: string): Promise<Rating | undefined>;
+  getRatingsByLeadId(leadId: number): Promise<Rating[]>;
+  getAllRatings(): Promise<Rating[]>;
+  getSetting(key: string): Promise<string | undefined>;
+  setSetting(key: string, value: string): Promise<void>;
+  getLeadSentimentSent(leadId: number): Promise<boolean>;
+  markLeadSentimentSent(leadId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -324,6 +335,37 @@ export class DatabaseStorage implements IStorage {
       .groupBy(backlinks.platform)
       .orderBy(sql`sum(${backlinks.clicks}) desc`);
     return result;
+  }
+  async createRating(data: { leadId: number | null; score: number; token: string; channel?: string }): Promise<Rating> {
+    const [result] = await db.insert(ratings).values(data).returning();
+    return result;
+  }
+  async getRatingByToken(token: string): Promise<Rating | undefined> {
+    const [result] = await db.select().from(ratings).where(eq(ratings.token, token));
+    return result;
+  }
+  async getRatingsByLeadId(leadId: number): Promise<Rating[]> {
+    return db.select().from(ratings).where(eq(ratings.leadId, leadId)).orderBy(desc(ratings.createdAt));
+  }
+  async getAllRatings(): Promise<Rating[]> {
+    return db.select().from(ratings).orderBy(desc(ratings.createdAt));
+  }
+  async getSetting(key: string): Promise<string | undefined> {
+    const [result] = await db.select().from(settings).where(eq(settings.key, key));
+    return result?.value;
+  }
+  async setSetting(key: string, value: string): Promise<void> {
+    await db.insert(settings).values({ key, value }).onConflictDoUpdate({
+      target: settings.key,
+      set: { value, updatedAt: new Date() },
+    });
+  }
+  async getLeadSentimentSent(leadId: number): Promise<boolean> {
+    const val = await this.getSetting(`sentiment_sent_${leadId}`);
+    return val === "true";
+  }
+  async markLeadSentimentSent(leadId: number): Promise<void> {
+    await this.setSetting(`sentiment_sent_${leadId}`, "true");
   }
 }
 

@@ -1,7 +1,7 @@
 # Dent Society - Precision Restoration Lab
 
 ## Overview
-Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons. Phase 4 adds webhook integration system for CRM connectivity with Zapier, Make, and custom systems.
+Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons. Phase 4 adds webhook integration system for CRM connectivity with Zapier, Make, and custom systems. Phase 5 adds UTM funnel tracking on all CTAs, customer sentiment survey system with auto-email on lead delivery, and "The Dyno" performance dashboard (in progress).
 
 ## Tech Stack
 - Frontend: React + Vite + Tailwind CSS + wouter routing
@@ -49,10 +49,11 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - /blog/:slug - Individual blog post page (with share buttons, read/share counters)
 - /login - Admin login
 - /admin - Admin dashboard (6 tabs: Dashboard, Leads, Blog, Newsletter, Users, Integrations)
+- /rate/:token - Customer sentiment rating page (from email survey)
 - 39 SEO pages (pillar, location, insurance, comparison, fleet, storm)
 
 ## Database Schema
-- `leads` table: id, name, phone, email, vehicle, insurance, message, status, loanerRequested, pickupRequested, insuranceApproved, insuranceApprovalTimestamp, createdAt
+- `leads` table: id, name, phone, email, vehicle, insurance, message, status, loanerRequested, pickupRequested, insuranceApproved, insuranceApprovalTimestamp, utmSource, utmMedium, utmCampaign, createdAt
 - `users` table: id, name, email, passwordHash, role (root/admin/editor), createdAt
 - `sessions` table: id, userId, token, expiresAt
 - `topics` table: id, title, overview, targetKeywords[], searchIntent, estimatedSearchVolume, competitionLevel, leadPotential, reasoning, status (suggested/generating/generated/archived), aiJobId, postId, createdAt
@@ -64,6 +65,8 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - `backlink_clicks` table: id, backlinkId, referrer, userAgent, clickedAt
 - `webhooks` table: id, name, url, events[], secret, active, createdAt
 - `webhook_logs` table: id, webhookId, event, payload, statusCode, response, success, duration, createdAt
+- `ratings` table: id, leadId, score (1-5), channel, token, createdAt
+- `settings` table: id, key, value, updatedAt
 
 ## API Endpoints
 ### Public
@@ -75,6 +78,7 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - POST /api/posts/:id/share - Increment share count
 - GET /api/unsubscribe/:token - Unsubscribe from newsletter
 - GET /r/:shortCode - Backlink click tracking redirect
+- GET /api/rate/:token - Submit rating via email link (redirects to /rate/:token?done=1)
 
 ### Auth
 - POST /api/auth/login - Login
@@ -114,6 +118,11 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - POST /api/webhooks/:id/test - Test webhook delivery (root/admin)
 - GET /api/webhooks/logs - Delivery logs (root/admin)
 - GET /api/webhooks/events - Available event types (root/admin)
+- GET /api/ratings - List all ratings (root/admin)
+- GET /api/ratings/summary - Rating summary with distribution (root/admin)
+- GET /api/settings/:key - Get setting value (root/admin)
+- PUT /api/settings/:key - Update setting value (root/admin)
+- GET /api/analytics/funnel - UTM funnel analytics by source/campaign (root/admin)
 
 ## Brand Guidelines
 - Font: Manrope, uppercase dominant headlines

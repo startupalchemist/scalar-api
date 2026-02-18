@@ -16,6 +16,9 @@ export const leads = pgTable("leads", {
   pickupRequested: boolean("pickup_requested").default(false),
   insuranceApproved: boolean("insurance_approved").default(false),
   insuranceApprovalTimestamp: timestamp("insurance_approval_timestamp"),
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -257,6 +260,26 @@ export const webhookLogs = pgTable("webhook_logs", {
 });
 
 export type WebhookLog = typeof webhookLogs.$inferSelect;
+
+export const ratings = pgTable("ratings", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").references(() => leads.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  channel: text("channel").notNull().default("email"),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Rating = typeof ratings.$inferSelect;
+
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Setting = typeof settings.$inferSelect;
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),

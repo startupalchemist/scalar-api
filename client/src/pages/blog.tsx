@@ -91,7 +91,7 @@ export default function Blog() {
         ) : (
           <div className="text-center py-20" data-testid="blog-empty-state">
             <p className="text-[#B3B3B8]/50 text-sm mb-6">Articles coming soon. Check back for expert insights on hail damage repair and insurance coordination.</p>
-            <Link href="/contact">
+            <Link href="/contact?utm_source=website&utm_medium=blog_cta&utm_campaign=blog">
               <Button
                 className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
                 data-testid="button-blog-cta"

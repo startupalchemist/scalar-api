@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -44,6 +45,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  Star,
+  TrendingUp,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog } from "@shared/schema";
@@ -216,6 +219,40 @@ function DashboardTab() {
     },
   });
 
+  const { data: sentimentSetting } = useQuery<{ key: string; value: string | null }>({
+    queryKey: ["/api/settings", "sentiment_auto_survey"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings/sentiment_auto_survey", { credentials: "include" });
+      if (!res.ok) return { key: "sentiment_auto_survey", value: null };
+      return res.json();
+    },
+  });
+
+  const { data: ratingSummary } = useQuery<{
+    total: number;
+    average: number;
+    distribution: { score: number; count: number }[];
+  }>({
+    queryKey: ["/api/ratings/summary"],
+  });
+
+  const { data: funnelData } = useQuery<{
+    totalLeads: number;
+    bySource: { source: string; total: number; statuses: Record<string, number> }[];
+    byCampaign: { campaign: string; total: number; statuses: Record<string, number> }[];
+  }>({
+    queryKey: ["/api/analytics/funnel"],
+  });
+
+  const toggleSentiment = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      await apiRequest("PUT", "/api/settings/sentiment_auto_survey", { value: enabled ? "true" : "false" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings", "sentiment_auto_survey"] });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -233,6 +270,10 @@ function DashboardTab() {
 
   const totalClicks = backlinkAnalytics.reduce((sum, a) => sum + a.clicks, 0);
   const totalBacklinks = backlinkAnalytics.reduce((sum, a) => sum + a.backlinkCount, 0);
+
+  const autoSurveyEnabled = sentimentSetting?.value === "true";
+  const maxDistCount = ratingSummary?.distribution ? Math.max(...ratingSummary.distribution.map(d => d.count), 1) : 1;
+  const sortedSources = funnelData?.bySource ? [...funnelData.bySource].sort((a, b) => b.total - a.total) : [];
 
   return (
     <div className="space-y-8">
@@ -252,6 +293,74 @@ function DashboardTab() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-sentiment">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-[#B3B3B8]/50" />
+              <span className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Customer Sentiment</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#B3B3B8]/50 uppercase tracking-wider">Auto-survey</span>
+              <Switch
+                checked={autoSurveyEnabled}
+                onCheckedChange={(checked) => toggleSentiment.mutate(checked)}
+                data-testid="switch-auto-survey"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-baseline gap-3 mb-5">
+            <span className="text-3xl font-bold text-[#F5F5F7]" data-testid="value-average-rating">
+              {ratingSummary?.average ?? "—"}
+            </span>
+            <span className="text-xs text-[#B3B3B8]/50">avg rating</span>
+            <span className="text-sm text-[#B3B3B8] ml-auto" data-testid="value-total-responses">
+              {ratingSummary?.total ?? 0} responses
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {(ratingSummary?.distribution ?? []).slice().reverse().map((d) => (
+              <div key={d.score} className="flex items-center gap-2" data-testid={`rating-bar-${d.score}`}>
+                <span className="text-xs text-[#B3B3B8] w-8 text-right">{d.score} star</span>
+                <div className="flex-1 h-2 bg-[#0B0B0D] rounded-sm overflow-hidden">
+                  <div
+                    className="h-full bg-[#FF192C] rounded-sm transition-all"
+                    style={{ width: `${(d.count / maxDistCount) * 100}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-[#B3B3B8]/50 w-6 text-right">{d.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-utm-funnel">
+          <div className="flex items-center gap-2 mb-5">
+            <TrendingUp className="w-5 h-5 text-[#B3B3B8]/50" />
+            <span className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Lead Attribution</span>
+          </div>
+
+          {sortedSources.length > 0 ? (
+            <div className="space-y-2">
+              {sortedSources.slice(0, 8).map((s) => (
+                <div
+                  key={s.source}
+                  className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-md bg-[#0B0B0D] border border-white/5"
+                  data-testid={`funnel-source-${s.source}`}
+                >
+                  <span className="text-sm text-[#F5F5F7] font-medium">{s.source}</span>
+                  <span className="text-sm font-bold text-[#F5F5F7]">{s.total}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#B3B3B8]/50" data-testid="text-no-funnel-data">No attribution data yet.</p>
+          )}
+        </div>
       </div>
 
       {(totalBacklinks > 0 || backlinkAnalytics.length > 0) && (
@@ -336,7 +445,28 @@ function LeadsTab({ toast }: { toast: any }) {
           <tbody>
             {leads.map((lead) => (
               <tr key={lead.id} className="border-b border-white/5" data-testid={`row-lead-${lead.id}`}>
-                <td className="py-3 px-3 text-[#F5F5F7] font-medium">{lead.name}</td>
+                <td className="py-3 px-3">
+                  <div className="text-[#F5F5F7] font-medium">{lead.name}</div>
+                  {(lead.utmSource || lead.utmMedium || lead.utmCampaign) && (
+                    <div className="flex flex-wrap items-center gap-1 mt-1" data-testid={`utm-badges-${lead.id}`}>
+                      {lead.utmSource && (
+                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-source-${lead.id}`}>
+                          Source: {lead.utmSource}
+                        </span>
+                      )}
+                      {lead.utmMedium && (
+                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-medium-${lead.id}`}>
+                          Medium: {lead.utmMedium}
+                        </span>
+                      )}
+                      {lead.utmCampaign && (
+                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-campaign-${lead.id}`}>
+                          Campaign: {lead.utmCampaign}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </td>
                 <td className="py-3 px-3 text-[#B3B3B8]">{lead.email}</td>
                 <td className="py-3 px-3 text-[#B3B3B8]">{lead.phone}</td>
                 <td className="py-3 px-3 text-[#B3B3B8]">{lead.vehicle}</td>

@@ -107,7 +107,7 @@ export default function About() {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/contact">
+          <Link href="/contact?utm_source=website&utm_medium=about_cta&utm_campaign=about">
             <Button
               className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-10"
               data-testid="button-about-cta"

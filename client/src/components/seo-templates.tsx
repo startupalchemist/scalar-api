@@ -1,7 +1,13 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+
+function useContactUrl() {
+  const [location] = useLocation();
+  const slug = location.replace(/^\//, "") || "homepage";
+  return `/contact?utm_source=website&utm_medium=seo_page&utm_campaign=${encodeURIComponent(slug)}`;
+}
 
 interface FAQItem {
   q: string;
@@ -51,12 +57,13 @@ function FAQAccordionItem({ q, a, index }: { q: string; a: string; index: number
 }
 
 function MidCTA() {
+  const contactUrl = useContactUrl();
   return (
     <div className="my-12 p-8 rounded-md bg-[#141416] border border-white/5 text-center" data-testid="cta-mid">
       <p className="text-[#F5F5F7] font-semibold text-lg mb-2">Ready to get started</p>
       <p className="text-[#B3B3B8]/60 text-sm mb-6">Schedule your inspection today. No obligation.</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <Link href="/contact">
+        <Link href={contactUrl}>
           <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8" data-testid="button-cta-mid-repair">
             Start My Repair
           </Button>
@@ -72,11 +79,12 @@ function MidCTA() {
 }
 
 function BottomCTA() {
+  const contactUrl = useContactUrl();
   return (
     <div className="mt-16 text-center" data-testid="cta-bottom">
       <p className="text-[#B3B3B8]/50 text-xs uppercase tracking-[0.2em] mb-3">Schedule your inspection today</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <Link href="/contact">
+        <Link href={contactUrl}>
           <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-10" data-testid="button-cta-bottom-repair">
             Start My Repair
           </Button>

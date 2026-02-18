@@ -28,6 +28,15 @@ const contactSchema = insertLeadSchema.extend({
 
 type ContactForm = z.infer<typeof contactSchema>;
 
+function getUtmParams(): { utmSource?: string; utmMedium?: string; utmCampaign?: string } {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utmSource: params.get("utm_source") || undefined,
+    utmMedium: params.get("utm_medium") || undefined,
+    utmCampaign: params.get("utm_campaign") || undefined,
+  };
+}
+
 export default function Contact() {
   const { toast } = useToast();
 
@@ -45,7 +54,8 @@ export default function Contact() {
 
   const mutation = useMutation({
     mutationFn: async (data: ContactForm) => {
-      const res = await apiRequest("POST", "/api/leads", data);
+      const utm = getUtmParams();
+      const res = await apiRequest("POST", "/api/leads", { ...data, ...utm });
       return res.json();
     },
     onSuccess: () => {

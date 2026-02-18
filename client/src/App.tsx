@@ -57,6 +57,7 @@ const DealershipHailServices = lazy(() => import("@/pages/dealership-hail-servic
 const CommercialFleetPdr = lazy(() => import("@/pages/commercial-fleet-pdr"));
 const PreSaleTouchUpServices = lazy(() => import("@/pages/pre-sale-touch-up-services"));
 const DallasHailStorm2026 = lazy(() => import("@/pages/dallas-hail-storm-2026"));
+const Rate = lazy(() => import("@/pages/rate"));
 
 function PageLoader() {
   return (
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogPost} />
+        <Route path="/rate/:token" component={Rate} />
 
         <Route path="/hail-damage-repair-dallas" component={HailDamageRepairDallas} />
         <Route path="/paintless-dent-repair-dallas" component={PaintlessDentRepairDallas} />

@@ -63,6 +63,50 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
+async function sendSentimentSurvey(lead: { id: number; name: string; email: string }) {
+  try {
+    const enabled = await storage.getSetting("sentiment_auto_survey");
+    if (enabled === "false") return;
+
+    const alreadySent = await storage.getLeadSentimentSent(lead.id);
+    if (alreadySent) return;
+
+    const token = crypto.randomUUID();
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : process.env.REPLIT_DEPLOYMENT_URL
+      ? `https://${process.env.REPLIT_DEPLOYMENT_URL}`
+      : "http://localhost:5000";
+    const rateUrl = `${baseUrl}/rate/${token}?leadId=${lead.id}`;
+
+    const { client, fromEmail } = await getResendClient();
+    await client.emails.send({
+      from: fromEmail,
+      to: lead.email,
+      subject: "How was your experience with Dent Society?",
+      html: `
+        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0D; color: #F5F5F7; padding: 40px 24px; border-radius: 8px;">
+          <p style="color: #B3B3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">Dent Society</p>
+          <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 16px 0;">How did we do, ${lead.name.split(" ")[0]}?</h2>
+          <p style="color: #B3B3B8; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">Your vehicle has been delivered. We'd appreciate a quick rating of your experience.</p>
+          <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${rateUrl}&score=5" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128515;</a>
+            <a href="${rateUrl}&score=4" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128578;</a>
+            <a href="${rateUrl}&score=3" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128528;</a>
+            <a href="${rateUrl}&score=2" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128533;</a>
+            <a href="${rateUrl}&score=1" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128542;</a>
+          </div>
+          <p style="color: #B3B3B8; font-size: 12px; text-align: center;">Click a face to rate. Takes 2 seconds.</p>
+        </div>
+      `,
+    });
+
+    await storage.markLeadSentimentSent(lead.id);
+  } catch (e: any) {
+    console.error("Sentiment survey email error:", e?.message);
+  }
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -262,6 +306,9 @@ export async function registerRoutes(
       }
       res.json(lead);
       fireWebhooks("lead.updated", { id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, vehicle: lead.vehicle, status: lead.status, changes: Object.keys(updates) });
+      if (updates.status === "Delivered") {
+        sendSentimentSurvey({ id: lead.id, name: lead.name, email: lead.email });
+      }
     } catch {
       res.status(500).json({ message: "Failed to update lead" });
     }
@@ -1287,6 +1334,107 @@ Respond in JSON format:
       });
     } catch {
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // ─── Rating / Sentiment Routes ─────────────────────────────
+
+  app.get("/api/rate/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const score = parseInt(req.query.score as string);
+      const leadId = req.query.leadId ? parseInt(req.query.leadId as string) : null;
+
+      if (!score || score < 1 || score > 5) {
+        return res.status(400).json({ message: "Invalid score" });
+      }
+
+      const existing = await storage.getRatingByToken(token);
+      if (existing) {
+        return res.redirect(`/rate/${token}?done=1`);
+      }
+
+      await storage.createRating({ leadId, score, token });
+      res.redirect(`/rate/${token}?done=1&score=${score}`);
+    } catch {
+      res.status(500).json({ message: "Failed to submit rating" });
+    }
+  });
+
+  app.get("/api/ratings", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const allRatings = await storage.getAllRatings();
+      res.json(allRatings);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch ratings" });
+    }
+  });
+
+  app.get("/api/ratings/summary", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const allRatings = await storage.getAllRatings();
+      const total = allRatings.length;
+      const avg = total > 0 ? allRatings.reduce((s, r) => s + r.score, 0) / total : 0;
+      const distribution = [1, 2, 3, 4, 5].map(s => ({
+        score: s,
+        count: allRatings.filter(r => r.score === s).length,
+      }));
+      res.json({ total, average: Math.round(avg * 10) / 10, distribution });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch rating summary" });
+    }
+  });
+
+  // ─── Settings Routes ─────────────────────────────────────────
+
+  app.get("/api/settings/:key", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const val = await storage.getSetting(req.params.key);
+      res.json({ key: req.params.key, value: val ?? null });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch setting" });
+    }
+  });
+
+  app.put("/api/settings/:key", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { value } = req.body;
+      if (typeof value !== "string") {
+        return res.status(400).json({ message: "Value must be a string" });
+      }
+      await storage.setSetting(req.params.key, value);
+      res.json({ key: req.params.key, value });
+    } catch {
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  // ─── Funnel Analytics Routes ──────────────────────────────────
+
+  app.get("/api/analytics/funnel", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const allLeads = await storage.getLeads();
+      const bySource: Record<string, { total: number; statuses: Record<string, number> }> = {};
+      for (const lead of allLeads) {
+        const source = lead.utmSource || "direct";
+        if (!bySource[source]) bySource[source] = { total: 0, statuses: {} };
+        bySource[source].total++;
+        bySource[source].statuses[lead.status] = (bySource[source].statuses[lead.status] || 0) + 1;
+      }
+      const byCampaign: Record<string, { total: number; statuses: Record<string, number> }> = {};
+      for (const lead of allLeads) {
+        const campaign = lead.utmCampaign || "none";
+        if (!byCampaign[campaign]) byCampaign[campaign] = { total: 0, statuses: {} };
+        byCampaign[campaign].total++;
+        byCampaign[campaign].statuses[lead.status] = (byCampaign[campaign].statuses[lead.status] || 0) + 1;
+      }
+      res.json({
+        totalLeads: allLeads.length,
+        bySource: Object.entries(bySource).map(([source, data]) => ({ source, ...data })),
+        byCampaign: Object.entries(byCampaign).map(([campaign, data]) => ({ campaign, ...data })),
+      });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch funnel analytics" });
     }
   });
 
