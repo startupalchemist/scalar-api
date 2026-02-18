@@ -1,7 +1,7 @@
 # Dent Society - Precision Restoration Lab
 
 ## Overview
-Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons.
+Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons. Phase 4 adds webhook integration system for CRM connectivity with Zapier, Make, and custom systems.
 
 ## Tech Stack
 - Frontend: React + Vite + Tailwind CSS + wouter routing
@@ -48,7 +48,7 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - /blog - Public blog index (shows published posts)
 - /blog/:slug - Individual blog post page (with share buttons, read/share counters)
 - /login - Admin login
-- /admin - Admin dashboard (5 tabs: Dashboard, Leads, Blog, Newsletter, Users)
+- /admin - Admin dashboard (6 tabs: Dashboard, Leads, Blog, Newsletter, Users, Integrations)
 - 39 SEO pages (pillar, location, insurance, comparison, fleet, storm)
 
 ## Database Schema
@@ -62,6 +62,8 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - `ai_jobs` table: id, type, input, output, status, createdAt
 - `backlinks` table: id, postId, platform, url, utmSource, utmMedium, utmCampaign, shortCode, clicks, createdAt
 - `backlink_clicks` table: id, backlinkId, referrer, userAgent, clickedAt
+- `webhooks` table: id, name, url, events[], secret, active, createdAt
+- `webhook_logs` table: id, webhookId, event, payload, statusCode, response, success, duration, createdAt
 
 ## API Endpoints
 ### Public
@@ -105,6 +107,13 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - POST /api/backlinks/generate - Generate backlink with UTM (root/admin)
 - GET /api/backlinks - List backlinks (root/admin)
 - GET /api/backlinks/analytics - Backlink analytics (root/admin)
+- GET /api/webhooks - List webhooks (root/admin)
+- POST /api/webhooks - Create webhook (root/admin)
+- PATCH /api/webhooks/:id - Update webhook (root/admin)
+- DELETE /api/webhooks/:id - Delete webhook (root/admin)
+- POST /api/webhooks/:id/test - Test webhook delivery (root/admin)
+- GET /api/webhooks/logs - Delivery logs (root/admin)
+- GET /api/webhooks/events - Available event types (root/admin)
 
 ## Brand Guidelines
 - Font: Manrope, uppercase dominant headlines
