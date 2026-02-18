@@ -224,6 +224,40 @@ export const backlinkClicks = pgTable("backlink_clicks", {
 
 export type BacklinkClick = typeof backlinkClicks.$inferSelect;
 
+export const webhookEvents = ["lead.created", "lead.updated", "post.published", "subscriber.created"] as const;
+
+export const webhooks = pgTable("webhooks", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  events: text("events").array().notNull().default(sql`'{}'::text[]`),
+  secret: text("secret").notNull(),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertWebhookSchema = createInsertSchema(webhooks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWebhook = z.infer<typeof insertWebhookSchema>;
+export type Webhook = typeof webhooks.$inferSelect;
+
+export const webhookLogs = pgTable("webhook_logs", {
+  id: serial("id").primaryKey(),
+  webhookId: integer("webhook_id").notNull().references(() => webhooks.id, { onDelete: "cascade" }),
+  event: text("event").notNull(),
+  payload: text("payload").notNull(),
+  statusCode: integer("status_code"),
+  response: text("response"),
+  success: boolean("success").notNull().default(false),
+  duration: integer("duration"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type WebhookLog = typeof webhookLogs.$inferSelect;
+
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),

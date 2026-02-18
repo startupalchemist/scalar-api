@@ -293,7 +293,6 @@ function ProcessSection() {
       title: "Claim Coordination",
       desc: "We contact your insurance carrier. We manage the adjuster. We document everything.",
       detail: "You won't need to negotiate.",
-      supporting: "You'll never speak to your adjuster twice.",
     },
     {
       icon: Car,
@@ -319,7 +318,6 @@ function ProcessSection() {
       title: "Delivery & Key Exchange",
       desc: "Pick up your vehicle or have it delivered back to you. Loaner retrieved at exchange.",
       detail: "Vehicle returned fully detailed. Warranty issued.",
-      supporting: "You'll know it happened. No one else will.",
     },
   ];
 
@@ -372,11 +370,6 @@ function ProcessSection() {
                     <span className="inline-block mt-3 text-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold">
                       {step.highlight}
                     </span>
-                  )}
-                  {step.supporting && (
-                    <p className="mt-3 text-[#B3B3B8]/40 text-xs italic tracking-wide">
-                      "{step.supporting}"
-                    </p>
                   )}
                 </div>
               </div>

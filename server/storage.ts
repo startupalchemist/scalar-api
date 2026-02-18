@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -10,6 +10,8 @@ import {
   type Backlink,
   type BacklinkClick,
   type Topic,
+  type Webhook, type InsertWebhook,
+  type WebhookLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -63,6 +65,15 @@ export interface IStorage {
 
   incrementPostReadCount(id: number): Promise<void>;
   incrementPostShareCount(id: number): Promise<void>;
+
+  createWebhook(data: InsertWebhook): Promise<Webhook>;
+  getWebhooks(): Promise<Webhook[]>;
+  getWebhookById(id: number): Promise<Webhook | undefined>;
+  updateWebhook(id: number, data: Partial<Webhook>): Promise<Webhook | undefined>;
+  deleteWebhook(id: number): Promise<void>;
+  getActiveWebhooksForEvent(event: string): Promise<Webhook[]>;
+  createWebhookLog(data: { webhookId: number; event: string; payload: string; statusCode?: number; response?: string; success: boolean; duration?: number }): Promise<WebhookLog>;
+  getWebhookLogs(webhookId?: number): Promise<WebhookLog[]>;
 
   createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink>;
   getBacklinksByPostId(postId: number): Promise<Backlink[]>;
@@ -243,6 +254,39 @@ export class DatabaseStorage implements IStorage {
   }
   async incrementPostShareCount(id: number): Promise<void> {
     await db.update(posts).set({ shareCount: sql`${posts.shareCount} + 1` }).where(eq(posts.id, id));
+  }
+
+  async createWebhook(data: InsertWebhook): Promise<Webhook> {
+    const [result] = await db.insert(webhooks).values(data).returning();
+    return result;
+  }
+  async getWebhooks(): Promise<Webhook[]> {
+    return db.select().from(webhooks).orderBy(desc(webhooks.createdAt));
+  }
+  async getWebhookById(id: number): Promise<Webhook | undefined> {
+    const [result] = await db.select().from(webhooks).where(eq(webhooks.id, id));
+    return result;
+  }
+  async updateWebhook(id: number, data: Partial<Webhook>): Promise<Webhook | undefined> {
+    const [result] = await db.update(webhooks).set(data).where(eq(webhooks.id, id)).returning();
+    return result;
+  }
+  async deleteWebhook(id: number): Promise<void> {
+    await db.delete(webhooks).where(eq(webhooks.id, id));
+  }
+  async getActiveWebhooksForEvent(event: string): Promise<Webhook[]> {
+    const allActive = await db.select().from(webhooks).where(eq(webhooks.active, true));
+    return allActive.filter(w => w.events.includes(event));
+  }
+  async createWebhookLog(data: { webhookId: number; event: string; payload: string; statusCode?: number; response?: string; success: boolean; duration?: number }): Promise<WebhookLog> {
+    const [result] = await db.insert(webhookLogs).values(data).returning();
+    return result;
+  }
+  async getWebhookLogs(webhookId?: number): Promise<WebhookLog[]> {
+    if (webhookId) {
+      return db.select().from(webhookLogs).where(eq(webhookLogs.webhookId, webhookId)).orderBy(desc(webhookLogs.createdAt)).limit(100);
+    }
+    return db.select().from(webhookLogs).orderBy(desc(webhookLogs.createdAt)).limit(100);
   }
 
   async createBacklink(data: { postId: number; platform: string; url: string; utmSource: string; utmMedium: string; utmCampaign: string; shortCode: string }): Promise<Backlink> {
