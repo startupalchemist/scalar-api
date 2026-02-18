@@ -37,10 +37,17 @@ import {
   X,
   Archive,
   Share2,
+  Settings,
+  ToggleLeft,
+  ToggleRight,
+  Play,
+  Clock,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import type { Lead, Post, Subscriber, Newsletter, Topic } from "@shared/schema";
-import { leadStatuses } from "@shared/schema";
+import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog } from "@shared/schema";
+import { leadStatuses, webhookEvents } from "@shared/schema";
 
 const statusColors: Record<string, string> = {
   "New Lead": "bg-blue-500/20 text-blue-400",
@@ -66,7 +73,7 @@ const statusColors: Record<string, string> = {
   "Closed": "bg-gray-500/20 text-gray-400",
 };
 
-type TabKey = "dashboard" | "leads" | "blog" | "newsletter" | "users";
+type TabKey = "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations";
 
 export default function Admin() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -102,6 +109,7 @@ export default function Admin() {
     { key: "blog", label: "Blog", icon: FileText },
     { key: "newsletter", label: "Newsletter", icon: Mail },
     ...(user.role === "root" || user.role === "admin" ? [{ key: "users" as TabKey, label: "Users", icon: Users }] : []),
+    ...(user.role === "root" || user.role === "admin" ? [{ key: "integrations" as TabKey, label: "Integrations", icon: Zap }] : []),
   ];
 
   return (
@@ -178,6 +186,9 @@ export default function Admin() {
             currentUserId={user.id}
             currentUserRole={user.role}
           />
+        )}
+        {activeTab === "integrations" && (user.role === "root" || user.role === "admin") && (
+          <IntegrationsTab toast={toast} />
         )}
       </div>
     </div>
@@ -1629,6 +1640,325 @@ function UsersTab({
         ))}
         {users.length === 0 && (
           <p className="text-center py-8 text-[#B3B3B8]/50 text-sm" data-testid="text-no-users">No users found.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function IntegrationsTab({ toast }: { toast: any }) {
+  const [showAdd, setShowAdd] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: "", url: "", events: [] as string[], active: true });
+  const [viewLogs, setViewLogs] = useState<number | null>(null);
+  const [showSecret, setShowSecret] = useState<number | null>(null);
+
+  const { data: webhooksData = [], isLoading } = useQuery<Webhook[]>({ queryKey: ["/api/webhooks"] });
+  const { data: logsData = [] } = useQuery<WebhookLog[]>({
+    queryKey: ["/api/webhooks/logs", viewLogs],
+    queryFn: async () => {
+      const url = viewLogs ? `/api/webhooks/logs?webhookId=${viewLogs}` : "/api/webhooks/logs";
+      const res = await fetch(url, { credentials: "include" });
+      return res.json();
+    },
+    enabled: viewLogs !== null,
+  });
+
+  const createWebhook = useMutation({
+    mutationFn: async (data: typeof form) => {
+      const res = await apiRequest("POST", "/api/webhooks", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/webhooks"] });
+      toast({ title: "Webhook created" });
+      setShowAdd(false);
+      setForm({ name: "", url: "", events: [], active: true });
+    },
+    onError: () => toast({ title: "Failed to create webhook", variant: "destructive" }),
+  });
+
+  const updateWebhook = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Webhook> }) => {
+      const res = await apiRequest("PATCH", `/api/webhooks/${id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/webhooks"] });
+      toast({ title: "Webhook updated" });
+      setEditingId(null);
+      setForm({ name: "", url: "", events: [], active: true });
+    },
+    onError: () => toast({ title: "Failed to update webhook", variant: "destructive" }),
+  });
+
+  const deleteWebhook = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/webhooks/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/webhooks"] });
+      toast({ title: "Webhook deleted" });
+    },
+    onError: () => toast({ title: "Failed to delete webhook", variant: "destructive" }),
+  });
+
+  const testWebhook = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("POST", `/api/webhooks/${id}/test`);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/webhooks/logs"] });
+      if (data.success) {
+        toast({ title: "Test delivered", description: `Status ${data.statusCode} in ${data.duration}ms` });
+      } else {
+        toast({ title: "Test failed", description: data.error || `Status ${data.statusCode}`, variant: "destructive" });
+      }
+    },
+    onError: () => toast({ title: "Test failed", variant: "destructive" }),
+  });
+
+  const toggleEvent = (event: string) => {
+    setForm(f => ({
+      ...f,
+      events: f.events.includes(event) ? f.events.filter(e => e !== event) : [...f.events, event],
+    }));
+  };
+
+  const startEdit = (hook: Webhook) => {
+    setEditingId(hook.id);
+    setForm({ name: hook.name, url: hook.url, events: hook.events || [], active: hook.active });
+    setShowAdd(true);
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.url || form.events.length === 0) {
+      toast({ title: "Name, URL, and at least one event required", variant: "destructive" });
+      return;
+    }
+    if (editingId) {
+      updateWebhook.mutate({ id: editingId, data: form });
+    } else {
+      createWebhook.mutate(form);
+    }
+  };
+
+  const cancelForm = () => {
+    setShowAdd(false);
+    setEditingId(null);
+    setForm({ name: "", url: "", events: [], active: true });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-5 h-5 text-[#FF192C] animate-spin" data-testid="loader-webhooks" />
+      </div>
+    );
+  }
+
+  if (viewLogs !== null) {
+    const hookName = webhooksData.find(w => w.id === viewLogs)?.name || "Webhook";
+    return (
+      <div data-testid="panel-webhook-logs">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-1">Delivery Log</p>
+            <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight">{hookName}</h2>
+          </div>
+          <Button variant="ghost" onClick={() => setViewLogs(null)} data-testid="button-back-webhooks">
+            <X className="w-4 h-4 mr-2" /> Back
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {logsData.map((log) => (
+            <div
+              key={log.id}
+              className="p-4 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-3"
+              data-testid={`card-log-${log.id}`}
+            >
+              <div className="flex items-center gap-3">
+                {log.success ? (
+                  <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                )}
+                <Badge className={`border-0 no-default-hover-elevate no-default-active-elevate text-xs ${log.success ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                  {log.statusCode || "ERR"}
+                </Badge>
+                <span className="text-[#F5F5F7] text-sm font-medium">{log.event}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                {log.duration && (
+                  <span className="text-[#B3B3B8]/50 text-xs">{log.duration}ms</span>
+                )}
+                <span className="text-[#B3B3B8]/50 text-xs">
+                  {new Date(log.createdAt).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          ))}
+          {logsData.length === 0 && (
+            <p className="text-center py-8 text-[#B3B3B8]/50 text-sm" data-testid="text-no-logs">No delivery logs yet.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-testid="panel-integrations">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-1">Integrations</p>
+          <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight">Webhooks</h2>
+          <p className="text-[#B3B3B8]/60 text-sm mt-1">Connect your CRM to Zapier, Make, or custom systems</p>
+        </div>
+        {!showAdd && (
+          <Button onClick={() => { setShowAdd(true); setEditingId(null); setForm({ name: "", url: "", events: [], active: true }); }} data-testid="button-add-webhook">
+            <Plus className="w-4 h-4 mr-2" /> Add Webhook
+          </Button>
+        )}
+      </div>
+
+      {showAdd && (
+        <div className="mb-8 p-6 rounded-md bg-[#141416] border border-white/5" data-testid="form-webhook">
+          <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F5F5F7] mb-4">
+            {editingId ? "Edit Webhook" : "New Webhook"}
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-[#B3B3B8] uppercase tracking-wider mb-1 block">Name</label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Zapier Lead Notification"
+                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
+                data-testid="input-webhook-name"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#B3B3B8] uppercase tracking-wider mb-1 block">Endpoint URL</label>
+              <Input
+                value={form.url}
+                onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))}
+                placeholder="https://hooks.zapier.com/..."
+                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7]"
+                data-testid="input-webhook-url"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#B3B3B8] uppercase tracking-wider mb-2 block">Events</label>
+              <div className="flex flex-wrap gap-2">
+                {webhookEvents.map((event) => (
+                  <Badge
+                    key={event}
+                    className={`cursor-pointer border-0 text-xs ${
+                      form.events.includes(event)
+                        ? "bg-[#FF192C]/20 text-[#FF192C]"
+                        : "bg-white/5 text-[#B3B3B8]/50"
+                    }`}
+                    onClick={() => toggleEvent(event)}
+                    data-testid={`badge-event-${event}`}
+                  >
+                    {event}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <Button onClick={handleSubmit} disabled={createWebhook.isPending || updateWebhook.isPending} data-testid="button-save-webhook">
+                {(createWebhook.isPending || updateWebhook.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {editingId ? "Update" : "Create"}
+              </Button>
+              <Button variant="ghost" onClick={cancelForm} data-testid="button-cancel-webhook">Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {webhooksData.map((hook) => (
+          <div
+            key={hook.id}
+            className="p-5 rounded-md bg-[#141416] border border-white/5"
+            data-testid={`card-webhook-${hook.id}`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <span className="text-[#F5F5F7] font-semibold text-sm">{hook.name}</span>
+                  <Badge className={`border-0 no-default-hover-elevate no-default-active-elevate text-xs ${hook.active ? "bg-green-500/20 text-green-400" : "bg-white/5 text-[#B3B3B8]/50"}`}>
+                    {hook.active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+                <p className="text-[#B3B3B8]/50 text-xs mb-3 break-all">{hook.url}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(hook.events || []).map((ev) => (
+                    <Badge key={ev} className="bg-white/5 text-[#B3B3B8] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
+                      {ev}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#B3B3B8]/40 text-xs uppercase tracking-wider">Secret</span>
+                    {showSecret === hook.id ? (
+                      <div className="flex items-center gap-2">
+                        <code className="text-[#B3B3B8] text-xs bg-[#0B0B0D] px-2 py-1 rounded font-mono break-all">{hook.secret}</code>
+                        <Button variant="ghost" size="icon" onClick={() => setShowSecret(null)} data-testid={`button-hide-secret-${hook.id}`}>
+                          <EyeOff className="w-3 h-3 text-[#B3B3B8]" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => { navigator.clipboard.writeText(hook.secret); toast({ title: "Secret copied" }); }} data-testid={`button-copy-secret-${hook.id}`}>
+                          <Copy className="w-3 h-3 text-[#B3B3B8]" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button variant="ghost" size="icon" onClick={() => setShowSecret(hook.id)} data-testid={`button-show-secret-${hook.id}`}>
+                        <Eye className="w-3 h-3 text-[#B3B3B8]" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => updateWebhook.mutate({ id: hook.id, data: { active: !hook.active } })}
+                  data-testid={`button-toggle-${hook.id}`}
+                >
+                  {hook.active ? <ToggleRight className="w-4 h-4 text-green-400" /> : <ToggleLeft className="w-4 h-4 text-[#B3B3B8]/50" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => testWebhook.mutate(hook.id)}
+                  disabled={testWebhook.isPending}
+                  data-testid={`button-test-${hook.id}`}
+                >
+                  {testWebhook.isPending ? <Loader2 className="w-4 h-4 animate-spin text-[#B3B3B8]" /> : <Play className="w-4 h-4 text-[#B3B3B8]" />}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setViewLogs(hook.id)} data-testid={`button-logs-${hook.id}`}>
+                  <Clock className="w-4 h-4 text-[#B3B3B8]" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => startEdit(hook)} data-testid={`button-edit-${hook.id}`}>
+                  <Settings className="w-4 h-4 text-[#B3B3B8]" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => deleteWebhook.mutate(hook.id)} data-testid={`button-delete-webhook-${hook.id}`}>
+                  <Trash2 className="w-4 h-4 text-red-400" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {webhooksData.length === 0 && !showAdd && (
+          <div className="text-center py-12" data-testid="text-no-webhooks">
+            <Zap className="w-8 h-8 text-[#B3B3B8]/20 mx-auto mb-3" />
+            <p className="text-[#B3B3B8]/50 text-sm mb-1">No webhooks configured</p>
+            <p className="text-[#B3B3B8]/30 text-xs">Add a webhook to send real-time data to Zapier, Make, or your own systems</p>
+          </div>
         )}
       </div>
     </div>
