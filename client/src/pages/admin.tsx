@@ -47,8 +47,10 @@ import {
   XCircle,
   Star,
   TrendingUp,
+  Gauge,
 } from "lucide-react";
 import { useLocation } from "wouter";
+import TheDyno from "@/components/the-dyno";
 import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog } from "@shared/schema";
 import { leadStatuses, webhookEvents } from "@shared/schema";
 
@@ -76,13 +78,13 @@ const statusColors: Record<string, string> = {
   "Closed": "bg-gray-500/20 text-gray-400",
 };
 
-type TabKey = "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations";
+type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations";
 
 export default function Admin() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
+  const [activeTab, setActiveTab] = useState<TabKey>("dyno");
 
   const [aiTopic, setAiTopic] = useState("");
   const [showAiForm, setShowAiForm] = useState(false);
@@ -107,6 +109,7 @@ export default function Admin() {
   }
 
   const tabs: { key: TabKey; label: string; icon: typeof BarChart3 }[] = [
+    { key: "dyno", label: "The Dyno", icon: Gauge },
     { key: "dashboard", label: "Dashboard", icon: BarChart3 },
     { key: "leads", label: "Leads", icon: Users },
     { key: "blog", label: "Blog", icon: FileText },
@@ -158,6 +161,7 @@ export default function Admin() {
           ))}
         </div>
 
+        {activeTab === "dyno" && <TheDyno />}
         {activeTab === "dashboard" && <DashboardTab />}
         {activeTab === "leads" && <LeadsTab toast={toast} />}
         {activeTab === "blog" && (

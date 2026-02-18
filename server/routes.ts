@@ -1301,22 +1301,34 @@ Respond in JSON format:
 
   app.get("/api/stats", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
     try {
-      const [allLeads, allPosts, allSubscribers, allNewsletters] = await Promise.all([
+      const [allLeads, allPosts, allSubscribers, allNewsletters, allRatings, allBacklinks] = await Promise.all([
         storage.getLeads(),
         storage.getPosts(),
         storage.getSubscribers(),
         storage.getNewsletters(),
+        storage.getAllRatings(),
+        storage.getAllBacklinks(),
       ]);
 
       const now = new Date();
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const recentLeads = allLeads.filter(l => l.createdAt > thirtyDaysAgo);
+      const delivered = allLeads.filter(l => l.status === "Delivered");
+      const closed = allLeads.filter(l => l.status === "Closed" || l.status === "Delivered");
+      const utmLeads = allLeads.filter(l => l.utmSource || l.utmCampaign);
+      const pipelineStatuses = ["New Lead", "Sale Closed", "Claim Initiated", "RA Signed", "Loaner Assigned", "Vehicle In Shop", "Scoped", "Estimate Sent", "First Look", "Supplement Submitted", "Awaiting Approval", "Approved", "R&I", "PDR", "QC 1", "Reinstall", "QC 2", "Detail", "Ready for Delivery"];
+      const pipelineLeads = allLeads.filter(l => pipelineStatuses.includes(l.status));
+      const avgRating = allRatings.length > 0 ? allRatings.reduce((s, r) => s + r.score, 0) / allRatings.length : 0;
+      const totalReads = allPosts.reduce((s, p) => s + (p.readCount || 0), 0);
+      const totalShares = allPosts.reduce((s, p) => s + (p.shareCount || 0), 0);
+      const totalClicks = allBacklinks.reduce((s, b) => s + (b.clicks || 0), 0);
 
       res.json({
         leads: {
           total: allLeads.length,
           new: allLeads.filter(l => l.status === "New Lead").length,
-          recent: allLeads.filter(l => l.createdAt > thirtyDaysAgo).length,
-          closed: allLeads.filter(l => l.status === "Closed" || l.status === "Delivered").length,
+          recent: recentLeads.length,
+          closed: closed.length,
         },
         posts: {
           total: allPosts.length,
@@ -1330,6 +1342,24 @@ Respond in JSON format:
         newsletters: {
           total: allNewsletters.length,
           sent: allNewsletters.filter(n => n.status === "sent").length,
+        },
+        dyno: {
+          rpm: recentLeads.length,
+          rpmMax: Math.max(allLeads.length, 10),
+          speed: allLeads.length > 0 ? Math.round((delivered.length / allLeads.length) * 100) : 0,
+          temp: Math.round(avgRating * 20),
+          tempRaw: Math.round(avgRating * 10) / 10,
+          fuel: pipelineLeads.length,
+          fuelMax: Math.max(allLeads.length, 10),
+          boost: allLeads.length > 0 ? Math.round((utmLeads.length / allLeads.length) * 100) : 0,
+          totalReads,
+          totalShares,
+          totalClicks,
+          totalBacklinks: allBacklinks.length,
+          publishedPosts: allPosts.filter(p => p.status === "published").length,
+          activeSubscribers: allSubscribers.filter(s => s.status === "active").length,
+          totalRatings: allRatings.length,
+          deliveredCount: delivered.length,
         },
       });
     } catch {
