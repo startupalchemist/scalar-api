@@ -72,7 +72,8 @@ function GaugeSVG({
     const isWarning = i / tickCount >= warningZone;
     const outer = polarToCartesian(cx, cy, r - 2, angle);
     const inner = polarToCartesian(cx, cy, r - (i % 2 === 0 ? 14 : 9), angle);
-    const labelPos = polarToCartesian(cx, cy, r - 22, angle);
+    const tickLabelOffset = Math.round(size * 0.12);
+    const labelPos = polarToCartesian(cx, cy, r - tickLabelOffset, angle);
     ticks.push(
       <g key={i}>
         <line
@@ -89,7 +90,7 @@ function GaugeSVG({
             x={labelPos.x}
             y={labelPos.y}
             fill={isWarning ? "#FF192C" : "#666"}
-            fontSize="8"
+            fontSize={Math.max(Math.round(size * 0.04), 6)}
             textAnchor="middle"
             dominantBaseline="middle"
             fontFamily="Manrope, sans-serif"
@@ -159,9 +160,9 @@ function GaugeSVG({
 
         <text
           x={cx}
-          y={cy + 35}
+          y={cy + size * 0.17}
           fill="#F5F5F7"
-          fontSize="22"
+          fontSize={Math.round(size * 0.11)}
           fontWeight="700"
           textAnchor="middle"
           fontFamily="Manrope, sans-serif"
@@ -170,12 +171,12 @@ function GaugeSVG({
         </text>
         <text
           x={cx}
-          y={cy + 50}
+          y={cy + size * 0.25}
           fill="#666"
-          fontSize="9"
+          fontSize={Math.max(Math.round(size * 0.04), 6)}
           textAnchor="middle"
           fontFamily="Manrope, sans-serif"
-          letterSpacing="0.15em"
+          letterSpacing="0.1em"
         >
           {unit}
         </text>
