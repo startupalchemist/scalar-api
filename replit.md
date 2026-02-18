@@ -1,7 +1,7 @@
 # Dent Society - Precision Restoration Lab
 
 ## Overview
-Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons. Phase 4 adds webhook integration system for CRM connectivity with Zapier, Make, and custom systems. Phase 5 adds UTM funnel tracking on all CTAs, customer sentiment survey system with auto-email on lead delivery, and "The Dyno" performance dashboard (in progress).
+Luxury dark-themed website for Dent Society, a precision dent repair / storm damage restoration company in Dallas, TX. Built with a Porsche-engineered aesthetic - controlled, confident, minimal. Phase 2 adds blog CMS, AI content generation, newsletter system, and admin dashboard with role-based access. Phase 3 restructures blog into multi-stage AI agent system (Research → Writer → Publisher) with read/share analytics and social share buttons. Phase 4 adds webhook integration system for CRM connectivity with Zapier, Make, and custom systems. Phase 5 adds UTM funnel tracking on all CTAs, customer sentiment survey system with auto-email on lead delivery, and "The Dyno" performance dashboard with Aventador-inspired SVG gauge cluster.
 
 ## Tech Stack
 - Frontend: React + Vite + Tailwind CSS + wouter routing
@@ -32,6 +32,15 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 5. **Read/Share Tracking**: POST /api/posts/:id/read (increment on page view), POST /api/posts/:id/share (increment on social share click)
 6. **Social Share Buttons**: Blog post pages have Twitter/X, Facebook, LinkedIn share buttons + copy link
 
+## The Dyno - Performance Instrument Cluster
+- SVG-based gauge cluster inspired by Lamborghini Aventador/Porsche/Ferrari dashboards
+- Component: `client/src/components/the-dyno.tsx`
+- Default tab on admin panel (first tab)
+- **Gauges**: Traffic (RPM = leads/30d), Conversion (speed = close rate %), Sentiment (temp = avg rating), Pipeline (fuel = active leads), CTA Rate (boost = UTM-tracked %)
+- **Vertical bars**: Reads, Shares, Clicks, Backlinks (desktop only)
+- **Info cells**: Total Leads, Delivered, Published, Subscribers, Newsletters, Ratings
+- Data sourced from enhanced `/api/stats` endpoint `dyno` object
+
 ## Admin Blog Sub-Tabs
 - **Topics**: Suggested topics from Research Agent with Preview/Generate/Archive actions
 - **Queue**: Queued articles waiting for publishing with Publish/Discard actions
@@ -48,7 +57,7 @@ Luxury dark-themed website for Dent Society, a precision dent repair / storm dam
 - /blog - Public blog index (shows published posts)
 - /blog/:slug - Individual blog post page (with share buttons, read/share counters)
 - /login - Admin login
-- /admin - Admin dashboard (6 tabs: Dashboard, Leads, Blog, Newsletter, Users, Integrations)
+- /admin - Admin dashboard (7 tabs: The Dyno, Dashboard, Leads, Blog, Newsletter, Users, Integrations)
 - /rate/:token - Customer sentiment rating page (from email survey)
 - 39 SEO pages (pillar, location, insurance, comparison, fleet, storm)
 
