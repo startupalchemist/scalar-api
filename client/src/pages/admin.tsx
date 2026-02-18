@@ -447,24 +447,10 @@ function LeadsTab({ toast }: { toast: any }) {
               <tr key={lead.id} className="border-b border-white/5" data-testid={`row-lead-${lead.id}`}>
                 <td className="py-3 px-3">
                   <div className="text-[#F5F5F7] font-medium">{lead.name}</div>
-                  {(lead.utmSource || lead.utmMedium || lead.utmCampaign) && (
-                    <div className="flex flex-wrap items-center gap-1 mt-1" data-testid={`utm-badges-${lead.id}`}>
-                      {lead.utmSource && (
-                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-source-${lead.id}`}>
-                          Source: {lead.utmSource}
-                        </span>
-                      )}
-                      {lead.utmMedium && (
-                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-medium-${lead.id}`}>
-                          Medium: {lead.utmMedium}
-                        </span>
-                      )}
-                      {lead.utmCampaign && (
-                        <span className="text-[10px] bg-white/5 text-[#B3B3B8] px-1.5 py-0.5 rounded-sm" data-testid={`utm-campaign-${lead.id}`}>
-                          Campaign: {lead.utmCampaign}
-                        </span>
-                      )}
-                    </div>
+                  {(lead.utmSource || lead.utmCampaign) && (
+                    <p className="text-[10px] text-[#B3B3B8]/50 mt-0.5 truncate" data-testid={`utm-badges-${lead.id}`}>
+                      {[lead.utmSource, lead.utmMedium, lead.utmCampaign].filter(Boolean).join(" / ")}
+                    </p>
                   )}
                 </td>
                 <td className="py-3 px-3 text-[#B3B3B8]">{lead.email}</td>
