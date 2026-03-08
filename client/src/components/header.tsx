@@ -80,14 +80,14 @@ function DesktopDropdown({ item }: { item: NavItem }) {
       onMouseLeave={handleLeave}
     >
       <button
-        className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-[#B3B3B8] hover:text-[#F5F5F7] transition-colors duration-300 cursor-pointer"
+        className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-[#555558] hover:text-[#111111] transition-colors duration-300 cursor-pointer"
         data-testid={`link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
       >
         {item.label}
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       <div
-        className={`absolute top-full left-0 mt-2 min-w-[220px] bg-[#141416] border border-white/10 rounded-md overflow-hidden transition-all duration-200 ${
+        className={`absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-black/8 rounded-md overflow-hidden shadow-lg transition-all duration-200 ${
           open ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-1"
         }`}
         style={{ zIndex: 100 }}
@@ -95,7 +95,7 @@ function DesktopDropdown({ item }: { item: NavItem }) {
         {item.children?.map((child) => (
           <Link key={child.href} href={child.href}>
             <span
-              className="block px-4 py-2.5 text-xs text-[#B3B3B8] hover:text-[#F5F5F7] hover:bg-white/5 transition-colors cursor-pointer"
+              className="block px-4 py-2.5 text-xs text-[#555558] hover:text-[#111111] hover:bg-black/4 transition-colors cursor-pointer"
               data-testid={`link-dropdown-${child.href.replace(/\//g, "").replace(/-/g, "-")}`}
             >
               {child.label}
@@ -113,7 +113,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
   if (!item.children) {
     return (
       <Link href={item.href!}>
-        <span className="text-sm uppercase tracking-[0.15em] font-medium text-[#B3B3B8] block py-2 cursor-pointer">
+        <span className="text-sm uppercase tracking-[0.15em] font-medium text-[#555558] block py-2 cursor-pointer">
           {item.label}
         </span>
       </Link>
@@ -123,7 +123,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
   return (
     <div>
       <button
-        className="flex items-center justify-between w-full text-sm uppercase tracking-[0.15em] font-medium text-[#B3B3B8] py-2 cursor-pointer"
+        className="flex items-center justify-between w-full text-sm uppercase tracking-[0.15em] font-medium text-[#555558] py-2 cursor-pointer"
         onClick={() => setOpen(!open)}
       >
         {item.label}
@@ -133,7 +133,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
         <div className="pl-4 pb-2">
           {item.children.map((child) => (
             <Link key={child.href} href={child.href}>
-              <span className="block py-1.5 text-xs text-[#B3B3B8]/70 hover:text-[#F5F5F7] cursor-pointer">
+              <span className="block py-1.5 text-xs text-[#555558]/70 hover:text-[#111111] cursor-pointer">
                 {child.label}
               </span>
             </Link>
@@ -164,7 +164,7 @@ export default function Header() {
       data-testid="header"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-[#0B0B0D]/90 backdrop-blur-md border-b border-white/5"
+          ? "bg-white/90 backdrop-blur-md border-b border-black/8"
           : "bg-transparent"
       }`}
     >
@@ -178,7 +178,7 @@ export default function Header() {
                 className="h-8 lg:h-10 w-auto"
                 data-testid="img-logo"
               />
-              <span className="text-[#F5F5F7] font-semibold tracking-[0.2em] text-sm uppercase hidden sm:block">
+              <span className="text-[#111111] font-semibold tracking-[0.2em] text-sm uppercase hidden sm:block">
                 Dent Society
               </span>
             </div>
@@ -194,7 +194,7 @@ export default function Header() {
                     className={`text-xs uppercase tracking-[0.15em] font-medium cursor-pointer transition-colors duration-300 ${
                       location === item.href
                         ? "text-[#FF192C]"
-                        : "text-[#B3B3B8] hover:text-[#F5F5F7]"
+                        : "text-[#555558] hover:text-[#111111]"
                     }`}
                     data-testid={`link-${item.label.toLowerCase()}`}
                   >
@@ -215,7 +215,7 @@ export default function Header() {
           </nav>
 
           <button
-            className="lg:hidden text-[#F5F5F7] p-2"
+            className="lg:hidden text-[#111111] p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
             data-testid="button-mobile-menu"
             aria-label="Toggle menu"
@@ -227,7 +227,7 @@ export default function Header() {
 
       {mobileOpen && (
         <div
-          className="lg:hidden bg-[#0B0B0D]/98 backdrop-blur-xl border-t border-white/5 max-h-[80vh] overflow-y-auto"
+          className="lg:hidden bg-white/98 backdrop-blur-xl border-t border-black/8 max-h-[80vh] overflow-y-auto"
           data-testid="nav-mobile"
         >
           <div className="px-6 py-6 flex flex-col gap-2">
