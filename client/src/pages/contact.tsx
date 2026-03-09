@@ -77,7 +77,7 @@ export default function Contact() {
   const onSubmit = (data: ContactForm) => mutation.mutate(data);
 
   return (
-    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
+    <div className="bg-background min-h-screen pt-24 lg:pt-32">
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           <div>
@@ -85,33 +85,33 @@ export default function Contact() {
               Contact
             </p>
             <h1
-              className="text-4xl sm:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight leading-[1.05]"
+              className="text-4xl sm:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]"
               data-testid="text-contact-headline"
             >
               Start Your Repair.
             </h1>
-            <p className="mt-6 text-[#B3B3B8] text-lg leading-relaxed max-w-md">
+            <p className="mt-6 text-[#555558] text-lg leading-relaxed max-w-md">
               Submit your information. We'll coordinate with your insurance and schedule your drop-off.
             </p>
 
             <div className="mt-12 space-y-8">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
                   Location
                 </p>
-                <p className="text-[#F5F5F7] text-sm">Dallas, Texas</p>
+                <p className="text-[#111111] text-sm">Dallas, Texas</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
                   Hours
                 </p>
-                <p className="text-[#F5F5F7] text-sm">By Appointment Only</p>
+                <p className="text-[#111111] text-sm">By Appointment Only</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
                   Guarantee
                 </p>
-                <p className="text-[#F5F5F7] text-sm">
+                <p className="text-[#111111] text-sm">
                   48-hour completion or $300 paid to you.
                 </p>
               </div>
@@ -122,10 +122,10 @@ export default function Contact() {
             {mutation.isSuccess ? (
               <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center" data-testid="contact-success">
                 <CheckCircle2 className="w-12 h-12 text-[#FF192C] mb-6" />
-                <h3 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight mb-3">
+                <h3 className="text-xl font-bold text-[#111111] uppercase tracking-tight mb-3">
                   Request Received
                 </h3>
-                <p className="text-[#B3B3B8] text-sm max-w-xs">
+                <p className="text-[#555558] text-sm max-w-xs">
                   We'll review your information and reach out within 24 hours to coordinate next steps.
                 </p>
               </div>
@@ -137,13 +137,13 @@ export default function Contact() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                           Full Name
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
                             placeholder="Your name"
                             data-testid="input-name"
                           />
@@ -159,13 +159,13 @@ export default function Contact() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                             Phone
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                              className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
                               placeholder="(555) 555-5555"
                               data-testid="input-phone"
                             />
@@ -180,14 +180,14 @@ export default function Contact() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                             Email
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
                               type="email"
-                              className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                              className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
                               placeholder="you@email.com"
                               data-testid="input-email"
                             />
@@ -203,13 +203,13 @@ export default function Contact() {
                     name="vehicle"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                           Vehicle
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
                             placeholder="Year, Make, Model"
                             data-testid="input-vehicle"
                           />
@@ -224,14 +224,14 @@ export default function Contact() {
                     name="insurance"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                           Insurance Carrier (Optional)
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             value={field.value ?? ""}
-                            className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
                             placeholder="State Farm, GEICO, etc."
                             data-testid="input-insurance"
                           />
@@ -246,14 +246,14 @@ export default function Contact() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold">
+                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
                           Additional Details (Optional)
                         </FormLabel>
                         <FormControl>
                           <Textarea
                             {...field}
                             value={field.value ?? ""}
-                            className="bg-[#141416] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50 resize-none min-h-[100px]"
+                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50 resize-none min-h-[100px]"
                             placeholder="Describe your damage, timeline preferences, or questions"
                             data-testid="input-message"
                           />
@@ -281,8 +281,8 @@ export default function Contact() {
           </div>
         </div>
 
-        <div className="mt-16 p-6 rounded-md bg-[#141416] border border-white/5">
-          <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Service Areas</h3>
+        <div className="mt-16 p-6 rounded-md bg-[#F0F0F0] border border-black/10">
+          <h3 className="text-xs uppercase tracking-[0.2em] text-[#555558] font-semibold mb-4">Service Areas</h3>
           <div className="flex flex-wrap gap-3">
             {[
               { label: "Dallas", href: "/hail-repair-dallas" },

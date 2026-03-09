@@ -355,7 +355,7 @@ function ProcessSection() {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="group relative p-6 lg:p-8 rounded-md bg-white border border-black/8 shadow-sm"
+              className="group relative p-6 lg:p-8 rounded-md bg-[#F0F0F0] border border-black/12 shadow-sm"
               data-testid={`card-process-${i}`}
             >
               <div className="flex items-start gap-5">

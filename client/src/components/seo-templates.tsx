@@ -38,18 +38,18 @@ function FAQAccordion({ items, schemaId }: { items: FAQItem[]; schemaId?: string
 function FAQAccordionItem({ q, a, index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-white/5">
+    <div className="border-b border-black/8">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"
         data-testid={`button-faq-${index}`}
       >
-        <span className="text-sm text-[#F5F5F7] font-medium pr-8">{q}</span>
-        <ChevronDown className={`w-4 h-4 text-[#B3B3B8]/50 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        <span className="text-sm text-[#111111] font-medium pr-8">{q}</span>
+        <ChevronDown className={`w-4 h-4 text-[#555558]/50 flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="pb-5 pr-12">
-          <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">{a}</p>
+          <p className="text-[#555558]/80 text-sm leading-relaxed">{a}</p>
         </div>
       )}
     </div>
@@ -59,9 +59,9 @@ function FAQAccordionItem({ q, a, index }: { q: string; a: string; index: number
 function MidCTA() {
   const contactUrl = useContactUrl();
   return (
-    <div className="my-12 p-8 rounded-md bg-[#141416] border border-white/5 text-center" data-testid="cta-mid">
-      <p className="text-[#F5F5F7] font-semibold text-lg mb-2">Ready to get started</p>
-      <p className="text-[#B3B3B8]/60 text-sm mb-6">Schedule your inspection today. No obligation.</p>
+    <div className="my-12 p-8 rounded-md bg-[#F0F0F0] border border-black/10 text-center" data-testid="cta-mid">
+      <p className="text-[#111111] font-semibold text-lg mb-2">Ready to get started</p>
+      <p className="text-[#555558]/70 text-sm mb-6">Schedule your inspection today. No obligation.</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link href={contactUrl}>
           <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8" data-testid="button-cta-mid-repair">
@@ -69,7 +69,7 @@ function MidCTA() {
           </Button>
         </Link>
         <Link href="/insurance-claim-assistance">
-          <Button variant="outline" className="text-xs uppercase tracking-[0.15em] font-semibold px-8 border-white/10 text-[#B3B3B8]" data-testid="button-cta-mid-claim">
+          <Button variant="outline" className="text-xs uppercase tracking-[0.15em] font-semibold px-8 border-black/15 text-[#555558]" data-testid="button-cta-mid-claim">
             Begin Claim Coordination
           </Button>
         </Link>
@@ -82,7 +82,7 @@ function BottomCTA() {
   const contactUrl = useContactUrl();
   return (
     <div className="mt-16 text-center" data-testid="cta-bottom">
-      <p className="text-[#B3B3B8]/50 text-xs uppercase tracking-[0.2em] mb-3">Schedule your inspection today</p>
+      <p className="text-[#555558]/60 text-xs uppercase tracking-[0.2em] mb-3">Schedule your inspection today</p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link href={contactUrl}>
           <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-10" data-testid="button-cta-bottom-repair">
@@ -90,15 +90,15 @@ function BottomCTA() {
           </Button>
         </Link>
       </div>
-      <p className="mt-4 text-[#B3B3B8]/30 text-xs">48-hour completion begins after insurance approval.</p>
+      <p className="mt-4 text-[#555558]/40 text-xs">48-hour completion begins after insurance approval.</p>
     </div>
   );
 }
 
 function InternalLinks({ links }: { links: InternalLink[] }) {
   return (
-    <div className="mt-12 p-6 rounded-md bg-[#141416] border border-white/5">
-      <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Related</h3>
+    <div className="mt-12 p-6 rounded-md bg-[#F0F0F0] border border-black/10">
+      <h3 className="text-xs uppercase tracking-[0.2em] text-[#555558] font-semibold mb-4">Related</h3>
       <div className="flex flex-wrap gap-3">
         {links.map((link) => (
           <Link key={link.href} href={link.href}>
@@ -117,18 +117,18 @@ function ComparisonTable({ headers, rows }: { headers: [string, string]; rows: C
     <div className="my-8 overflow-x-auto">
       <table className="w-full text-sm" data-testid="comparison-table">
         <thead>
-          <tr className="border-b border-white/10">
-            <th className="text-left py-3 px-4 text-[#B3B3B8]/60 font-medium text-xs uppercase tracking-wider">Feature</th>
+          <tr className="border-b border-black/10">
+            <th className="text-left py-3 px-4 text-[#555558]/60 font-medium text-xs uppercase tracking-wider">Feature</th>
             <th className="text-left py-3 px-4 text-[#FF192C] font-semibold text-xs uppercase tracking-wider">{headers[0]}</th>
-            <th className="text-left py-3 px-4 text-[#B3B3B8]/60 font-medium text-xs uppercase tracking-wider">{headers[1]}</th>
+            <th className="text-left py-3 px-4 text-[#555558]/60 font-medium text-xs uppercase tracking-wider">{headers[1]}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-white/5">
-              <td className="py-3 px-4 text-[#F5F5F7] text-sm">{row.feature}</td>
-              <td className="py-3 px-4 text-[#B3B3B8]/80 text-sm">{row.optionA}</td>
-              <td className="py-3 px-4 text-[#B3B3B8]/60 text-sm">{row.optionB}</td>
+            <tr key={i} className="border-b border-black/6">
+              <td className="py-3 px-4 text-[#111111] text-sm">{row.feature}</td>
+              <td className="py-3 px-4 text-[#555558]/80 text-sm">{row.optionA}</td>
+              <td className="py-3 px-4 text-[#555558]/60 text-sm">{row.optionB}</td>
             </tr>
           ))}
         </tbody>
@@ -160,16 +160,16 @@ interface SEOPageProps {
 
 function SEOPageLayout({ badge, title, subtitle, children, faq, internalLinks, midCTA = true, schema }: SEOPageProps) {
   return (
-    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
+    <div className="bg-background min-h-screen pt-24 lg:pt-32">
       {schema && <SchemaMarkup schema={schema} />}
       <article className="max-w-4xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <header className="mb-12">
           <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">{badge}</p>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight leading-[1.05]" data-testid="text-page-headline">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]" data-testid="text-page-headline">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-4 text-[#B3B3B8] text-lg leading-relaxed max-w-2xl">{subtitle}</p>
+            <p className="mt-4 text-[#555558] text-lg leading-relaxed max-w-2xl">{subtitle}</p>
           )}
         </header>
 
@@ -179,7 +179,7 @@ function SEOPageLayout({ badge, title, subtitle, children, faq, internalLinks, m
 
         {faq && faq.length > 0 && (
           <section className="mt-16">
-            <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight mb-8">Frequently Asked Questions</h2>
+            <h2 className="text-xl font-bold text-[#111111] uppercase tracking-tight mb-8">Frequently Asked Questions</h2>
             <FAQAccordion items={faq} />
           </section>
         )}

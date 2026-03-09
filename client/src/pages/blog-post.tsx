@@ -62,7 +62,7 @@ function renderMarkdown(content: string): string {
     const placeholder = `%%BULLET_${bIdx++}%%`;
     bulletPlaceholders.push({
       placeholder,
-      html: `<li class="text-[#B3B3B8] leading-relaxed">${escapeHtml(item)}</li>`
+      html: `<li class="text-[#555558] leading-relaxed">${escapeHtml(item)}</li>`
     });
     return placeholder;
   });
@@ -80,7 +80,7 @@ function renderMarkdown(content: string): string {
     const bulletMatch = bulletPlaceholders.find(b => line.includes(b.placeholder));
     if (bulletMatch) {
       if (!inList) {
-        outputLines.push('<ul class="list-disc list-inside text-[#B3B3B8] text-sm leading-relaxed mb-4 space-y-1 ml-2">');
+        outputLines.push('<ul class="list-disc list-inside text-[#555558] text-sm leading-relaxed mb-4 space-y-1 ml-2">');
         inList = true;
       }
       outputLines.push(line.replace(bulletMatch.placeholder, bulletMatch.html));
@@ -96,12 +96,12 @@ function renderMarkdown(content: string): string {
   safe = outputLines.join('\n');
 
   return safe
-    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-[#F5F5F7] mt-8 mb-3">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-[#F5F5F7] mt-10 mb-4">$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#F5F5F7]">$1</strong>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-[#111111] mt-8 mb-3">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-[#111111] mt-10 mb-4">$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#111111]">$1</strong>')
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\n\n/g, '</p><p class="text-[#B3B3B8] leading-relaxed mb-4">')
-    .replace(/^/, '<p class="text-[#B3B3B8] leading-relaxed mb-4">')
+    .replace(/\n\n/g, '</p><p class="text-[#555558] leading-relaxed mb-4">')
+    .replace(/^/, '<p class="text-[#555558] leading-relaxed mb-4">')
     .replace(/$/, "</p>");
 }
 
@@ -201,7 +201,7 @@ export default function BlogPost() {
 
   if (isLoading) {
     return (
-      <div className="bg-[#0B0B0D] min-h-screen pt-24 flex items-center justify-center">
+      <div className="bg-background min-h-screen pt-24 flex items-center justify-center">
         <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" />
       </div>
     );
@@ -209,10 +209,10 @@ export default function BlogPost() {
 
   if (error || !post) {
     return (
-      <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
+      <div className="bg-background min-h-screen pt-24 lg:pt-32">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 text-center py-20">
-          <h1 className="text-2xl font-bold text-[#F5F5F7] mb-4" data-testid="text-post-not-found">Article Not Found</h1>
-          <p className="text-[#B3B3B8] mb-8">This article may have been moved or removed.</p>
+          <h1 className="text-2xl font-bold text-[#111111] mb-4" data-testid="text-post-not-found">Article Not Found</h1>
+          <p className="text-[#555558] mb-8">This article may have been moved or removed.</p>
           <Link href="/blog">
             <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold" data-testid="button-back-to-blog">
               Back to Blog
@@ -224,11 +224,11 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
+    <div className="bg-background min-h-screen pt-24 lg:pt-32">
 
       <article className="max-w-3xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <Link href="/blog">
-          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#B3B3B8] hover:text-[#FF192C] transition-colors cursor-pointer mb-8" data-testid="link-back-to-blog">
+          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#555558] hover:text-[#FF192C] transition-colors cursor-pointer mb-8" data-testid="link-back-to-blog">
             <ArrowLeft className="w-3 h-3" />
             Back to Blog
           </span>
@@ -236,24 +236,24 @@ export default function BlogPost() {
 
         <div className="mb-10">
           <div className="flex flex-wrap items-center gap-4 mb-4">
-            <p className="text-xs text-[#B3B3B8]/60 uppercase tracking-[0.15em]">
+            <p className="text-xs text-[#555558]/60 uppercase tracking-[0.15em]">
               {post.publishedAt
                 ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                 : ""}
             </p>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-read-count">
+              <span className="flex items-center gap-1 text-xs text-[#555558]/40" data-testid="text-read-count">
                 <Eye className="w-3 h-3" />
                 {post.readCount}
               </span>
-              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-share-count">
+              <span className="flex items-center gap-1 text-xs text-[#555558]/40" data-testid="text-share-count">
                 <Share2 className="w-3 h-3" />
                 {post.shareCount}
               </span>
             </div>
           </div>
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight leading-[1.05]"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]"
             data-testid="text-post-title"
           >
             {post.title}
@@ -278,7 +278,7 @@ export default function BlogPost() {
           dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
         />
 
-        <div className="mt-16 pt-8 border-t border-white/5">
+        <div className="mt-16 pt-8 border-t border-black/8">
           <div className="flex flex-wrap items-center justify-between gap-6">
             <Link href="/contact">
               <Button
@@ -290,14 +290,14 @@ export default function BlogPost() {
             </Link>
 
             <div className="flex items-center gap-1">
-              <span className="text-xs text-[#B3B3B8]/40 uppercase tracking-[0.15em] mr-2">Share</span>
+              <span className="text-xs text-[#555558]/40 uppercase tracking-[0.15em] mr-2">Share</span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleShare("twitter")}
                 data-testid="button-share-twitter"
               >
-                <SiX className="w-4 h-4 text-[#B3B3B8]" />
+                <SiX className="w-4 h-4 text-[#555558]" />
               </Button>
               <Button
                 variant="ghost"
@@ -305,7 +305,7 @@ export default function BlogPost() {
                 onClick={() => handleShare("facebook")}
                 data-testid="button-share-facebook"
               >
-                <SiFacebook className="w-4 h-4 text-[#B3B3B8]" />
+                <SiFacebook className="w-4 h-4 text-[#555558]" />
               </Button>
               <Button
                 variant="ghost"
@@ -313,7 +313,7 @@ export default function BlogPost() {
                 onClick={() => handleShare("linkedin")}
                 data-testid="button-share-linkedin"
               >
-                <SiLinkedin className="w-4 h-4 text-[#B3B3B8]" />
+                <SiLinkedin className="w-4 h-4 text-[#555558]" />
               </Button>
               <Button
                 variant="ghost"
@@ -321,7 +321,7 @@ export default function BlogPost() {
                 onClick={() => handleShare("copy")}
                 data-testid="button-share-copy"
               >
-                <Share2 className="w-4 h-4 text-[#B3B3B8]" />
+                <Share2 className="w-4 h-4 text-[#555558]" />
               </Button>
             </div>
           </div>

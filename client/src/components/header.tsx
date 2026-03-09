@@ -17,41 +17,19 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Hail Repair",
+    label: "Services",
     children: [
       { label: "Hail Damage Repair", href: "/hail-damage-repair-dallas" },
       { label: "Paintless Dent Repair", href: "/paintless-dent-repair-dallas" },
       { label: "Storm Damage Restoration", href: "/storm-damage-restoration" },
-      { label: "48-Hour Guarantee", href: "/48-hour-completion-guarantee" },
     ],
   },
   {
-    label: "Insurance Help",
+    label: "Insurance",
     children: [
       { label: "Claim Assistance", href: "/insurance-claim-assistance" },
       { label: "State Farm", href: "/state-farm-hail-claims" },
       { label: "GEICO", href: "/geico-hail-damage-repair" },
-      { label: "Allstate", href: "/allstate-hail-claims" },
-      { label: "Progressive", href: "/progressive-hail-repair" },
-      { label: "USAA", href: "/usaa-hail-damage" },
-      { label: "Farmers", href: "/farmers-hail-claims" },
-      { label: "Liberty Mutual", href: "/liberty-mutual-hail-claims" },
-    ],
-  },
-  {
-    label: "Fleet Services",
-    children: [
-      { label: "Fleet Hail Repair", href: "/fleet-hail-repair" },
-      { label: "Dealership Services", href: "/dealership-hail-services" },
-      { label: "Commercial Fleet PDR", href: "/commercial-fleet-pdr" },
-      { label: "Pre-Sale Touch Up", href: "/pre-sale-touch-up-services" },
-    ],
-  },
-  {
-    label: "Loaner & Pickup",
-    children: [
-      { label: "Free Loaner Vehicles", href: "/free-loaner-vehicles" },
-      { label: "Pickup & Delivery", href: "/pickup-and-delivery-service" },
     ],
   },
   { label: "Blog", href: "/blog" },

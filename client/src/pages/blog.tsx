@@ -20,7 +20,7 @@ export default function Blog() {
   });
 
   return (
-    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
+    <div className="bg-background min-h-screen pt-24 lg:pt-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -37,12 +37,12 @@ export default function Blog() {
         <div className="max-w-2xl mb-16">
           <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">Blog</p>
           <h1
-            className="text-4xl sm:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight leading-[1.05]"
+            className="text-4xl sm:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]"
             data-testid="text-blog-headline"
           >
             Insights and Expertise
           </h1>
-          <p className="mt-4 text-[#B3B3B8] text-lg leading-relaxed">
+          <p className="mt-4 text-[#555558] text-lg leading-relaxed">
             Technical knowledge, industry analysis, and storm season guidance from the Dent Society team.
           </p>
         </div>
@@ -56,19 +56,19 @@ export default function Blog() {
             {posts.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`}>
                 <article
-                  className="p-6 rounded-md bg-[#141416] border border-white/5 hover-elevate cursor-pointer h-full flex flex-col"
+                  className="p-6 rounded-md bg-white border border-black/8 shadow-sm hover-elevate cursor-pointer h-full flex flex-col"
                   data-testid={`card-blog-post-${post.id}`}
                 >
-                  <p className="text-xs text-[#B3B3B8]/60 uppercase tracking-[0.15em] mb-3">
+                  <p className="text-xs text-[#555558]/60 uppercase tracking-[0.15em] mb-3">
                     {post.publishedAt
                       ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
                       : ""}
                   </p>
-                  <h2 className="text-lg font-bold text-[#F5F5F7] leading-snug mb-3" data-testid={`text-post-title-${post.id}`}>
+                  <h2 className="text-lg font-bold text-[#111111] leading-snug mb-3" data-testid={`text-post-title-${post.id}`}>
                     {post.title}
                   </h2>
                   {post.excerpt && (
-                    <p className="text-sm text-[#B3B3B8] leading-relaxed mb-4 flex-1">
+                    <p className="text-sm text-[#555558] leading-relaxed mb-4 flex-1">
                       {post.excerpt}
                     </p>
                   )}
@@ -90,7 +90,7 @@ export default function Blog() {
           </div>
         ) : (
           <div className="text-center py-20" data-testid="blog-empty-state">
-            <p className="text-[#B3B3B8]/50 text-sm mb-6">Articles coming soon. Check back for expert insights on hail damage repair and insurance coordination.</p>
+            <p className="text-[#555558]/50 text-sm mb-6">Articles coming soon. Check back for expert insights on hail damage repair and insurance coordination.</p>
             <Link href="/contact?utm_source=website&utm_medium=blog_cta&utm_campaign=blog">
               <Button
                 className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
@@ -102,8 +102,8 @@ export default function Blog() {
           </div>
         )}
 
-        <div className="mt-16 p-6 rounded-md bg-[#141416] border border-white/5">
-          <h3 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">Explore</h3>
+        <div className="mt-16 p-6 rounded-md bg-[#F0F0F0] border border-black/10">
+          <h3 className="text-xs uppercase tracking-[0.2em] text-[#555558] font-semibold mb-4">Explore</h3>
           <div className="flex flex-wrap gap-3">
             {[
               { label: "Hail Damage Repair", href: "/hail-damage-repair-dallas" },
