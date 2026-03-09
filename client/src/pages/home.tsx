@@ -355,7 +355,7 @@ function ProcessSection() {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="group relative p-6 lg:p-8 rounded-md bg-[#F0F0F0] border border-black/12 shadow-sm"
+              className="group relative p-6 lg:p-8 rounded-xl bg-[#26262E]/92 backdrop-blur-sm border border-white/10 shadow-[0_2px_24px_0_rgba(0,0,0,0.18),inset_0_1px_0_0_rgba(255,255,255,0.07)]"
               data-testid={`card-process-${i}`}
             >
               <div className="flex items-start gap-5">
@@ -369,7 +369,7 @@ function ProcessSection() {
                     <span className="text-[#FF192C] text-xs font-bold tracking-wider">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#111111]">
+                    <h3 className="text-sm uppercase tracking-[0.1em] font-semibold text-[#F0F0F2]">
                       {step.title}
                     </h3>
                     {step.highlight && (
@@ -378,10 +378,10 @@ function ProcessSection() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-[#555558] leading-relaxed">
+                  <p className="text-sm text-[#A8A8B0] leading-relaxed">
                     {step.desc}
                   </p>
-                  <p className="mt-2 text-xs text-[#555558]/60 font-medium">
+                  <p className="mt-2 text-xs text-[#A8A8B0]/60 font-medium">
                     {step.detail}
                   </p>
                 </div>
