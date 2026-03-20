@@ -83,12 +83,12 @@ async function sendSentimentSurvey(lead: { id: number; name: string; email: stri
     await client.emails.send({
       from: fromEmail,
       to: lead.email,
-      subject: "How was your experience with Dent Society?",
+      subject: "How was your experience with Reign Services?",
       html: `
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0D; color: #F5F5F7; padding: 40px 24px; border-radius: 8px;">
-          <p style="color: #B3B3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">Dent Society</p>
+          <p style="color: #B3B3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">Reign Services</p>
           <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 16px 0;">How did we do, ${lead.name.split(" ")[0]}?</h2>
-          <p style="color: #B3B3B8; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">Your vehicle has been delivered. We'd appreciate a quick rating of your experience.</p>
+          <p style="color: #B3B3B8; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">Your project has been completed. We'd appreciate a quick rating of your experience.</p>
           <div style="text-align: center; margin-bottom: 32px;">
             <a href="${rateUrl}&score=5" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128515;</a>
             <a href="${rateUrl}&score=4" style="text-decoration: none; font-size: 32px; margin: 0 8px;">&#128578;</a>
@@ -434,11 +434,11 @@ export async function registerRoutes(
         input: JSON.stringify({ topic, keywords, tone }),
       });
 
-      const systemPrompt = `You are an expert automotive content writer for Dent Society, a precision hail damage repair company in Dallas, TX. Write authoritative, professional blog articles about paintless dent repair, hail damage, insurance claims, and storm damage restoration.
+      const systemPrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor. Write authoritative, professional blog articles about custom turf installation, foundation repair, interior remodeling, outdoor living spaces, and hardscaping.
 
 Rules:
 - Write in a controlled, confident tone. No exclamation points. No sales hype.
-- Use substantive, factual content. Include specific details about PDR techniques, insurance processes, and storm damage.
+- Use substantive, factual content. Include specific details about renovation techniques, material selection, and project execution.
 - Target Dallas-Fort Worth market when relevant.
 - Structure with H2 and H3 headings using markdown.
 - Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact). Do NOT output raw URLs or bare paths.
@@ -548,19 +548,19 @@ Respond in this exact JSON format:
 
       (async () => {
         try {
-          const researchPrompt = `You are an expert SEO strategist and content marketing researcher for Dent Society, a premium paintless dent repair (PDR) and hail damage restoration company in Dallas-Fort Worth, Texas.
+          const researchPrompt = `You are an expert SEO strategist and content marketing researcher for Reign Services, DFW's premier interior and exterior renovation contractor specializing in custom turf, foundation repair, interior remodeling, outdoor living spaces, and hardscaping in Dallas-Fort Worth, Texas.
 
-Conduct thorough competitive and market research for the PDR and hail damage repair industry. Analyze:
+Conduct thorough competitive and market research for the home renovation and outdoor living industry in DFW. Analyze:
 1. What topics competitors are ranking for
-2. High-volume, low-competition keywords in the PDR/hail repair space
-3. Seasonal search trends (storm season, hail events)
-4. Customer pain points and frequently asked questions
-5. Local SEO opportunities in Dallas-Fort Worth
+2. High-volume, low-competition keywords in the renovation and outdoor living space
+3. Seasonal search trends (spring/summer outdoor projects, year-round interior remodeling)
+4. Customer pain points and frequently asked questions about renovation projects
+5. Local SEO opportunities in Dallas-Fort Worth for renovation services
 
 Then identify 5 highly effective article topics that will:
 - Drive organic search traffic
-- Convert readers into leads
-- Target different aspects of PDR and hail repair
+- Convert readers into assessment requests
+- Target different aspects of renovation and outdoor living
 - Include location-specific angles where relevant
 - Cover informational, commercial, and transactional intent
 
@@ -652,7 +652,7 @@ Respond in JSON format:
 
       (async () => {
         try {
-          const articlePrompt = `You are an expert automotive content writer for Dent Society, a precision hail damage repair company in Dallas, TX.
+          const articlePrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor in Dallas, TX.
 
 Write a comprehensive, SEO-optimized blog article based on this research:
 Topic: ${topic.title}
@@ -663,12 +663,12 @@ Search Intent: ${topic.searchIntent || "informational"}
 Rules:
 - Write in a controlled, confident tone. No exclamation points. No sales hype.
 - Naturally incorporate target keywords throughout the content
-- Use substantive, factual content with specific details about PDR techniques, insurance processes, and storm damage
+- Use substantive, factual content with specific details about renovation techniques, material selection, and project execution
 - Target Dallas-Fort Worth market when relevant
 - Structure with H2 and H3 headings using markdown
 - Minimum 1000 words
-- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact), [insurance claim assistance](/insurance-claim-assistance). Do NOT output raw URLs or bare paths.
-- End with a subtle call-to-action that encourages contacting Dent Society
+- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact), [custom turf installation](/custom-turf-install). Do NOT output raw URLs or bare paths.
+- End with a subtle call-to-action that encourages booking a free assessment with Reign Services
 
 Respond in JSON format:
 {
@@ -837,8 +837,8 @@ Respond in JSON:
             const nlHtml = `<div style="font-family:Manrope,sans-serif;background:#0B0B0D;color:#F5F5F7;padding:40px 20px;">
 <h1 style="font-size:24px;margin-bottom:16px;">${post.title}</h1>
 ${post.excerpt ? `<p style="color:#B3B3B8;font-size:16px;line-height:1.6;margin-bottom:24px;">${post.excerpt}</p>` : ""}
-<a href="${articleLink}" style="display:inline-block;background:#FF192C;color:white;padding:12px 32px;text-decoration:none;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Read Full Article</a>
-<p style="color:#B3B3B8;font-size:12px;margin-top:40px;">Dent Society - Precision Restoration Lab</p>
+<a href="${articleLink}" style="display:inline-block;background:#5D3FD3;color:white;padding:12px 32px;text-decoration:none;font-size:14px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Read Full Article</a>
+<p style="color:#B3B3B8;font-size:12px;margin-top:40px;">Reign Services - DFW's Premier Interior/Exterior Renovations Experts</p>
 </div>`;
 
             const newsletter = await storage.createNewsletter({ subject: nlSubject, htmlContent: nlHtml });
@@ -1237,7 +1237,7 @@ Respond in JSON format:
 
       const testPayload = {
         event: "webhook.test",
-        data: { message: "This is a test webhook delivery from Dent Society CRM", timestamp: new Date().toISOString() },
+        data: { message: "This is a test webhook delivery from Reign Services CRM", timestamp: new Date().toISOString() },
         timestamp: new Date().toISOString(),
       };
       const body = JSON.stringify(testPayload);
