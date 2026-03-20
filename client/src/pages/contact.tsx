@@ -16,14 +16,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertLeadSchema } from "@shared/schema";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { Link } from "wouter";
+import { Loader2, CheckCircle2, MapPin, Clock, MessageSquare } from "lucide-react";
 
 const contactSchema = insertLeadSchema.extend({
   name: z.string().min(2, "Name is required"),
   phone: z.string().min(7, "Phone number is required"),
   email: z.string().email("Valid email required"),
-  vehicle: z.string().min(2, "Vehicle info is required"),
+  vehicle: z.string().min(2, "Project type is required"),
 });
 
 type ContactForm = z.infer<typeof contactSchema>;
@@ -36,6 +35,9 @@ function getUtmParams(): { utmSource?: string; utmMedium?: string; utmCampaign?:
     utmCampaign: params.get("utm_campaign") || undefined,
   };
 }
+
+const inputClass = "bg-white/5 border-white/10 text-white placeholder:text-[#B3B3B8]/40 focus:border-[#5D3FD3]/50";
+const labelClass = "text-xs uppercase tracking-[0.15em] text-[#B3B3B8] font-semibold";
 
 export default function Contact() {
   const { toast } = useToast();
@@ -61,14 +63,14 @@ export default function Contact() {
     onSuccess: () => {
       form.reset();
       toast({
-        title: "Request received",
-        description: "We'll be in touch within 24 hours.",
+        title: "Assessment request received",
+        description: "Our team will be in touch within 24 hours to schedule your free assessment.",
       });
     },
     onError: () => {
       toast({
         title: "Something went wrong",
-        description: "Please try again or call us directly.",
+        description: "Please try again or contact us directly.",
         variant: "destructive",
       });
     },
@@ -77,97 +79,170 @@ export default function Contact() {
   const onSubmit = (data: ContactForm) => mutation.mutate(data);
 
   return (
-    <div className="bg-background min-h-screen pt-24 lg:pt-32">
+    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">
-              Contact
-            </p>
+            <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">
+              Free Assessment
+            </span>
             <h1
-              className="text-4xl sm:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]"
+              className="mt-4 text-4xl sm:text-5xl font-extrabold text-white uppercase tracking-tight leading-[1.05]"
+              style={{ fontFamily: "Poppins, sans-serif" }}
               data-testid="text-contact-headline"
             >
-              Start Your Repair.
+              Request Your<br />
+              Free Assessment
             </h1>
-            <p className="mt-6 text-[#555558] text-lg leading-relaxed max-w-md">
-              Submit your information. We'll coordinate with your insurance and schedule your drop-off.
+            <p className="mt-6 text-[#B3B3B8] text-lg leading-relaxed max-w-md">
+              Tell us about your project. Our team will review your information and reach out to schedule a complimentary on-site assessment — no obligation, no pressure.
             </p>
 
-            <div className="mt-12 space-y-8">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
-                  Location
-                </p>
-                <p className="text-[#111111] text-sm">Dallas, Texas</p>
+            <div className="mt-10 space-y-7">
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded-md bg-[#5D3FD3]/15 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4 text-[#5D3FD3]" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-1">
+                    Service Area
+                  </p>
+                  <p className="text-[#F5F5F7] text-sm">Dallas-Fort Worth Metroplex</p>
+                  <p className="text-[#B3B3B8]/50 text-xs mt-0.5">Residential & commercial properties across all of DFW</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
-                  Hours
-                </p>
-                <p className="text-[#111111] text-sm">By Appointment Only</p>
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded-md bg-[#5D3FD3]/15 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-4 h-4 text-[#5D3FD3]" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-1">
+                    Response Time
+                  </p>
+                  <p className="text-[#F5F5F7] text-sm">Within 24 Hours</p>
+                  <p className="text-[#B3B3B8]/50 text-xs mt-0.5">We schedule assessments at your convenience</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#555558]/50 font-semibold mb-2">
-                  Guarantee
-                </p>
-                <p className="text-[#111111] text-sm">
-                  48-hour completion or $300 paid to you.
-                </p>
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 rounded-md bg-[#5D3FD3]/15 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="w-4 h-4 text-[#5D3FD3]" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8]/50 font-semibold mb-1">
+                    Chat with Us
+                  </p>
+                  <p className="text-[#F5F5F7] text-sm">Instant Answers Available</p>
+                  <p className="text-[#B3B3B8]/50 text-xs mt-0.5">Use our live chat for pricing questions or quick info</p>
+                </div>
               </div>
             </div>
           </div>
 
           <div>
             {mutation.isSuccess ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center" data-testid="contact-success">
-                <CheckCircle2 className="w-12 h-12 text-[#FF192C] mb-6" />
-                <h3 className="text-xl font-bold text-[#111111] uppercase tracking-tight mb-3">
-                  Request Received
+              <div
+                className="flex flex-col items-center justify-center h-full min-h-[500px] text-center p-10 rounded-xl"
+                style={{
+                  background: "rgba(93,63,211,0.08)",
+                  border: "1px solid rgba(93,63,211,0.25)",
+                }}
+                data-testid="contact-success"
+              >
+                <CheckCircle2 className="w-14 h-14 text-[#5D3FD3] mb-6" />
+                <h3 className="text-xl font-bold text-white uppercase tracking-tight mb-3"
+                  style={{ fontFamily: "Poppins, sans-serif" }}>
+                  Assessment Requested
                 </h3>
-                <p className="text-[#555558] text-sm max-w-xs">
-                  We'll review your information and reach out within 24 hours to coordinate next steps.
+                <p className="text-[#B3B3B8] text-sm max-w-xs">
+                  Our team will review your project details and reach out within 24 hours to schedule your free on-site assessment.
                 </p>
               </div>
             ) : (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" data-testid="form-contact">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                          Full Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
-                            placeholder="Your name"
-                            data-testid="input-name"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div
+                className="p-8 rounded-xl"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <h2 className="text-sm uppercase tracking-[0.15em] text-white font-semibold mb-6">
+                  Project Details
+                </h2>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" data-testid="form-contact">
                     <FormField
                       control={form.control}
-                      name="phone"
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                            Phone
-                          </FormLabel>
+                          <FormLabel className={labelClass}>Full Name</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
-                              placeholder="(555) 555-5555"
-                              data-testid="input-phone"
+                              className={inputClass}
+                              placeholder="Your name"
+                              data-testid="input-name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className={labelClass}>Phone</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className={inputClass}
+                                placeholder="(555) 555-5555"
+                                data-testid="input-phone"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className={labelClass}>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="email"
+                                className={inputClass}
+                                placeholder="you@email.com"
+                                data-testid="input-email"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="vehicle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={labelClass}>Service Type / Project Description</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className={inputClass}
+                              placeholder="e.g. Custom turf install, Foundation repair, Kitchen remodel..."
+                              data-testid="input-vehicle"
                             />
                           </FormControl>
                           <FormMessage />
@@ -177,130 +252,64 @@ export default function Contact() {
 
                     <FormField
                       control={form.control}
-                      name="email"
+                      name="insurance"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                            Email
-                          </FormLabel>
+                          <FormLabel className={labelClass}>Property Address (Optional)</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              type="email"
-                              className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
-                              placeholder="you@email.com"
-                              data-testid="input-email"
+                              value={field.value ?? ""}
+                              className={inputClass}
+                              placeholder="City or full address for assessment scheduling"
+                              data-testid="input-insurance"
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="vehicle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                          Vehicle
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
-                            placeholder="Year, Make, Model"
-                            data-testid="input-vehicle"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className={labelClass}>Additional Details (Optional)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              value={field.value ?? ""}
+                              className={`${inputClass} resize-none min-h-[100px]`}
+                              placeholder="Tell us more about your project, timeline, or any specific questions"
+                              data-testid="input-message"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="insurance"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                          Insurance Carrier (Optional)
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value ?? ""}
-                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50"
-                            placeholder="State Farm, GEICO, etc."
-                            data-testid="input-insurance"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <Button
+                      type="submit"
+                      disabled={mutation.isPending}
+                      className="w-full bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-sm uppercase tracking-[0.15em] font-semibold py-5"
+                      data-testid="button-submit-contact"
+                    >
+                      {mutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Request Free Assessment"
+                      )}
+                    </Button>
 
-                  <FormField
-                    control={form.control}
-                    name="message"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-[0.15em] text-[#555558] font-semibold">
-                          Additional Details (Optional)
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            value={field.value ?? ""}
-                            className="bg-white border-black/15 text-[#111111] placeholder:text-[#555558]/30 focus:border-[#FF192C]/50 resize-none min-h-[100px]"
-                            placeholder="Describe your damage, timeline preferences, or questions"
-                            data-testid="input-message"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button
-                    type="submit"
-                    disabled={mutation.isPending}
-                    className="w-full bg-[#FF192C] text-white border-[#FF192C] text-sm uppercase tracking-[0.15em] font-semibold"
-                    data-testid="button-submit-contact"
-                  >
-                    {mutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      "Submit Request"
-                    )}
-                  </Button>
-                </form>
-              </Form>
+                    <p className="text-center text-xs text-[#B3B3B8]/40 tracking-wide">
+                      Free assessment. No obligation. We'll contact you within 24 hours.
+                    </p>
+                  </form>
+                </Form>
+              </div>
             )}
-          </div>
-        </div>
-
-        <div className="mt-16 p-6 rounded-md bg-[#F0F0F0] border border-black/10">
-          <h3 className="text-xs uppercase tracking-[0.2em] text-[#555558] font-semibold mb-4">Service Areas</h3>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { label: "Dallas", href: "/hail-repair-dallas" },
-              { label: "Plano", href: "/hail-repair-plano" },
-              { label: "Frisco", href: "/hail-repair-frisco" },
-              { label: "Fort Worth", href: "/hail-repair-fort-worth" },
-              { label: "Arlington", href: "/hail-repair-arlington" },
-              { label: "Denton", href: "/hail-repair-denton" },
-              { label: "McKinney", href: "/hail-repair-mckinney" },
-              { label: "Irving", href: "/hail-repair-irving" },
-              { label: "Garland", href: "/hail-repair-garland" },
-            ].map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span className="text-xs text-[#FF192C] hover:text-[#FF192C]/80 transition-colors cursor-pointer" data-testid={`link-area-${link.label.toLowerCase()}`}>
-                  {link.label}
-                </span>
-              </Link>
-            ))}
           </div>
         </div>
       </section>

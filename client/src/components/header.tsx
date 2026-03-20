@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import logoMark from "@assets/Asset_7@3x-8_1770967674840.png";
+import logoMark from "@assets/IMG_4743_1773978350169.png";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -19,19 +19,15 @@ const navItems: NavItem[] = [
   {
     label: "Services",
     children: [
-      { label: "Hail Damage Repair", href: "/hail-damage-repair-dallas" },
-      { label: "Paintless Dent Repair", href: "/paintless-dent-repair-dallas" },
-      { label: "Storm Damage Restoration", href: "/storm-damage-restoration" },
+      { label: "Custom Turf Design & Install", href: "/custom-turf-install" },
+      { label: "Foundation Repair", href: "/foundation-repair" },
+      { label: "Interior Remodeling", href: "/interior-remodeling" },
+      { label: "Outdoor Remodeling", href: "/outdoor-remodeling" },
+      { label: "Outdoor Living Spaces", href: "/outdoor-living" },
+      { label: "Turf & Pavers", href: "/turf-and-pavers" },
     ],
   },
-  {
-    label: "Insurance",
-    children: [
-      { label: "Claim Assistance", href: "/insurance-claim-assistance" },
-      { label: "State Farm", href: "/state-farm-hail-claims" },
-      { label: "GEICO", href: "/geico-hail-damage-repair" },
-    ],
-  },
+  { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
@@ -58,22 +54,27 @@ function DesktopDropdown({ item }: { item: NavItem }) {
       onMouseLeave={handleLeave}
     >
       <button
-        className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-[#555558] hover:text-[#111111] transition-colors duration-300 cursor-pointer"
+        className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-medium text-[#B3B3B8] hover:text-white transition-colors duration-300 cursor-pointer"
         data-testid={`link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
       >
         {item.label}
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       <div
-        className={`absolute top-full left-0 mt-2 min-w-[220px] bg-white border border-black/8 rounded-md overflow-hidden shadow-lg transition-all duration-200 ${
+        className={`absolute top-full left-0 mt-2 min-w-[260px] rounded-md overflow-hidden shadow-xl transition-all duration-200 ${
           open ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-1"
         }`}
-        style={{ zIndex: 100 }}
+        style={{
+          zIndex: 100,
+          background: "rgba(11, 11, 18, 0.95)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.10)",
+        }}
       >
         {item.children?.map((child) => (
           <Link key={child.href} href={child.href}>
             <span
-              className="block px-4 py-2.5 text-xs text-[#555558] hover:text-[#111111] hover:bg-black/4 transition-colors cursor-pointer"
+              className="block px-4 py-2.5 text-xs text-[#B3B3B8] hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
               data-testid={`link-dropdown-${child.href.replace(/\//g, "").replace(/-/g, "-")}`}
             >
               {child.label}
@@ -91,7 +92,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
   if (!item.children) {
     return (
       <Link href={item.href!}>
-        <span className="text-sm uppercase tracking-[0.15em] font-medium text-[#555558] block py-2 cursor-pointer">
+        <span className="text-sm uppercase tracking-[0.15em] font-medium text-[#B3B3B8] hover:text-white block py-2 cursor-pointer transition-colors">
           {item.label}
         </span>
       </Link>
@@ -101,7 +102,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
   return (
     <div>
       <button
-        className="flex items-center justify-between w-full text-sm uppercase tracking-[0.15em] font-medium text-[#555558] py-2 cursor-pointer"
+        className="flex items-center justify-between w-full text-sm uppercase tracking-[0.15em] font-medium text-[#B3B3B8] py-2 cursor-pointer"
         onClick={() => setOpen(!open)}
       >
         {item.label}
@@ -111,7 +112,7 @@ function MobileAccordion({ item }: { item: NavItem }) {
         <div className="pl-4 pb-2">
           {item.children.map((child) => (
             <Link key={child.href} href={child.href}>
-              <span className="block py-1.5 text-xs text-[#555558]/70 hover:text-[#111111] cursor-pointer">
+              <span className="block py-1.5 text-xs text-[#B3B3B8]/70 hover:text-white cursor-pointer transition-colors">
                 {child.label}
               </span>
             </Link>
@@ -142,9 +143,14 @@ export default function Header() {
       data-testid="header"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-white/90 backdrop-blur-md border-b border-black/8"
+          ? "border-b border-white/8"
           : "bg-transparent"
       }`}
+      style={scrolled ? {
+        background: "rgba(11, 11, 18, 0.90)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+      } : {}}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         <div className="flex items-center justify-between h-16 lg:h-20">
@@ -152,12 +158,13 @@ export default function Header() {
             <div className="flex items-center gap-3 cursor-pointer">
               <img
                 src={logoMark}
-                alt="Dent Society"
-                className="h-8 lg:h-10 w-auto"
+                alt="Reign Services"
+                className="h-10 lg:h-12 w-auto"
                 data-testid="img-logo"
               />
-              <span className="text-[#111111] font-semibold tracking-[0.2em] text-sm uppercase hidden sm:block">
-                Dent Society
+              <span className="text-white font-bold tracking-[0.18em] text-sm uppercase hidden sm:block"
+                style={{ fontFamily: "Poppins, sans-serif" }}>
+                Reign Services
               </span>
             </div>
           </Link>
@@ -171,8 +178,8 @@ export default function Header() {
                   <span
                     className={`text-xs uppercase tracking-[0.15em] font-medium cursor-pointer transition-colors duration-300 ${
                       location === item.href
-                        ? "text-[#FF192C]"
-                        : "text-[#555558] hover:text-[#111111]"
+                        ? "text-[#5D3FD3]"
+                        : "text-[#B3B3B8] hover:text-white"
                     }`}
                     data-testid={`link-${item.label.toLowerCase()}`}
                   >
@@ -184,16 +191,16 @@ export default function Header() {
             <Link href="/contact?utm_source=website&utm_medium=header_nav&utm_campaign=sitewide">
               <Button
                 variant="default"
-                className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-6"
-                data-testid="button-start-repair-header"
+                className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs uppercase tracking-[0.15em] font-semibold px-6"
+                data-testid="button-book-assessment-header"
               >
-                Start My Repair
+                Book Free Assessment
               </Button>
             </Link>
           </nav>
 
           <button
-            className="lg:hidden text-[#111111] p-2"
+            className="lg:hidden text-white p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
             data-testid="button-mobile-menu"
             aria-label="Toggle menu"
@@ -205,7 +212,12 @@ export default function Header() {
 
       {mobileOpen && (
         <div
-          className="lg:hidden bg-white/98 backdrop-blur-xl border-t border-black/8 max-h-[80vh] overflow-y-auto"
+          className="lg:hidden border-t border-white/8 max-h-[80vh] overflow-y-auto"
+          style={{
+            background: "rgba(11, 11, 18, 0.98)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
           data-testid="nav-mobile"
         >
           <div className="px-6 py-6 flex flex-col gap-2">
@@ -215,10 +227,10 @@ export default function Header() {
             <Link href="/contact?utm_source=website&utm_medium=mobile_nav&utm_campaign=sitewide">
               <Button
                 variant="default"
-                className="bg-[#FF192C] text-white border-[#FF192C] w-full text-xs uppercase tracking-[0.15em] font-semibold mt-4"
-                data-testid="button-start-repair-mobile"
+                className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 w-full text-xs uppercase tracking-[0.15em] font-semibold mt-4"
+                data-testid="button-book-assessment-mobile"
               >
-                Start My Repair
+                Book Free Assessment
               </Button>
             </Link>
           </div>

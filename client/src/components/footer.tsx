@@ -1,6 +1,5 @@
 import { Link } from "wouter";
-import logoMark from "@assets/Asset_6_1770967674840.png";
-import startupAlchemistLogo from "@assets/5C50E7C9-6986-4FB2-B8DC-A8BAA3D8D0D1_1771005924017.png";
+import logoMark from "@assets/IMG_8426_1773978350170.png";
 
 const navLinks = [
   { label: "Services", href: "/services" },
@@ -10,11 +9,13 @@ const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-const categoryLinks = [
-  { label: "Service Areas", href: "/hail-repair-dallas" },
-  { label: "Insurance Partners", href: "/insurance-claim-assistance" },
-  { label: "Fleet & Commercial", href: "/fleet-hail-repair" },
-  { label: "Resources", href: "/pdr-vs-body-shop" },
+const serviceLinks = [
+  { label: "Custom Turf Design & Install", href: "/custom-turf-install" },
+  { label: "Foundation Repair", href: "/foundation-repair" },
+  { label: "Interior Remodeling", href: "/interior-remodeling" },
+  { label: "Outdoor Remodeling", href: "/outdoor-remodeling" },
+  { label: "Outdoor Living Spaces", href: "/outdoor-living" },
+  { label: "Turf & Pavers", href: "/turf-and-pavers" },
 ];
 
 export default function Footer() {
@@ -24,18 +25,51 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src={logoMark} alt="Dent Society" className="h-8 w-auto opacity-40" />
-              <span className="text-[#F5F5F7] font-semibold tracking-[0.2em] text-sm uppercase">
-                Dent Society
-              </span>
+              <img src={logoMark} alt="Reign Services" className="h-10 w-auto opacity-70" />
+              <div>
+                <span className="text-[#F5F5F7] font-bold tracking-[0.18em] text-sm uppercase block"
+                  style={{ fontFamily: "Poppins, sans-serif" }}>
+                  Reign Services
+                </span>
+                <span className="text-[#B3B3B8]/50 text-[10px] tracking-widest uppercase">
+                  DFW's Premier Renovations Experts
+                </span>
+              </div>
             </div>
-            <p className="text-[#B3B3B8]/60 text-xs leading-relaxed max-w-xs">
-              Precision restoration lab. Storm damage neutralization. Insurance coordination. Dallas-Fort Worth.
+            <p className="text-[#B3B3B8]/60 text-xs leading-relaxed max-w-xs mt-4">
+              Interior and exterior renovation specialists serving the Dallas-Fort Worth metroplex. Residential and commercial projects across North Texas.
             </p>
+            <div className="mt-6">
+              <Link href="/contact?utm_source=footer&utm_medium=cta&utm_campaign=sitewide">
+                <span className="inline-block text-xs uppercase tracking-[0.15em] font-semibold text-[#5D3FD3] hover:text-[#7a5ce8] transition-colors cursor-pointer border border-[#5D3FD3]/40 px-4 py-2 rounded-sm hover:border-[#5D3FD3]/70">
+                  Book Free Assessment
+                </span>
+              </Link>
+            </div>
           </div>
 
           <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">
+            <h4 className="text-xs uppercase tracking-[0.2em] text-[#5D3FD3] font-semibold mb-4">
+              Services
+            </h4>
+            <ul className="space-y-2">
+              {serviceLinks.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href}>
+                    <span
+                      className="text-[#B3B3B8]/60 hover:text-[#F5F5F7] text-xs transition-colors duration-300 cursor-pointer"
+                      data-testid={`link-footer-service-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs uppercase tracking-[0.2em] text-[#5D3FD3] font-semibold mb-4">
               Navigate
             </h4>
             <ul className="space-y-2">
@@ -52,33 +86,21 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-[#B3B3B8] font-semibold mb-4">
-              Explore
-            </h4>
-            <ul className="space-y-2">
-              {categoryLinks.map((item) => (
-                <li key={item.href}>
-                  <Link href={item.href}>
-                    <span
-                      className="text-[#B3B3B8]/60 hover:text-[#F5F5F7] text-xs transition-colors duration-300 cursor-pointer"
-                      data-testid={`link-footer-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
-                      {item.label}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-6">
+              <h4 className="text-xs uppercase tracking-[0.2em] text-[#0A1F44]/80 font-semibold mb-2" style={{ color: "#4a6fa5" }}>
+                Service Area
+              </h4>
+              <p className="text-[#B3B3B8]/50 text-xs leading-relaxed">
+                Dallas · Fort Worth · Plano · Frisco · McKinney · Arlington · Irving · Denton · Garland
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-white/5 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[#B3B3B8]/40 text-xs tracking-wide">
-              {new Date().getFullYear()} Dent Society. All rights reserved.
+              {new Date().getFullYear()} Reign Services. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link href="/login">
@@ -87,15 +109,9 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-[#B3B3B8]/30 text-xs tracking-wide">
-                Engineered, not improvised.
+                DFW's Premier Interior/Exterior Renovations Experts
               </p>
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 pt-2">
-            <img src={startupAlchemistLogo} alt="Startup Alchemist" className="h-4 w-4 opacity-30 invert" />
-            <p className="text-[#B3B3B8]/30 text-[10px] tracking-wide">
-              Site designed & maintained by Startup Alchemist
-            </p>
           </div>
         </div>
       </div>

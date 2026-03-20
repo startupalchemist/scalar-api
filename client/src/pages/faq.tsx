@@ -1,50 +1,78 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
-    q: "How does the 48-hour guarantee work?",
-    a: "The 48-hour completion window begins once your insurer approves the repair and your vehicle is in our possession. If we exceed that window, we pay you $300. Documented. Enforced.",
+    category: "Getting Started",
+    q: "What is a free assessment and what does it include?",
+    a: "Our free assessment is a no-obligation, on-site visit by one of our project specialists. We evaluate your property, discuss your goals, and document the project scope. At the end, we provide a detailed proposal with transparent pricing — all at no cost to you.",
   },
   {
-    q: "Will I owe anything out of pocket?",
-    a: "In most cases, your insurance covers the full cost of hail damage repair minus your deductible. We coordinate directly with your carrier. No surprise bills.",
+    category: "Getting Started",
+    q: "Do you serve both residential and commercial properties?",
+    a: "Yes. Reign Services works with homeowners, HOAs, property investors, commercial developers, and business owners throughout the DFW metroplex. Our crews are licensed and insured for both residential and commercial scopes.",
   },
   {
-    q: "Do you work with my insurance company?",
-    a: "We work with all major insurance carriers. We handle the claim coordination, supplement filing, and approval process. You drop off the vehicle. We handle the rest.",
+    category: "Getting Started",
+    q: "What areas of DFW do you serve?",
+    a: "We serve the entire Dallas-Fort Worth metroplex, including Dallas, Fort Worth, Plano, Frisco, McKinney, Arlington, Irving, Denton, Garland, Mesquite, Carrollton, Grand Prairie, Flower Mound, Allen, Lewisville, and all surrounding communities.",
   },
   {
-    q: "What is paintless dent repair?",
-    a: "PDR is a precision technique that removes dents without affecting your vehicle's factory paint finish. No fillers. No repainting. The metal is restored to its original form using specialized tools and controlled pressure.",
+    category: "Custom Turf",
+    q: "How does the custom turf design and installation process work?",
+    a: "We start with a site assessment and design consultation to understand your space and goals. Our team handles everything: existing sod and topsoil removal, base preparation, drainage engineering, turf selection, and professional installation. We finish with detailed edge work and brushing to achieve a natural look.",
   },
   {
-    q: "How long does a typical repair take?",
-    a: "Most hail damage repairs are completed within 48 hours of insurance approval. Severity varies, but our process is engineered for speed without compromising quality.",
+    category: "Custom Turf",
+    q: "How long does artificial turf last?",
+    a: "With proper installation and occasional maintenance (rinsing and light brushing), premium artificial turf typically lasts 15–20 years. We use products specifically chosen for DFW's heat and climate conditions.",
   },
   {
-    q: "Do you offer a warranty?",
-    a: "Every repair carries a lifetime warranty against defects in workmanship. If something isn't right, bring it back. We fix it. No questions.",
+    category: "Custom Turf",
+    q: "Is artificial turf safe for children and pets?",
+    a: "Absolutely. We offer pet-friendly and child-safe turf options that are non-toxic, lead-free, and designed for high-traffic use. Our drainage systems also handle pet waste efficiently.",
   },
   {
-    q: "Can I get a rental car during repairs?",
-    a: "If your insurance policy includes rental coverage, we coordinate that as well. Most carriers provide a rental vehicle for the duration of the repair.",
+    category: "Foundation Repair",
+    q: "What are the signs I might need foundation repair?",
+    a: "Common indicators include cracks in interior walls (especially diagonal cracks), sticking doors or windows, uneven floors, gaps around window frames or exterior doors, and visible separation between walls and ceilings. If you notice any of these, contact us for a free assessment.",
   },
   {
-    q: "What if my vehicle has severe damage?",
-    a: "We assess every vehicle individually. If a repair requires additional time beyond 48 hours due to severity, we communicate that upfront before the clock begins. Transparency first.",
+    category: "Foundation Repair",
+    q: "How long does foundation repair take?",
+    a: "Most residential foundation repairs are completed within 2–5 days, depending on the extent of damage. We'll provide a clear timeline as part of your assessment and proposal.",
   },
   {
-    q: "Do you offer loaner vehicles?",
-    a: "Yes. Complimentary loaners are available, and we can deliver one when we pick up your vehicle.",
+    category: "Interior & Outdoor Remodeling",
+    q: "What interior remodeling services do you offer?",
+    a: "We offer full kitchen and bathroom renovations, custom cabinetry and countertop installation, flooring (hardwood, tile, LVP), lighting upgrades, layout reconfigurations, and commercial tenant improvements across the DFW area.",
   },
   {
-    q: "Can you pick up my vehicle?",
-    a: "Yes. Pickup and delivery are available based on scheduling.",
+    category: "Interior & Outdoor Remodeling",
+    q: "Do you handle permits and HOA approvals?",
+    a: "Yes. We manage all necessary permit applications and coordinate with HOAs on your behalf. We're familiar with the requirements across DFW municipalities and HOA communities.",
   },
   {
-    q: "When does the 48-hour clock begin?",
-    a: "Once your insurance formally approves the repair and your vehicle is in our possession.",
+    category: "Interior & Outdoor Remodeling",
+    q: "How long does a kitchen or bathroom remodel take?",
+    a: "Most kitchen remodels take 3–6 weeks and bathroom remodels 2–4 weeks, depending on scope. We provide a detailed project timeline before work begins and keep you updated throughout the process.",
+  },
+  {
+    category: "Outdoor Living",
+    q: "What does 'bespoke outdoor living space' mean?",
+    a: "It means a fully custom-designed outdoor environment built specifically for your property and lifestyle. This can include outdoor kitchens, covered pavilions, fire features, water elements, entertainment systems, custom lighting, and landscape integration — all designed from scratch to reflect your vision.",
+  },
+  {
+    category: "Pricing",
+    q: "How much does a turf installation or remodel cost?",
+    a: "Costs vary based on the size of the project, materials selected, and scope of work. We don't publish flat rates because every project is different — that's why we offer a free assessment. After visiting your property, we deliver a transparent, line-item quote with no hidden fees.",
+  },
+  {
+    category: "Pricing",
+    q: "What happens after I submit a contact request?",
+    a: "Our team will reach out within 24 hours to introduce ourselves and schedule your free on-site assessment. There is no obligation to move forward. We're here to help you understand your options — at no cost.",
   },
 ];
 
@@ -58,48 +86,104 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-6 text-left cursor-pointer group"
+        className="w-full flex items-center justify-between py-5 text-left cursor-pointer group"
         data-testid={`button-faq-${index}`}
       >
-        <span className="text-sm sm:text-base text-[#F5F5F7] font-medium pr-8">
+        <span className="text-sm sm:text-base text-[#F5F5F7] font-medium pr-8 group-hover:text-white transition-colors">
           {q}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-[#B3B3B8]/50 flex-shrink-0 transition-transform duration-300 ${
-            open ? "rotate-180" : ""
+          className={`w-4 h-4 text-[#5D3FD3]/60 flex-shrink-0 transition-transform duration-300 ${
+            open ? "rotate-180 text-[#5D3FD3]" : ""
           }`}
         />
       </button>
       {open && (
-        <div className="pb-6 pr-12">
-          <p className="text-[#B3B3B8]/70 text-sm leading-relaxed">{a}</p>
+        <div className="pb-5 pr-12">
+          <p className="text-[#B3B3B8]/75 text-sm leading-relaxed">{a}</p>
         </div>
       )}
     </div>
   );
 }
 
+const categories = [...new Set(faqs.map((f) => f.category))];
+
 export default function FAQ() {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const filtered = activeCategory
+    ? faqs.filter((f) => f.category === activeCategory)
+    : faqs;
+
   return (
     <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
       <section className="max-w-3xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
-        <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-4">
+        <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">
           FAQ
-        </p>
+        </span>
         <h1
-          className="text-4xl sm:text-5xl font-extrabold text-[#F5F5F7] uppercase tracking-tight mb-4"
+          className="mt-4 text-4xl sm:text-5xl font-extrabold text-white uppercase tracking-tight mb-4"
+          style={{ fontFamily: "Poppins, sans-serif" }}
           data-testid="text-faq-headline"
         >
-          Questions. Answered.
+          Questions Answered.
         </h1>
-        <p className="text-[#B3B3B8] text-lg mb-12 lg:mb-16">
-          No fluff. Just facts.
+        <p className="text-[#B3B3B8] text-lg mb-10">
+          Everything you need to know about working with Reign Services across DFW.
         </p>
 
+        <div className="flex flex-wrap gap-2 mb-10">
+          <button
+            onClick={() => setActiveCategory(null)}
+            className={`text-xs uppercase tracking-[0.12em] font-semibold px-3 py-1.5 rounded-sm border transition-colors ${
+              activeCategory === null
+                ? "bg-[#5D3FD3] text-white border-[#5D3FD3]"
+                : "text-[#B3B3B8] border-white/10 hover:border-white/20 hover:text-white"
+            }`}
+          >
+            All
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`text-xs uppercase tracking-[0.12em] font-semibold px-3 py-1.5 rounded-sm border transition-colors ${
+                activeCategory === cat
+                  ? "bg-[#5D3FD3] text-white border-[#5D3FD3]"
+                  : "text-[#B3B3B8] border-white/10 hover:border-white/20 hover:text-white"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         <div>
-          {faqs.map((faq, i) => (
+          {filtered.map((faq, i) => (
             <FaqItem key={i} q={faq.q} a={faq.a} index={i} />
           ))}
+        </div>
+
+        <div
+          className="mt-16 p-8 rounded-xl text-center"
+          style={{
+            background: "rgba(93,63,211,0.08)",
+            border: "1px solid rgba(93,63,211,0.25)",
+          }}
+        >
+          <p className="text-white font-semibold mb-2">Have a question we didn't answer?</p>
+          <p className="text-[#B3B3B8]/70 text-sm mb-6">
+            Reach out through our contact form or use the live chat. Our team responds within 24 hours.
+          </p>
+          <Link href="/contact?utm_source=faq&utm_medium=cta&utm_campaign=faq">
+            <Button
+              className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs uppercase tracking-[0.15em] font-semibold px-8"
+              data-testid="button-faq-contact"
+            >
+              Contact Us
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

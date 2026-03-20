@@ -123,11 +123,11 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-6 lg:px-10 pb-24">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold mb-1">
               Admin Panel
             </p>
             <h1 className="text-2xl font-bold text-[#F5F5F7] uppercase tracking-tight" data-testid="text-admin-headline">
-              Dent Society
+              Reign Services
             </h1>
           </div>
           <div className="flex items-center gap-3">
