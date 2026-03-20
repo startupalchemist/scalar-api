@@ -36,6 +36,7 @@ function HeroSection() {
           background: "rgba(10, 31, 68, 0.05)",
           backdropFilter: "blur(2px)",
           WebkitBackdropFilter: "blur(2px)",
+          backgroundImage: "linear-gradient(180deg, rgba(10,31,68,0.05) 0%, rgba(10,31,68,0.12) 100%)",
         }}
       />
 
