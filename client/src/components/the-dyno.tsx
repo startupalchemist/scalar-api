@@ -42,7 +42,7 @@ function GaugeSVG({
   size = 180,
   startAngle = -225,
   endAngle = 45,
-  color = "#FF192C",
+  color = "#5D3FD3",
   warningZone = 0.8,
   tickCount = 10,
 }: {
@@ -81,7 +81,7 @@ function GaugeSVG({
           y1={outer.y}
           x2={inner.x}
           y2={inner.y}
-          stroke={isWarning ? "#FF192C" : "#4A4A50"}
+          stroke={isWarning ? "#5D3FD3" : "#4A4A50"}
           strokeWidth={i % 2 === 0 ? 2 : 1}
           strokeLinecap="round"
         />
@@ -89,7 +89,7 @@ function GaugeSVG({
           <text
             x={labelPos.x}
             y={labelPos.y}
-            fill={isWarning ? "#FF192C" : "#666"}
+            fill={isWarning ? "#5D3FD3" : "#666"}
             fontSize={Math.max(Math.round(size * 0.04), 6)}
             textAnchor="middle"
             dominantBaseline="middle"
@@ -193,7 +193,7 @@ function VerticalBar({
   max,
   label,
   displayValue,
-  color = "#FF192C",
+  color = "#5D3FD3",
 }: {
   value: number;
   max: number;
@@ -241,7 +241,7 @@ export default function TheDyno() {
   if (isLoading || !stats?.dyno) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-dyno" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-dyno" />
       </div>
     );
   }
@@ -257,12 +257,12 @@ export default function TheDyno() {
 
         <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-8">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="h-px flex-1 max-w-16" style={{ background: "linear-gradient(to right, transparent, #FF192C33)" }} />
+            <div className="h-px flex-1 max-w-16" style={{ background: "linear-gradient(to right, transparent, #5D3FD333)" }} />
             <img src={logoMark} alt="DS" className="h-5 w-auto opacity-30" />
-            <span className="text-[10px] uppercase tracking-[0.4em] text-[#FF192C]/40 font-semibold">
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#5D3FD3]/40 font-semibold">
               The Dyno
             </span>
-            <div className="h-px flex-1 max-w-16" style={{ background: "linear-gradient(to left, transparent, #FF192C33)" }} />
+            <div className="h-px flex-1 max-w-16" style={{ background: "linear-gradient(to left, transparent, #5D3FD333)" }} />
           </div>
           <p className="text-center text-[9px] uppercase tracking-[0.3em] text-[#B3B3B8]/30 mb-8">
             Performance Instrument Cluster
@@ -293,7 +293,7 @@ export default function TheDyno() {
               unit="LEADS/30D"
               displayValue={String(d.rpm)}
               size={150}
-              color="#FF192C"
+              color="#5D3FD3"
               warningZone={0.8}
             />
 
@@ -316,7 +316,7 @@ export default function TheDyno() {
               unit={`${d.tempRaw}/5 AVG`}
               displayValue={d.tempRaw > 0 ? String(d.tempRaw) : "—"}
               size={150}
-              color={d.temp > 80 ? "#22C55E" : d.temp > 50 ? "#F59E0B" : "#FF192C"}
+              color={d.temp > 80 ? "#22C55E" : d.temp > 50 ? "#F59E0B" : "#5D3FD3"}
               warningZone={0.2}
             />
 
@@ -362,9 +362,9 @@ export default function TheDyno() {
         <div className="flex items-center justify-center gap-4 pb-4">
           {[
             { c: "#22C55E", l: "Pipeline" },
-            { c: "#FF192C", l: "Traffic" },
+            { c: "#5D3FD3", l: "Traffic" },
             { c: "#F59E0B", l: "Conversion" },
-            { c: d.temp > 80 ? "#22C55E" : d.temp > 50 ? "#F59E0B" : "#FF192C", l: "Sentiment" },
+            { c: d.temp > 80 ? "#22C55E" : d.temp > 50 ? "#F59E0B" : "#5D3FD3", l: "Sentiment" },
             { c: "#3B82F6", l: "CTA Rate" },
           ].map((item) => (
             <div key={item.l} className="flex items-center gap-1.5">
