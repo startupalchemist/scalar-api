@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import logoMark from "@assets/Asset_7@3x-8_1770967674840.png";
+import logoMark from "@assets/IMG_4743_1773978350169.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,9 +32,9 @@ export default function Login() {
     <div className="bg-[#0B0B0D] min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-3 mb-10">
-          <img src={logoMark} alt="Dent Society" className="h-10 w-auto" />
+          <img src={logoMark} alt="Reign Services" className="h-10 w-auto" />
           <span className="text-[#F5F5F7] font-semibold tracking-[0.2em] text-sm uppercase">
-            Dent Society
+            Reign Services
           </span>
         </div>
 
@@ -55,7 +55,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#5D3FD3]/50"
                 placeholder="email@example.com"
                 data-testid="input-login-email"
                 required
@@ -70,20 +70,20 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#FF192C]/50"
+                className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/30 focus:border-[#5D3FD3]/50"
                 data-testid="input-login-password"
                 required
               />
             </div>
 
             {error && (
-              <p className="text-xs text-[#FF192C]" data-testid="text-login-error">{error}</p>
+              <p className="text-xs text-red-400" data-testid="text-login-error">{error}</p>
             )}
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold"
+              className="w-full bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs uppercase tracking-[0.15em] font-semibold"
               data-testid="button-login-submit"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}

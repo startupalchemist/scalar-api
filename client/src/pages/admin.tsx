@@ -98,7 +98,7 @@ export default function Admin() {
   if (authLoading) {
     return (
       <div className="bg-[#0B0B0D] min-h-screen pt-24 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-auth" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-auth" />
       </div>
     );
   }
@@ -132,7 +132,7 @@ export default function Admin() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-[#B3B3B8]" data-testid="text-admin-user">{user.name}</span>
-            <Badge className="bg-[#FF192C]/20 text-[#FF192C] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
+            <Badge className="bg-[#5D3FD3]/20 text-[#5D3FD3] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
               {user.role}
             </Badge>
             <Button
@@ -151,7 +151,7 @@ export default function Admin() {
             <Button
               key={tab.key}
               variant={activeTab === tab.key ? "default" : "ghost"}
-              className={activeTab === tab.key ? "bg-[#FF192C] text-white" : "text-[#B3B3B8]"}
+              className={activeTab === tab.key ? "bg-[#5D3FD3] text-white" : "text-[#B3B3B8]"}
               onClick={() => setActiveTab(tab.key)}
               data-testid={`tab-${tab.key}`}
             >
@@ -260,7 +260,7 @@ function DashboardTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-dashboard" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-dashboard" />
       </div>
     );
   }
@@ -332,7 +332,7 @@ function DashboardTab() {
                 <span className="text-xs text-[#B3B3B8] w-8 text-right">{d.score} star</span>
                 <div className="flex-1 h-2 bg-[#0B0B0D] rounded-sm overflow-hidden">
                   <div
-                    className="h-full bg-[#FF192C] rounded-sm transition-all"
+                    className="h-full bg-[#5D3FD3] rounded-sm transition-all"
                     style={{ width: `${(d.count / maxDistCount) * 100}%` }}
                   />
                 </div>
@@ -387,7 +387,7 @@ function DashboardTab() {
               <div key={a.platform} className="p-4 rounded-md bg-[#141416] border border-white/5 flex flex-wrap items-center justify-between gap-3" data-testid={`analytics-platform-${a.platform}`}>
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="text-[#F5F5F7] text-sm font-semibold">{a.platform}</span>
-                  <Badge className="bg-[#FF192C]/20 text-[#FF192C] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
+                  <Badge className="bg-[#5D3FD3]/20 text-[#5D3FD3] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
                     {a.backlinkCount} {a.backlinkCount === 1 ? "link" : "links"}
                   </Badge>
                 </div>
@@ -425,7 +425,7 @@ function LeadsTab({ toast }: { toast: any }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-leads" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-leads" />
       </div>
     );
   }
@@ -532,7 +532,7 @@ function ArticlePreviewModal({ post, onClose }: { post: Post; onClose: () => voi
         <h1 className="text-2xl font-bold text-[#F5F5F7] mb-4 pr-10" data-testid="text-preview-title">{post.title}</h1>
 
         {post.excerpt && (
-          <p className="text-[#B3B3B8] italic mb-6 border-l-2 border-[#FF192C] pl-4" data-testid="text-preview-excerpt">{post.excerpt}</p>
+          <p className="text-[#B3B3B8] italic mb-6 border-l-2 border-[#5D3FD3] pl-4" data-testid="text-preview-excerpt">{post.excerpt}</p>
         )}
 
         {post.tags && post.tags.length > 0 && (
@@ -600,7 +600,7 @@ function TopicPreviewModal({ topic, onClose }: { topic: Topic; onClose: () => vo
         <h1 className="text-2xl font-bold text-[#F5F5F7] mb-4 pr-10" data-testid="text-topic-preview-title">{topic.title}</h1>
 
         {topic.overview && (
-          <p className="text-[#B3B3B8] leading-relaxed mb-6 border-l-2 border-[#FF192C] pl-4" data-testid="text-topic-preview-overview">{topic.overview}</p>
+          <p className="text-[#B3B3B8] leading-relaxed mb-6 border-l-2 border-[#5D3FD3] pl-4" data-testid="text-topic-preview-overview">{topic.overview}</p>
         )}
 
         {topic.reasoning && (
@@ -691,7 +691,7 @@ function BlogTab({
           <Button
             key={tab.key}
             variant={blogSubTab === tab.key ? "default" : "ghost"}
-            className={blogSubTab === tab.key ? "bg-[#FF192C] text-white" : "text-[#B3B3B8]"}
+            className={blogSubTab === tab.key ? "bg-[#5D3FD3] text-white" : "text-[#B3B3B8]"}
             onClick={() => setBlogSubTab(tab.key)}
             data-testid={`subtab-${tab.key}`}
           >
@@ -846,7 +846,7 @@ function TopicsSubTab({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-topics" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-topics" />
       </div>
     );
   }
@@ -857,7 +857,7 @@ function TopicsSubTab({
         <Button
           onClick={() => getTopics.mutate()}
           disabled={getTopics.isPending}
-          className="bg-[#FF192C] text-white"
+          className="bg-[#5D3FD3] text-white"
           data-testid="button-get-topics"
         >
           {getTopics.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
@@ -887,7 +887,7 @@ function TopicsSubTab({
             <Button
               onClick={() => aiTopic.trim() && generateSingleArticle.mutate(aiTopic.trim())}
               disabled={generateSingleArticle.isPending || !aiTopic.trim()}
-              className="bg-[#FF192C] text-white"
+              className="bg-[#5D3FD3] text-white"
               data-testid="button-ai-submit"
             >
               {generateSingleArticle.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
@@ -957,7 +957,7 @@ function TopicsSubTab({
                 <Button
                   onClick={() => generateArticle.mutate(topic.id)}
                   disabled={generateArticle.isPending || topic.status === "generating" || topic.status === "generated"}
-                  className="bg-[#FF192C] text-white"
+                  className="bg-[#5D3FD3] text-white"
                   data-testid={`button-generate-article-${topic.id}`}
                 >
                   {(generateArticle.isPending || topic.status === "generating") ? (
@@ -1027,7 +1027,7 @@ function PublisherQueueSubTab({ toast, onPreview }: { toast: any; onPreview: (po
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-queue" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-queue" />
       </div>
     );
   }
@@ -1074,7 +1074,7 @@ function PublisherQueueSubTab({ toast, onPreview }: { toast: any; onPreview: (po
                 <Button
                   onClick={() => publishPost.mutate(post.id)}
                   disabled={publishPost.isPending}
-                  className="bg-[#FF192C] text-white"
+                  className="bg-[#5D3FD3] text-white"
                   data-testid={`button-publish-${post.id}`}
                 >
                   {publishPost.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Globe className="w-4 h-4 mr-2" />}
@@ -1118,7 +1118,7 @@ function ArchiveSubTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-archive" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-archive" />
       </div>
     );
   }
@@ -1167,7 +1167,7 @@ function PublishedSubTab({ onPreview }: { onPreview: (post: Post) => void }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-published" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-published" />
       </div>
     );
   }
@@ -1314,7 +1314,7 @@ function BacklinksSubTab({ toast }: { toast: any }) {
             <Button
               onClick={() => researchPlatforms.mutate(selectedPostId)}
               disabled={researchPlatforms.isPending}
-              className="bg-[#FF192C] text-white"
+              className="bg-[#5D3FD3] text-white"
               data-testid="button-research-platforms"
             >
               {researchPlatforms.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
@@ -1355,7 +1355,7 @@ function BacklinksSubTab({ toast }: { toast: any }) {
               <Button
                 onClick={() => platformInput.trim() && generateBacklink.mutate({ postId: selectedPostId, platform: platformInput.trim() })}
                 disabled={generateBacklink.isPending || !platformInput.trim()}
-                className="bg-[#FF192C] text-white"
+                className="bg-[#5D3FD3] text-white"
                 data-testid="button-generate-backlink"
               >
                 {generateBacklink.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Link2 className="w-4 h-4 mr-2" />}
@@ -1368,7 +1368,7 @@ function BacklinksSubTab({ toast }: { toast: any }) {
             <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 mb-3">Existing Backlinks</p>
             {backlinksLoading ? (
               <div className="flex items-center justify-center py-10">
-                <Loader2 className="w-5 h-5 text-[#FF192C] animate-spin" data-testid="loader-backlinks" />
+                <Loader2 className="w-5 h-5 text-[#5D3FD3] animate-spin" data-testid="loader-backlinks" />
               </div>
             ) : backlinks.length === 0 ? (
               <p className="text-center py-8 text-[#B3B3B8]/50 text-sm" data-testid="text-no-backlinks">No backlinks yet for this post.</p>
@@ -1481,7 +1481,7 @@ function NewsletterTab({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-newsletter" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-newsletter" />
       </div>
     );
   }
@@ -1493,7 +1493,7 @@ function NewsletterTab({
       <div>
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50">Subscribers</p>
-          <Badge className="bg-[#FF192C]/20 text-[#FF192C] border-0 no-default-hover-elevate no-default-active-elevate text-xs" data-testid="badge-subscriber-count">
+          <Badge className="bg-[#5D3FD3]/20 text-[#5D3FD3] border-0 no-default-hover-elevate no-default-active-elevate text-xs" data-testid="badge-subscriber-count">
             {activeCount} active
           </Badge>
         </div>
@@ -1552,7 +1552,7 @@ function NewsletterTab({
               createNewsletter.mutate({ subject: nlSubject, htmlContent: nlContent });
             }}
             disabled={createNewsletter.isPending || !nlSubject.trim() || !nlContent.trim()}
-            className="bg-[#FF192C] text-white"
+            className="bg-[#5D3FD3] text-white"
             data-testid="button-newsletter-save"
           >
             {createNewsletter.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
@@ -1588,7 +1588,7 @@ function NewsletterTab({
                   variant="ghost"
                   onClick={() => sendNewsletter.mutate(nl.id)}
                   disabled={sendNewsletter.isPending}
-                  className="text-[#FF192C]"
+                  className="text-[#5D3FD3]"
                   data-testid={`button-send-newsletter-${nl.id}`}
                 >
                   {sendNewsletter.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
@@ -1659,7 +1659,7 @@ function UsersTab({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" data-testid="loader-users" />
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-users" />
       </div>
     );
   }
@@ -1669,7 +1669,7 @@ function UsersTab({
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <Button
           onClick={() => setShowAddUser(!showAddUser)}
-          className="bg-[#FF192C] text-white"
+          className="bg-[#5D3FD3] text-white"
           data-testid="button-add-user"
         >
           <Plus className="w-4 h-4 mr-2" /> Add User
@@ -1719,7 +1719,7 @@ function UsersTab({
                 createUser.mutate(userForm);
               }}
               disabled={createUser.isPending || !userForm.name.trim() || !userForm.email.trim() || !userForm.password.trim()}
-              className="bg-[#FF192C] text-white"
+              className="bg-[#5D3FD3] text-white"
               data-testid="button-user-submit"
             >
               {createUser.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
@@ -1742,7 +1742,7 @@ function UsersTab({
             <div className="flex flex-wrap items-center gap-4">
               <span className="text-[#F5F5F7] font-semibold text-sm">{u.name}</span>
               <span className="text-[#B3B3B8] text-sm">{u.email}</span>
-              <Badge className="bg-[#FF192C]/20 text-[#FF192C] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
+              <Badge className="bg-[#5D3FD3]/20 text-[#5D3FD3] border-0 no-default-hover-elevate no-default-active-elevate text-xs">
                 {u.role}
               </Badge>
             </div>
@@ -1873,7 +1873,7 @@ function IntegrationsTab({ toast }: { toast: any }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-5 h-5 text-[#FF192C] animate-spin" data-testid="loader-webhooks" />
+        <Loader2 className="w-5 h-5 text-[#5D3FD3] animate-spin" data-testid="loader-webhooks" />
       </div>
     );
   }
@@ -1884,7 +1884,7 @@ function IntegrationsTab({ toast }: { toast: any }) {
       <div data-testid="panel-webhook-logs">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-1">Delivery Log</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold mb-1">Delivery Log</p>
             <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight">{hookName}</h2>
           </div>
           <Button variant="ghost" onClick={() => setViewLogs(null)} data-testid="button-back-webhooks">
@@ -1931,7 +1931,7 @@ function IntegrationsTab({ toast }: { toast: any }) {
     <div data-testid="panel-integrations">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-[#FF192C] font-semibold mb-1">Integrations</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold mb-1">Integrations</p>
           <h2 className="text-xl font-bold text-[#F5F5F7] uppercase tracking-tight">Webhooks</h2>
           <p className="text-[#B3B3B8]/60 text-sm mt-1">Connect your CRM to Zapier, Make, or custom systems</p>
         </div>
@@ -1976,7 +1976,7 @@ function IntegrationsTab({ toast }: { toast: any }) {
                     key={event}
                     className={`cursor-pointer border-0 text-xs ${
                       form.events.includes(event)
-                        ? "bg-[#FF192C]/20 text-[#FF192C]"
+                        ? "bg-[#5D3FD3]/20 text-[#5D3FD3]"
                         : "bg-white/5 text-[#B3B3B8]/50"
                     }`}
                     onClick={() => toggleEvent(event)}

@@ -42,7 +42,7 @@ function renderMarkdown(content: string): string {
       const safeHref = escapeHtml(href.trim());
       linkPlaceholders.push({
         placeholder,
-        html: `<a href="${safeHref}" class="text-[#FF192C] hover:text-[#FF192C]/80 underline underline-offset-2 transition-colors">${safeText}</a>`
+        html: `<a href="${safeHref}" class="text-[#5D3FD3] hover:text-[#7a5ce8] underline underline-offset-2 transition-colors">${safeText}</a>`
       });
       return placeholder;
     })
@@ -51,7 +51,7 @@ function renderMarkdown(content: string): string {
       const label = match.replace(/^\//, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       linkPlaceholders.push({
         placeholder,
-        html: `<a href="${escapeHtml(match)}" class="text-[#FF192C] hover:text-[#FF192C]/80 underline underline-offset-2 transition-colors">${escapeHtml(label)}</a>`
+        html: `<a href="${escapeHtml(match)}" class="text-[#5D3FD3] hover:text-[#7a5ce8] underline underline-offset-2 transition-colors">${escapeHtml(label)}</a>`
       });
       return placeholder;
     });
@@ -62,7 +62,7 @@ function renderMarkdown(content: string): string {
     const placeholder = `%%BULLET_${bIdx++}%%`;
     bulletPlaceholders.push({
       placeholder,
-      html: `<li class="text-[#555558] leading-relaxed">${escapeHtml(item)}</li>`
+      html: `<li class="text-[#B3B3B8] leading-relaxed">${escapeHtml(item)}</li>`
     });
     return placeholder;
   });
@@ -80,7 +80,7 @@ function renderMarkdown(content: string): string {
     const bulletMatch = bulletPlaceholders.find(b => line.includes(b.placeholder));
     if (bulletMatch) {
       if (!inList) {
-        outputLines.push('<ul class="list-disc list-inside text-[#555558] text-sm leading-relaxed mb-4 space-y-1 ml-2">');
+        outputLines.push('<ul class="list-disc list-inside text-[#B3B3B8] text-sm leading-relaxed mb-4 space-y-1 ml-2">');
         inList = true;
       }
       outputLines.push(line.replace(bulletMatch.placeholder, bulletMatch.html));
@@ -96,12 +96,12 @@ function renderMarkdown(content: string): string {
   safe = outputLines.join('\n');
 
   return safe
-    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-[#111111] mt-8 mb-3">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-[#111111] mt-10 mb-4">$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#111111]">$1</strong>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold text-white mt-8 mb-3">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-white mt-10 mb-4">$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>')
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\n\n/g, '</p><p class="text-[#555558] leading-relaxed mb-4">')
-    .replace(/^/, '<p class="text-[#555558] leading-relaxed mb-4">')
+    .replace(/\n\n/g, '</p><p class="text-[#B3B3B8] leading-relaxed mb-4">')
+    .replace(/^/, '<p class="text-[#B3B3B8] leading-relaxed mb-4">')
     .replace(/$/, "</p>");
 }
 
@@ -126,7 +126,7 @@ export default function BlogPost() {
 
   useEffect(() => {
     if (!post) return;
-    document.title = post.seoTitle || `${post.title} | Dent Society`;
+    document.title = post.seoTitle || `${post.title} | Reign Services`;
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
       if (!el) { el = document.createElement("meta"); el.name = name; document.head.appendChild(el); }
@@ -154,11 +154,11 @@ export default function BlogPost() {
       description: post.excerpt || post.seoDescription || "",
       datePublished: post.publishedAt,
       ...(post.seoKeywords?.length ? { keywords: post.seoKeywords.join(", ") } : {}),
-      publisher: { "@type": "Organization", name: "Dent Society" },
+      publisher: { "@type": "Organization", name: "Reign Services" },
     });
 
     return () => {
-      document.title = "Dent Society";
+      document.title = "Reign Services";
       document.querySelector('meta[name="description"]')?.remove();
       document.querySelector('meta[name="keywords"]')?.remove();
       document.querySelector('meta[property="og:title"]')?.remove();
@@ -173,7 +173,6 @@ export default function BlogPost() {
     if (!post) return;
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(post.title);
-    const excerpt = encodeURIComponent(post.excerpt || "");
 
     let shareUrl = "";
     switch (platform) {
@@ -201,20 +200,23 @@ export default function BlogPost() {
 
   if (isLoading) {
     return (
-      <div className="bg-background min-h-screen pt-24 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-[#FF192C] animate-spin" />
+      <div className="bg-[#0B0B0D] min-h-screen pt-24 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" />
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="bg-background min-h-screen pt-24 lg:pt-32">
+      <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
         <div className="max-w-3xl mx-auto px-6 lg:px-10 text-center py-20">
-          <h1 className="text-2xl font-bold text-[#111111] mb-4" data-testid="text-post-not-found">Article Not Found</h1>
-          <p className="text-[#555558] mb-8">This article may have been moved or removed.</p>
+          <h1 className="text-2xl font-bold text-white mb-4" data-testid="text-post-not-found">Article Not Found</h1>
+          <p className="text-[#B3B3B8] mb-8">This article may have been moved or removed.</p>
           <Link href="/blog">
-            <Button className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold" data-testid="button-back-to-blog">
+            <Button
+              className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs uppercase tracking-[0.15em] font-semibold"
+              data-testid="button-back-to-blog"
+            >
               Back to Blog
             </Button>
           </Link>
@@ -224,11 +226,10 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="bg-background min-h-screen pt-24 lg:pt-32">
-
+    <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
       <article className="max-w-3xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
         <Link href="/blog">
-          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#555558] hover:text-[#FF192C] transition-colors cursor-pointer mb-8" data-testid="link-back-to-blog">
+          <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-[#B3B3B8]/60 hover:text-[#5D3FD3] transition-colors cursor-pointer mb-8" data-testid="link-back-to-blog">
             <ArrowLeft className="w-3 h-3" />
             Back to Blog
           </span>
@@ -236,24 +237,25 @@ export default function BlogPost() {
 
         <div className="mb-10">
           <div className="flex flex-wrap items-center gap-4 mb-4">
-            <p className="text-xs text-[#555558]/60 uppercase tracking-[0.15em]">
+            <p className="text-xs text-[#B3B3B8]/50 uppercase tracking-[0.15em]">
               {post.publishedAt
                 ? new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
                 : ""}
             </p>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-xs text-[#555558]/40" data-testid="text-read-count">
+              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-read-count">
                 <Eye className="w-3 h-3" />
                 {post.readCount}
               </span>
-              <span className="flex items-center gap-1 text-xs text-[#555558]/40" data-testid="text-share-count">
+              <span className="flex items-center gap-1 text-xs text-[#B3B3B8]/40" data-testid="text-share-count">
                 <Share2 className="w-3 h-3" />
                 {post.shareCount}
               </span>
             </div>
           </div>
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] uppercase tracking-tight leading-[1.05]"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white uppercase tracking-tight leading-[1.05]"
+            style={{ fontFamily: "Poppins, sans-serif" }}
             data-testid="text-post-title"
           >
             {post.title}
@@ -263,7 +265,7 @@ export default function BlogPost() {
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] uppercase tracking-[0.15em] text-[#FF192C]/70 bg-[#FF192C]/5 px-2 py-0.5 rounded"
+                  className="text-[10px] uppercase tracking-[0.15em] text-[#5D3FD3]/80 bg-[#5D3FD3]/10 px-2 py-0.5 rounded"
                 >
                   {tag}
                 </span>
@@ -273,55 +275,59 @@ export default function BlogPost() {
         </div>
 
         <div
-          className="prose prose-invert max-w-none"
+          className="prose-reign"
           data-testid="blog-post-content"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
         />
 
-        <div className="mt-16 pt-8 border-t border-black/8">
+        <div className="mt-16 pt-8 border-t border-white/5">
           <div className="flex flex-wrap items-center justify-between gap-6">
-            <Link href="/contact">
+            <Link href="/contact?utm_source=blog&utm_medium=post_cta&utm_campaign=blog">
               <Button
-                className="bg-[#FF192C] text-white border-[#FF192C] text-xs uppercase tracking-[0.15em] font-semibold px-8"
+                className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs uppercase tracking-[0.15em] font-semibold px-8"
                 data-testid="button-post-cta"
               >
-                Get a Free Estimate
+                Book Free Assessment
               </Button>
             </Link>
 
             <div className="flex items-center gap-1">
-              <span className="text-xs text-[#555558]/40 uppercase tracking-[0.15em] mr-2">Share</span>
+              <span className="text-xs text-[#B3B3B8]/40 uppercase tracking-[0.15em] mr-2">Share</span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleShare("twitter")}
+                className="text-[#B3B3B8] hover:text-white"
                 data-testid="button-share-twitter"
               >
-                <SiX className="w-4 h-4 text-[#555558]" />
+                <SiX className="w-4 h-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleShare("facebook")}
+                className="text-[#B3B3B8] hover:text-white"
                 data-testid="button-share-facebook"
               >
-                <SiFacebook className="w-4 h-4 text-[#555558]" />
+                <SiFacebook className="w-4 h-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleShare("linkedin")}
+                className="text-[#B3B3B8] hover:text-white"
                 data-testid="button-share-linkedin"
               >
-                <SiLinkedin className="w-4 h-4 text-[#555558]" />
+                <SiLinkedin className="w-4 h-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleShare("copy")}
+                className="text-[#B3B3B8] hover:text-white"
                 data-testid="button-share-copy"
               >
-                <Share2 className="w-4 h-4 text-[#555558]" />
+                <Share2 className="w-4 h-4" />
               </Button>
             </div>
           </div>

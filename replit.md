@@ -25,7 +25,7 @@ Dark-themed website for Reign Services, a Dallas-Fort Worth premium renovation c
 - Colors: #0B0B0D bg, #141416 cards, #5D3FD3 purple primary, #0A1F44 navy blue accent, #F5F5F7 text, #B3B3B8 secondary text
 - Tone: Premium, professional, confident. No exclamation hype. Results-focused.
 - Logos: IMG_4743_1773978350169.png (header), IMG_8426_1773978350170.png (footer)
-- Hero video: attached_assets/generated_videos/pdr_hero_timelapse.mp4 (placeholder — owner to replace with turf timelapse)
+- Hero video: attached_assets/generated_videos/turf_install_timelapse.mp4 (AI-generated: luxury Texas backyard turf install + outdoor living, golden hour, cinematic 720p 6s)
 - CTA label everywhere: "Book Free Assessment"
 
 ## Pages
