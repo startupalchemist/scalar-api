@@ -78,13 +78,13 @@ function HeroSection() {
               Book Free Assessment
             </Button>
           </Link>
-          <Link href="/services">
+          <Link href="/contact?utm_source=website&utm_medium=hero_secondary&utm_campaign=homepage">
             <Button
               variant="ghost"
               className="text-white border border-white/20 hover:bg-white/5 text-sm uppercase tracking-[0.15em] font-semibold px-8 py-6"
-              data-testid="button-view-services-hero"
+              data-testid="button-chat-hero"
             >
-              View Services
+              Chat With Our Team
             </Button>
           </Link>
         </div>

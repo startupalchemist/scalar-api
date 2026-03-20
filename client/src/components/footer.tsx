@@ -32,7 +32,7 @@ export default function Footer() {
                   Reign Services
                 </span>
                 <span className="text-[#B3B3B8]/50 text-[10px] tracking-widest uppercase">
-                  DFW's Premier Renovations Experts
+                  DFW's Premier Interior/Exterior Renovations
                 </span>
               </div>
             </div>
