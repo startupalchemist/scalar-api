@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Leaf, Home as HomeIcon, Wrench, Sun, Trees, Square, Shield, Star, MapPin, ChevronRight,
 } from "lucide-react";
-import turfVideo from "@assets/generated_videos/turf_install_timelapse.mp4";
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -37,7 +36,13 @@ function HeroSection() {
     const video = videoRef.current;
     if (!video) return;
     video.muted = true;
-    video.play().catch(() => {});
+    const tryPlay = () => { video.play().catch(() => {}); };
+    if (video.readyState >= 3) {
+      tryPlay();
+    } else {
+      video.addEventListener("canplay", tryPlay, { once: true });
+    }
+    return () => video.removeEventListener("canplay", tryPlay);
   }, []);
 
   return (
@@ -50,11 +55,13 @@ function HeroSection() {
         muted
         loop
         playsInline
+        preload="auto"
         className="absolute inset-0 w-full h-full object-cover"
         style={{ opacity: 0.35 }}
         data-testid="video-hero-background"
+        onCanPlay={() => { videoRef.current?.play().catch(() => {}); }}
       >
-        <source src={turfVideo} type="video/mp4" />
+        <source src="/hero.mp4" type="video/mp4" />
       </video>
 
       <div
