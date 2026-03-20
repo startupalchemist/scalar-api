@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Leaf, Home as HomeIcon, Wrench, Sun, Trees, Square, Shield, Star, MapPin, ChevronRight,
 } from "lucide-react";
-import turfVideo from "@assets/generated_videos/pdr_hero_timelapse.mp4";
+import turfVideo from "@assets/generated_videos/turf_install_timelapse.mp4";
 
 function HeroSection() {
   const [visible, setVisible] = useState(false);
