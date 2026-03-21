@@ -125,19 +125,8 @@ export default function CustomTurfInstall() {
             <p className="mt-4 text-[#B3B3B8]/80 text-sm leading-relaxed max-w-2xl">
               Want something truly bespoke? Our custom pattern turf is made to order — geometric cuts, floral designs, branded logo inlays, and architectural patterns. Available for residential showpieces, commercial properties, hospitality spaces, and brand activations across DFW.
             </p>
-            <div
-              className="mt-5 inline-flex flex-wrap items-center gap-3 px-4 py-3 rounded-lg"
-              style={{
-                background: "rgba(93,63,211,0.12)",
-                border: "1px solid rgba(93,63,211,0.25)",
-              }}
-            >
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#5D3FD3] font-semibold">Pricing Guide</span>
-              <span className="text-white text-sm font-semibold">Starting around $20–$25 per sq ft</span>
-              <span className="text-[#B3B3B8]/50 text-xs">— quoted per project</span>
-            </div>
-            <p className="mt-3 text-xs text-[#B3B3B8]/40 leading-relaxed">
-              Custom pattern pricing varies by design complexity, order size, and material. Final quotes are confirmed at assessment.
+            <p className="mt-4 text-[#B3B3B8]/50 text-xs leading-relaxed">
+              Every project is quoted individually — design complexity, size, and material are all factors. The best way to get accurate numbers is a free walk-through with our team.
             </p>
             <div className="mt-6">
               <Link href="/contact?utm_source=service_page&utm_medium=custom_patterns_cta&utm_campaign=custom-turf-install">

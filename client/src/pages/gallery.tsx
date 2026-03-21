@@ -169,9 +169,9 @@ export default function Gallery() {
                 Made-to-Order Turf Design
               </h2>
               <p className="mt-2 text-sm text-[#B3B3B8]/70">
-                Custom patterns available — geometric, floral, branded logos, and more.{" "}
+                Geometric, floral, branded logos, and more — every pattern is quoted individually.{" "}
                 <Link href="/contact?utm_source=gallery&utm_medium=patterns_inline_cta">
-                  <span className="text-[#5D3FD3] hover:text-white transition-colors cursor-pointer">Contact us for pricing.</span>
+                  <span className="text-[#5D3FD3] hover:text-white transition-colors cursor-pointer">Request a free estimate.</span>
                 </Link>
               </p>
             </div>
