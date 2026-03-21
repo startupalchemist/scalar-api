@@ -48,6 +48,10 @@ import {
   Star,
   TrendingUp,
   Gauge,
+  Target,
+  Tag,
+  Pencil,
+  Save,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import TheDyno from "@/components/the-dyno";
@@ -78,7 +82,7 @@ const statusColors: Record<string, string> = {
   "Closed": "bg-gray-500/20 text-gray-400",
 };
 
-type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations";
+type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations" | "seo";
 
 export default function Admin() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -116,6 +120,7 @@ export default function Admin() {
     { key: "newsletter", label: "Newsletter", icon: Mail },
     ...(user.role === "root" || user.role === "admin" ? [{ key: "users" as TabKey, label: "Users", icon: Users }] : []),
     ...(user.role === "root" || user.role === "admin" ? [{ key: "integrations" as TabKey, label: "Integrations", icon: Zap }] : []),
+    ...(user.role === "root" || user.role === "admin" ? [{ key: "seo" as TabKey, label: "SEO", icon: Target }] : []),
   ];
 
   return (
@@ -196,6 +201,9 @@ export default function Admin() {
         )}
         {activeTab === "integrations" && (user.role === "root" || user.role === "admin") && (
           <IntegrationsTab toast={toast} />
+        )}
+        {activeTab === "seo" && (user.role === "root" || user.role === "admin") && (
+          <SeoTab toast={toast} userRole={user.role} />
         )}
       </div>
     </div>
@@ -2078,6 +2086,353 @@ function IntegrationsTab({ toast }: { toast: any }) {
             <Zap className="w-8 h-8 text-[#B3B3B8]/20 mx-auto mb-3" />
             <p className="text-[#B3B3B8]/50 text-sm mb-1">No webhooks configured</p>
             <p className="text-[#B3B3B8]/30 text-xs">Add a webhook to send real-time data to Zapier, Make, or your own systems</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── SEO Tab ──────────────────────────────────────────────────────────────────
+
+interface SeoGlobal { siteTitle: string; metaDescription: string; ogImageUrl: string; }
+interface PageSeo { page: string; route: string; title: string; description: string; keywords: string; }
+interface SeoKeyword { id: string; keyword: string; priority: "high" | "medium" | "low"; status: "tracking" | "ranking" | "testing" | "paused"; notes: string; }
+
+const DEFAULT_PAGES: PageSeo[] = [
+  { page: "Home", route: "/", title: "Reign Services - DFW's Premier Interior/Exterior Renovations Experts", description: "Residential and commercial renovation specialists serving the Dallas-Fort Worth metroplex.", keywords: "custom turf DFW, renovation contractor Dallas" },
+  { page: "About", route: "/about", title: "About Reign Services | DFW Renovation Experts", description: "Meet the Reign Services team — DFW's premier renovation contractor for residential and commercial projects.", keywords: "about Reign Services, DFW contractor" },
+  { page: "Contact", route: "/contact", title: "Contact Reign Services | Free Assessment | DFW", description: "Book your free on-site assessment. Our team serves all of Dallas-Fort Worth.", keywords: "contact Reign Services, free assessment DFW" },
+  { page: "Services", route: "/services", title: "Renovation Services | Reign Services DFW", description: "Custom turf, foundation repair, interior and outdoor remodeling, outdoor living spaces, and turf & pavers.", keywords: "renovation services DFW, turf and pavers, outdoor living" },
+  { page: "Gallery", route: "/gallery", title: "Project Gallery | Reign Services", description: "Real projects across DFW — from backyard turf transformations to commercial installations.", keywords: "turf gallery DFW, renovation photos, outdoor living gallery" },
+  { page: "Custom Turf Design & Install", route: "/custom-turf-install", title: "Custom Turf Design & Install | Reign Services DFW", description: "Bespoke artificial turf installations for residential and commercial properties across DFW.", keywords: "custom turf install DFW, artificial turf contractor, turf design Dallas" },
+  { page: "Foundation Repair", route: "/foundation-repair", title: "Foundation Repair | Reign Services DFW", description: "Expert foundation repair services for homes and commercial properties across Dallas-Fort Worth.", keywords: "foundation repair DFW, foundation contractor Dallas" },
+  { page: "Interior Remodeling", route: "/interior-remodeling", title: "Interior Remodeling | Reign Services DFW", description: "Complete interior renovation services across the Dallas-Fort Worth metroplex.", keywords: "interior remodeling DFW, home renovation Dallas" },
+  { page: "Outdoor Remodeling", route: "/outdoor-remodeling", title: "Outdoor Remodeling | Reign Services DFW", description: "Transform your outdoor spaces with Reign Services — professional outdoor remodeling across DFW.", keywords: "outdoor remodeling DFW, backyard renovation Dallas" },
+  { page: "Outdoor Living Spaces", route: "/outdoor-living", title: "Bespoke Outdoor Living Spaces | Reign Services DFW", description: "Custom outdoor living spaces — pergolas, covered patios, kitchens, and more across DFW.", keywords: "outdoor living spaces DFW, pergola contractor Dallas" },
+  { page: "Turf & Pavers", route: "/turf-and-pavers", title: "Turf & Pavers | Reign Services DFW", description: "Premium turf and paver installations for pools, patios, and commercial properties across Dallas-Fort Worth.", keywords: "turf and pavers DFW, paver contractor Dallas" },
+  { page: "Blog", route: "/blog", title: "Blog | Reign Services - DFW Renovation Tips", description: "Expert renovation tips, project spotlights, and industry insights from the Reign Services team.", keywords: "DFW renovation blog, turf tips, outdoor living ideas" },
+  { page: "FAQ", route: "/faq", title: "FAQ | Reign Services DFW", description: "Answers to your most common questions about our renovation services and free assessment process.", keywords: "Reign Services FAQ, renovation questions DFW" },
+];
+
+const PRIORITY_COLORS: Record<string, string> = {
+  high: "bg-red-500/20 text-red-400",
+  medium: "bg-amber-500/20 text-amber-400",
+  low: "bg-emerald-500/20 text-emerald-400",
+};
+const STATUS_COLORS: Record<string, string> = {
+  tracking: "bg-[#5D3FD3]/20 text-[#5D3FD3]",
+  ranking: "bg-green-500/20 text-green-400",
+  testing: "bg-sky-500/20 text-sky-400",
+  paused: "bg-gray-500/20 text-gray-400",
+};
+
+function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
+  const isRoot = userRole === "root";
+
+  const { data: seoData, isLoading, refetch } = useQuery<{ global: SeoGlobal | null; pages: PageSeo[] | null; keywords: SeoKeyword[] | null }>({
+    queryKey: ["/api/seo"],
+    queryFn: async () => {
+      const res = await fetch("/api/seo", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch SEO");
+      return res.json();
+    },
+  });
+
+  const [globalForm, setGlobalForm] = useState<SeoGlobal>({ siteTitle: "", metaDescription: "", ogImageUrl: "" });
+  const [pages, setPages] = useState<PageSeo[]>(DEFAULT_PAGES);
+  const [editingPage, setEditingPage] = useState<string | null>(null);
+  const [editPageForm, setEditPageForm] = useState<PageSeo | null>(null);
+  const [keywords, setKeywords] = useState<SeoKeyword[]>([]);
+  const [showAddKeyword, setShowAddKeyword] = useState(false);
+  const [newKw, setNewKw] = useState<Omit<SeoKeyword, "id">>({ keyword: "", priority: "medium", status: "tracking", notes: "" });
+
+  const [initialized, setInitialized] = useState(false);
+  if (!initialized && seoData) {
+    if (seoData.global) setGlobalForm(seoData.global);
+    if (seoData.pages) setPages(seoData.pages);
+    if (seoData.keywords) setKeywords(seoData.keywords);
+    setInitialized(true);
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
+      const res = await fetch("/api/seo", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/seo"] });
+      toast({ title: "Saved" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const handleGlobalSave = () => saveMutation.mutate({ key: "seo_global", value: globalForm });
+
+  const handlePageEdit = (route: string) => {
+    const p = pages.find(p => p.route === route);
+    if (p) { setEditingPage(route); setEditPageForm({ ...p }); }
+  };
+
+  const handlePageSave = () => {
+    if (!editPageForm) return;
+    const updated = pages.map(p => p.route === editPageForm.route ? editPageForm : p);
+    setPages(updated);
+    saveMutation.mutate({ key: "seo_pages", value: updated });
+    setEditingPage(null);
+    setEditPageForm(null);
+  };
+
+  const handleAddKeyword = () => {
+    if (!newKw.keyword.trim()) return;
+    const updated = [...keywords, { ...newKw, id: Date.now().toString() }];
+    setKeywords(updated);
+    saveMutation.mutate({ key: "seo_keywords", value: updated });
+    setNewKw({ keyword: "", priority: "medium", status: "tracking", notes: "" });
+    setShowAddKeyword(false);
+  };
+
+  const handleDeleteKeyword = (id: string) => {
+    const updated = keywords.filter(k => k.id !== id);
+    setKeywords(updated);
+    saveMutation.mutate({ key: "seo_keywords", value: updated });
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" /></div>;
+  }
+
+  return (
+    <div className="space-y-10" data-testid="tab-seo-content">
+      {!isRoot && (
+        <div className="flex items-center gap-2 p-3 rounded-md bg-amber-500/10 border border-amber-500/20">
+          <Eye className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <p className="text-xs text-amber-400">You have view-only access to the SEO module. Contact a super admin to make changes.</p>
+        </div>
+      )}
+
+      <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-seo-global">
+        <div className="flex items-center gap-2 mb-6">
+          <Globe className="w-4 h-4 text-[#B3B3B8]/50" />
+          <h3 className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Global Meta</h3>
+        </div>
+        <div className="space-y-4 max-w-2xl">
+          <div>
+            <label className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider block mb-1.5">Site Title Template</label>
+            <Input
+              value={globalForm.siteTitle}
+              onChange={e => setGlobalForm(f => ({ ...f, siteTitle: e.target.value }))}
+              disabled={!isRoot}
+              placeholder="Reign Services - DFW's Premier Interior/Exterior Renovations Experts"
+              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm"
+              data-testid="input-seo-site-title"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider block mb-1.5">Meta Description</label>
+            <Textarea
+              value={globalForm.metaDescription}
+              onChange={e => setGlobalForm(f => ({ ...f, metaDescription: e.target.value }))}
+              disabled={!isRoot}
+              placeholder="Residential and commercial renovation specialists serving the Dallas-Fort Worth metroplex..."
+              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm resize-none"
+              rows={3}
+              data-testid="input-seo-meta-description"
+            />
+            <p className="text-[10px] text-[#B3B3B8]/30 mt-1">{globalForm.metaDescription.length}/160 characters</p>
+          </div>
+          <div>
+            <label className="text-xs text-[#B3B3B8]/50 uppercase tracking-wider block mb-1.5">OG Image URL</label>
+            <Input
+              value={globalForm.ogImageUrl}
+              onChange={e => setGlobalForm(f => ({ ...f, ogImageUrl: e.target.value }))}
+              disabled={!isRoot}
+              placeholder="/og-image.png"
+              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm"
+              data-testid="input-seo-og-image"
+            />
+          </div>
+          {isRoot && (
+            <Button
+              className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+              onClick={handleGlobalSave}
+              disabled={saveMutation.isPending}
+              data-testid="button-save-seo-global"
+            >
+              {saveMutation.isPending ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Save className="w-3 h-3 mr-2" />}
+              Save Global Meta
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-seo-pages">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#B3B3B8]/50" />
+            <h3 className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Page SEO Manager</h3>
+          </div>
+          <span className="text-xs text-[#B3B3B8]/30">{pages.length} pages</span>
+        </div>
+
+        {editingPage && editPageForm && isRoot ? (
+          <div className="space-y-4 max-w-2xl mb-6 p-4 rounded-md bg-[#0B0B0D] border border-[#5D3FD3]/20">
+            <p className="text-sm font-semibold text-[#F5F5F7]">{editPageForm.page} <span className="text-[#B3B3B8]/40 text-xs font-normal">{editPageForm.route}</span></p>
+            <div>
+              <label className="text-xs text-[#B3B3B8]/50 block mb-1">SEO Title</label>
+              <Input value={editPageForm.title} onChange={e => setEditPageForm(f => f ? { ...f, title: e.target.value } : f)}
+                className="bg-[#141416] border-white/10 text-[#F5F5F7] text-sm" data-testid="input-edit-page-title" />
+              <p className="text-[10px] text-[#B3B3B8]/30 mt-1">{editPageForm.title.length}/60</p>
+            </div>
+            <div>
+              <label className="text-xs text-[#B3B3B8]/50 block mb-1">Meta Description</label>
+              <Textarea value={editPageForm.description} onChange={e => setEditPageForm(f => f ? { ...f, description: e.target.value } : f)}
+                className="bg-[#141416] border-white/10 text-[#F5F5F7] text-sm resize-none" rows={2} data-testid="input-edit-page-desc" />
+              <p className="text-[10px] text-[#B3B3B8]/30 mt-1">{editPageForm.description.length}/160</p>
+            </div>
+            <div>
+              <label className="text-xs text-[#B3B3B8]/50 block mb-1">Target Keywords (comma separated)</label>
+              <Input value={editPageForm.keywords} onChange={e => setEditPageForm(f => f ? { ...f, keywords: e.target.value } : f)}
+                className="bg-[#141416] border-white/10 text-[#F5F5F7] text-sm" data-testid="input-edit-page-keywords" />
+            </div>
+            <div className="flex gap-2">
+              <Button className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs" onClick={handlePageSave} disabled={saveMutation.isPending} data-testid="button-save-page-seo">
+                {saveMutation.isPending ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Save className="w-3 h-3 mr-2" />}Save
+              </Button>
+              <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => { setEditingPage(null); setEditPageForm(null); }}>Cancel</Button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/5">
+                {["Page", "Route", "Title", "Description", "Keywords", ...(isRoot ? [""] : [])].map(h => (
+                  <th key={h} className="text-left text-xs uppercase tracking-wider text-[#B3B3B8]/50 py-3 px-3 font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pages.map((p) => (
+                <tr key={p.route} className="border-b border-white/5 align-top" data-testid={`row-page-seo-${p.route.replace(/\//g, "-")}`}>
+                  <td className="py-3 px-3 text-[#F5F5F7] font-medium whitespace-nowrap">{p.page}</td>
+                  <td className="py-3 px-3 text-[#5D3FD3] text-xs whitespace-nowrap">{p.route}</td>
+                  <td className="py-3 px-3 text-[#B3B3B8] text-xs max-w-[200px]">
+                    <p className="line-clamp-2">{p.title || <span className="text-[#B3B3B8]/30 italic">Not set</span>}</p>
+                  </td>
+                  <td className="py-3 px-3 text-[#B3B3B8]/70 text-xs max-w-[220px]">
+                    <p className="line-clamp-2">{p.description || <span className="text-[#B3B3B8]/30 italic">Not set</span>}</p>
+                  </td>
+                  <td className="py-3 px-3 text-[#B3B3B8]/50 text-xs max-w-[160px]">
+                    <p className="line-clamp-2">{p.keywords || <span className="italic">—</span>}</p>
+                  </td>
+                  {isRoot && (
+                    <td className="py-3 px-3">
+                      <Button variant="ghost" size="icon" onClick={() => handlePageEdit(p.route)} data-testid={`button-edit-page-${p.route.replace(/\//g, "-")}`}>
+                        <Pencil className="w-3.5 h-3.5 text-[#B3B3B8]/50" />
+                      </Button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-seo-keywords">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-[#B3B3B8]/50" />
+            <h3 className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Keyword Tracker</h3>
+          </div>
+          {isRoot && (
+            <Button className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs" onClick={() => setShowAddKeyword(true)} data-testid="button-add-keyword">
+              <Plus className="w-3 h-3 mr-1" /> Add Keyword
+            </Button>
+          )}
+        </div>
+
+        {showAddKeyword && isRoot && (
+          <div className="mb-6 p-4 rounded-md bg-[#0B0B0D] border border-[#5D3FD3]/20 space-y-3">
+            <p className="text-xs font-semibold text-[#F5F5F7]">New Keyword</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#B3B3B8]/50 block mb-1">Keyword</label>
+                <Input value={newKw.keyword} onChange={e => setNewKw(k => ({ ...k, keyword: e.target.value }))}
+                  placeholder="e.g. custom turf install DFW" className="bg-[#141416] border-white/10 text-[#F5F5F7] text-sm" data-testid="input-new-keyword" />
+              </div>
+              <div>
+                <label className="text-xs text-[#B3B3B8]/50 block mb-1">Notes</label>
+                <Input value={newKw.notes} onChange={e => setNewKw(k => ({ ...k, notes: e.target.value }))}
+                  placeholder="Target page, volume notes..." className="bg-[#141416] border-white/10 text-[#F5F5F7] text-sm" data-testid="input-new-keyword-notes" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#B3B3B8]/50 block mb-1">Priority</label>
+                <Select value={newKw.priority} onValueChange={(v) => setNewKw(k => ({ ...k, priority: v as SeoKeyword["priority"] }))}>
+                  <SelectTrigger className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs" data-testid="select-new-keyword-priority">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#141416] border-white/10">
+                    <SelectItem value="high" className="text-[#F5F5F7] text-xs">High</SelectItem>
+                    <SelectItem value="medium" className="text-[#F5F5F7] text-xs">Medium</SelectItem>
+                    <SelectItem value="low" className="text-[#F5F5F7] text-xs">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-[#B3B3B8]/50 block mb-1">Status</label>
+                <Select value={newKw.status} onValueChange={(v) => setNewKw(k => ({ ...k, status: v as SeoKeyword["status"] }))}>
+                  <SelectTrigger className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs" data-testid="select-new-keyword-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#141416] border-white/10">
+                    <SelectItem value="tracking" className="text-[#F5F5F7] text-xs">Tracking</SelectItem>
+                    <SelectItem value="ranking" className="text-[#F5F5F7] text-xs">Ranking</SelectItem>
+                    <SelectItem value="testing" className="text-[#F5F5F7] text-xs">Testing</SelectItem>
+                    <SelectItem value="paused" className="text-[#F5F5F7] text-xs">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs" onClick={handleAddKeyword} data-testid="button-save-keyword">Add</Button>
+              <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => setShowAddKeyword(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {keywords.length === 0 ? (
+          <div className="text-center py-10" data-testid="text-no-keywords">
+            <Target className="w-8 h-8 text-[#B3B3B8]/20 mx-auto mb-3" />
+            <p className="text-[#B3B3B8]/50 text-sm">No keywords tracked yet</p>
+            {isRoot && <p className="text-[#B3B3B8]/30 text-xs mt-1">Add target keywords to monitor your SEO strategy</p>}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {keywords.map((kw) => (
+              <div key={kw.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-md bg-[#0B0B0D] border border-white/5" data-testid={`row-keyword-${kw.id}`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[#F5F5F7] text-sm font-medium">{kw.keyword}</span>
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${PRIORITY_COLORS[kw.priority]}`}>{kw.priority}</span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${STATUS_COLORS[kw.status]}`}>{kw.status}</span>
+                  {kw.notes && <span className="text-xs text-[#B3B3B8]/40">{kw.notes}</span>}
+                </div>
+                {isRoot && (
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteKeyword(kw.id)} data-testid={`button-delete-keyword-${kw.id}`}>
+                    <Trash2 className="w-3.5 h-3.5 text-[#B3B3B8]/40 hover:text-red-400" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

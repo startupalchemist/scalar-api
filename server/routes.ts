@@ -1468,5 +1468,39 @@ Respond in JSON format:
     }
   });
 
+  // ─── SEO Management Routes ────────────────────────────────────
+
+  app.get("/api/seo", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const [globalRaw, pagesRaw, keywordsRaw] = await Promise.all([
+        storage.getSetting("seo_global"),
+        storage.getSetting("seo_pages"),
+        storage.getSetting("seo_keywords"),
+      ]);
+      const parseSafe = (raw: string | null) => { try { return raw ? JSON.parse(raw) : null; } catch { return null; } };
+      res.json({
+        global: parseSafe(globalRaw),
+        pages: parseSafe(pagesRaw),
+        keywords: parseSafe(keywordsRaw),
+      });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch SEO settings" });
+    }
+  });
+
+  app.put("/api/seo", authMiddleware, requireRole("root"), async (req, res) => {
+    try {
+      const { key, value } = req.body;
+      const allowed = ["seo_global", "seo_pages", "seo_keywords"];
+      if (!allowed.includes(key)) {
+        return res.status(400).json({ message: "Invalid SEO key" });
+      }
+      await storage.setSetting(key, JSON.stringify(value));
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ message: "Failed to update SEO setting" });
+    }
+  });
+
   return httpServer;
 }

@@ -168,6 +168,28 @@ function HeroSection() {
         >
           Free assessment. No obligation. We serve all of DFW.
         </p>
+
+        <div
+          className="mt-8 flex items-center justify-center"
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: "opacity 1s ease-out 0.85s",
+          }}
+        >
+          <a
+            href="https://tachyonbuilt.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="link-truetrade-hero"
+            className="group"
+          >
+            <img
+              src="/truetrade-certified.jpeg"
+              alt="TrueTrade Certified 11.7"
+              className="h-16 w-auto opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+            />
+          </a>
+        </div>
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce opacity-40">

@@ -46,6 +46,21 @@ export default function Footer() {
                 </span>
               </Link>
             </div>
+
+            <div className="mt-8">
+              <a
+                href="https://tachyonbuilt.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="link-truetrade-footer"
+              >
+                <img
+                  src="/truetrade-certified.jpeg"
+                  alt="TrueTrade Certified 11.7"
+                  className="h-20 w-auto opacity-90 hover:opacity-100 transition-opacity"
+                />
+              </a>
+            </div>
           </div>
 
           <div>
@@ -87,7 +102,7 @@ export default function Footer() {
               ))}
             </ul>
             <div className="mt-6">
-              <h4 className="text-xs uppercase tracking-[0.2em] text-[#0A1F44]/80 font-semibold mb-2" style={{ color: "#4a6fa5" }}>
+              <h4 className="text-xs uppercase tracking-[0.2em] font-semibold mb-2" style={{ color: "#4a6fa5" }}>
                 Service Area
               </h4>
               <p className="text-[#B3B3B8]/50 text-xs leading-relaxed">
@@ -112,6 +127,27 @@ export default function Footer() {
                 DFW's Premier Interior/Exterior Renovations Experts
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
+            <img
+              src="/startup-alchemist-rocket.png"
+              alt="Startup Alchemist"
+              className="h-5 w-5 object-contain"
+              style={{ filter: "brightness(0) invert(1)", opacity: 0.35 }}
+            />
+            <p className="text-[#B3B3B8]/25 text-[10px] tracking-wide" data-testid="text-footer-attribution">
+              Site Designed &amp; Maintained by{" "}
+              <a
+                href="https://tachyonbuilt.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[#B3B3B8]/50 transition-colors"
+              >
+                TachyonBuilt
+              </a>
+              {" "}— A Startup Alchemist Venture
+            </p>
           </div>
         </div>
       </div>
