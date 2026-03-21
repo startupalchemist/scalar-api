@@ -14,18 +14,9 @@ const details = [
 ];
 
 const patternPhotos = [
-  {
-    src: "/gallery/pattern-diamond-factory.jpeg",
-    caption: "Diamond-cut custom pattern",
-  },
-  {
-    src: "/gallery/pattern-floral-wall.jpeg",
-    caption: "Floral turf accent wall",
-  },
-  {
-    src: "/gallery/pattern-circular-luxury.jpeg",
-    caption: "Circular pattern on luxury estate",
-  },
+  { src: "/gallery/pattern-diamond-factory.jpeg", caption: "Diamond-cut custom pattern" },
+  { src: "/gallery/pattern-floral-wall.jpeg",     caption: "Floral turf accent wall" },
+  { src: "/gallery/pattern-circular-luxury.jpeg", caption: "Circular pattern on luxury estate" },
 ];
 
 export default function CustomTurfInstall() {
@@ -81,7 +72,21 @@ export default function CustomTurfInstall() {
           </Link>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-4" data-testid="section-pattern-photos">
+          {patternPhotos.map((photo, i) => (
+            <div key={i} className="rounded-xl overflow-hidden" data-testid={`pattern-photo-${i}`}>
+              <img
+                src={photo.src}
+                alt={photo.caption}
+                loading="lazy"
+                className="w-full h-52 object-cover"
+              />
+              <p className="mt-2 text-xs text-[#B3B3B8]/50 text-center tracking-wide">{photo.caption}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-4">
           {details.map((d, i) => (
             <div key={i} className="flex items-start gap-3" data-testid={`detail-${i}`}>
               <CheckCircle2 className="w-4 h-4 text-[#5D3FD3] flex-shrink-0 mt-0.5" />
@@ -90,36 +95,8 @@ export default function CustomTurfInstall() {
           ))}
         </div>
 
-        <div className="mt-20">
-          <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">
-            Custom Pattern Gallery
-          </span>
-          <h2
-            className="mt-3 text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            Beyond Standard Turf
-          </h2>
-          <p className="mt-3 text-[#B3B3B8]/70 text-sm leading-relaxed max-w-xl">
-            From geometric cuts to intricate floral designs — custom pattern turf is made to order for clients who want something truly one-of-a-kind.
-          </p>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {patternPhotos.map((photo, i) => (
-              <div key={i} className="rounded-xl overflow-hidden" data-testid={`pattern-photo-${i}`}>
-                <img
-                  src={photo.src}
-                  alt={photo.caption}
-                  loading="lazy"
-                  className="w-full h-52 object-cover"
-                />
-                <p className="mt-2 text-xs text-[#B3B3B8]/50 text-center tracking-wide">{photo.caption}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div
-          className="mt-12 p-8 rounded-xl relative overflow-hidden"
+          className="mt-14 p-8 rounded-xl relative overflow-hidden"
           style={{
             background: "rgba(93,63,211,0.06)",
             border: "1px solid rgba(93,63,211,0.25)",
@@ -136,7 +113,7 @@ export default function CustomTurfInstall() {
                 <Sparkles className="w-4 h-4 text-[#5D3FD3]" />
               </div>
               <span className="text-xs uppercase tracking-[0.25em] text-[#5D3FD3] font-semibold">
-                Upsell Add-On
+                Premium Add-On
               </span>
             </div>
             <h3
@@ -149,7 +126,7 @@ export default function CustomTurfInstall() {
               Want something truly bespoke? Our custom pattern turf is made to order — geometric cuts, floral designs, branded logo inlays, and architectural patterns. Available for residential showpieces, commercial properties, hospitality spaces, and brand activations across DFW.
             </p>
             <div
-              className="mt-5 inline-flex items-center gap-3 px-4 py-3 rounded-lg"
+              className="mt-5 inline-flex flex-wrap items-center gap-3 px-4 py-3 rounded-lg"
               style={{
                 background: "rgba(93,63,211,0.12)",
                 border: "1px solid rgba(93,63,211,0.25)",
