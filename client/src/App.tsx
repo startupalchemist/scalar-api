@@ -20,6 +20,7 @@ const Blog = lazy(() => import("@/pages/blog"));
 const BlogPost = lazy(() => import("@/pages/blog-post"));
 const Rate = lazy(() => import("@/pages/rate"));
 
+const Gallery = lazy(() => import("@/pages/gallery"));
 const CustomTurfInstall = lazy(() => import("@/pages/custom-turf-install"));
 const FoundationRepair = lazy(() => import("@/pages/foundation-repair"));
 const InteriorRemodeling = lazy(() => import("@/pages/interior-remodeling"));
@@ -50,6 +51,7 @@ function Router() {
         <Route path="/blog/:slug" component={BlogPost} />
         <Route path="/rate/:token" component={Rate} />
 
+        <Route path="/gallery" component={Gallery} />
         <Route path="/custom-turf-install" component={CustomTurfInstall} />
         <Route path="/foundation-repair" component={FoundationRepair} />
         <Route path="/interior-remodeling" component={InteriorRemodeling} />

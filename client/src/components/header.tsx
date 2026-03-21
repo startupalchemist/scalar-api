@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: "About", href: "/about" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
