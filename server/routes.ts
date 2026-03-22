@@ -446,7 +446,7 @@ export async function registerRoutes(
       }
 
       const blogServicesRaw = await storage.getSetting("blog_services");
-      const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+      const blogServices: { title: string; description: string }[] = (() => { try { return blogServicesRaw ? JSON.parse(blogServicesRaw) : []; } catch { return []; } })();
       const servicesContext = blogServices.length > 0
         ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
         : "custom turf design & installation, foundation repair, interior remodeling, outdoor remodeling, bespoke outdoor living spaces, turf & pavers";
@@ -571,7 +571,7 @@ Respond in this exact JSON format:
       (async () => {
         try {
           const blogServicesRaw = await storage.getSetting("blog_services");
-          const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+          const blogServices: { title: string; description: string }[] = (() => { try { return blogServicesRaw ? JSON.parse(blogServicesRaw) : []; } catch { return []; } })();
           const activeServices = blogServices.length > 0
             ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
             : "Custom Turf Design & Install; Foundation Repair; Interior Remodeling; Outdoor Remodeling; Bespoke Outdoor Living Spaces; Turf & Pavers";
@@ -686,7 +686,7 @@ Respond in JSON format:
       (async () => {
         try {
           const blogServicesRaw = await storage.getSetting("blog_services");
-          const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+          const blogServices: { title: string; description: string }[] = (() => { try { return blogServicesRaw ? JSON.parse(blogServicesRaw) : []; } catch { return []; } })();
           const activeServices = blogServices.length > 0
             ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
             : "Custom Turf Design & Install; Foundation Repair; Interior Remodeling; Outdoor Remodeling; Bespoke Outdoor Living Spaces; Turf & Pavers";
