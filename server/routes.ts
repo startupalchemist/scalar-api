@@ -463,6 +463,7 @@ Rules:
 - Use substantive, factual content. Include specific details about renovation techniques, material selection, and project execution.
 - Target Dallas-Fort Worth market when relevant.
 - Structure with H2 and H3 headings using markdown.
+- Only reference services from the active services list above when making internal links
 - Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact). Do NOT output raw URLs or bare paths.
 - Include a compelling excerpt (2 sentences max).
 - Suggest 3-5 relevant tags.
