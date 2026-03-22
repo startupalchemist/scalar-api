@@ -661,7 +661,7 @@ function TopicPreviewModal({ topic, onClose }: { topic: Topic; onClose: () => vo
   );
 }
 
-type BlogSubTab = "topics" | "queue" | "archive" | "published" | "backlinks";
+type BlogSubTab = "topics" | "queue" | "archive" | "published" | "backlinks" | "settings";
 
 function BlogTab({
   toast,
@@ -688,6 +688,7 @@ function BlogTab({
     { key: "archive", label: "Archive", icon: Archive },
     { key: "published", label: "Published", icon: Globe },
     { key: "backlinks", label: "Backlinks", icon: Link2, adminOnly: true },
+    { key: "settings", label: "Blog Settings", icon: Settings, adminOnly: true },
   ];
 
   const visibleSubTabs = subTabs.filter(t => !t.adminOnly || user.role === "root" || user.role === "admin");
@@ -721,8 +722,9 @@ function BlogTab({
       )}
       {blogSubTab === "queue" && <PublisherQueueSubTab toast={toast} onPreview={setPreviewPost} />}
       {blogSubTab === "archive" && <ArchiveSubTab />}
-      {blogSubTab === "published" && <PublishedSubTab onPreview={setPreviewPost} />}
+      {blogSubTab === "published" && <PublishedSubTab toast={toast} onPreview={setPreviewPost} user={user} />}
       {blogSubTab === "backlinks" && <BacklinksSubTab toast={toast} />}
+      {blogSubTab === "settings" && <BlogSettingsSubTab toast={toast} user={user} />}
 
       {previewPost && <ArticlePreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
       {previewTopic && <TopicPreviewModal topic={previewTopic} onClose={() => setPreviewTopic(null)} />}
@@ -1162,7 +1164,7 @@ function ArchiveSubTab() {
   );
 }
 
-function PublishedSubTab({ onPreview }: { onPreview: (post: Post) => void }) {
+function PublishedSubTab({ toast, onPreview, user }: { toast: any; onPreview: (post: Post) => void; user: { role: string } }) {
   const { data: publishedPosts = [], isLoading } = useQuery<Post[]>({
     queryKey: ["/api/posts", "published"],
     queryFn: async () => {
@@ -1171,6 +1173,21 @@ function PublishedSubTab({ onPreview }: { onPreview: (post: Post) => void }) {
       return res.json();
     },
   });
+
+  const deletePost = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/posts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      toast({ title: "Post deleted" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const isAdmin = user.role === "root" || user.role === "admin";
 
   if (isLoading) {
     return (
@@ -1222,6 +1239,18 @@ function PublishedSubTab({ onPreview }: { onPreview: (post: Post) => void }) {
               >
                 <Eye className="w-4 h-4 text-[#B3B3B8]" />
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-400 hover:text-red-300"
+                  onClick={() => deletePost.mutate(post.id)}
+                  disabled={deletePost.isPending}
+                  data-testid={`button-delete-published-${post.id}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         ))}
@@ -2094,6 +2123,269 @@ function IntegrationsTab({ toast }: { toast: any }) {
 }
 
 // ─── SEO Tab ──────────────────────────────────────────────────────────────────
+
+const RENOVATION_SERVICES_LIBRARY = [
+  "Custom Turf Design & Install",
+  "Artificial Turf Installation",
+  "Foundation Repair",
+  "Slab Foundation Repair",
+  "Pier & Beam Repair",
+  "Interior Remodeling",
+  "Kitchen Remodeling",
+  "Bathroom Remodeling",
+  "Outdoor Remodeling",
+  "Deck Building & Repair",
+  "Patio Installation",
+  "Pergola & Shade Structure",
+  "Outdoor Kitchen Installation",
+  "Fire Pit Construction",
+  "Bespoke Outdoor Living Spaces",
+  "Turf & Pavers",
+  "Paver Installation",
+  "Hardscaping",
+  "Landscape Design",
+  "Pool Surround Installation",
+  "Putting Green Installation",
+  "Sports Field Installation",
+  "Commercial Turf Installation",
+  "Fence Installation",
+  "Privacy Fencing",
+  "Driveway Renovation",
+  "Concrete Work",
+  "Foundation Drainage",
+  "French Drain Installation",
+  "Flooring Installation",
+  "Window & Door Replacement",
+  "Interior Painting",
+  "Exterior Painting",
+  "Roofing Repair",
+];
+
+type BlogService = { title: string; description: string };
+
+function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string } }) {
+  const isRoot = user.role === "root";
+  const [services, setServices] = useState<BlogService[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const [confirmPurge, setConfirmPurge] = useState(false);
+
+  const { data: setting, isLoading } = useQuery<{ key: string; value: string | null }>({
+    queryKey: ["/api/settings/blog_services"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings/blog_services", { credentials: "include" });
+      if (!res.ok) return { key: "blog_services", value: null };
+      return res.json();
+    },
+  });
+
+  if (!initialized && setting) {
+    try {
+      const parsed: BlogService[] = setting.value ? JSON.parse(setting.value) : [];
+      setServices(parsed);
+    } catch {
+      setServices([]);
+    }
+    setInitialized(true);
+  }
+
+  const saveServices = useMutation({
+    mutationFn: async (list: BlogService[]) => {
+      const res = await fetch("/api/settings/blog_services", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: JSON.stringify(list) }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/blog_services"] });
+      toast({ title: "Blog services saved" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const purgeAllPosts = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("DELETE", "/api/posts/purge-all");
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      toast({ title: data.message || "All posts deleted" });
+      setConfirmPurge(false);
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const filteredSuggestions = inputValue.trim().length === 0
+    ? []
+    : RENOVATION_SERVICES_LIBRARY.filter(
+        (s) =>
+          s.toLowerCase().includes(inputValue.toLowerCase()) &&
+          !services.some((svc) => svc.title === s)
+      );
+
+  const addService = (title: string) => {
+    if (services.some((s) => s.title === title)) return;
+    setServices((prev) => [...prev, { title, description: "" }]);
+    setInputValue("");
+    setShowSuggestions(false);
+  };
+
+  const removeService = (title: string) => {
+    setServices((prev) => prev.filter((s) => s.title !== title));
+  };
+
+  const updateDescription = (title: string, description: string) => {
+    setServices((prev) => prev.map((s) => s.title === title ? { ...s, description } : s));
+  };
+
+  const handleCustomAdd = () => {
+    const val = inputValue.trim();
+    if (!val || services.some((s) => s.title === val)) return;
+    addService(val);
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" /></div>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="p-6 rounded-md bg-[#141416] border border-white/5" data-testid="card-blog-services">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-[#B3B3B8]/50" />
+          <h3 className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Blog Services Context</h3>
+        </div>
+        <p className="text-xs text-[#B3B3B8]/40 mb-6">
+          These services are injected into the AI research and writing agents so every generated article stays aligned with what Reign Services actually offers.
+        </p>
+
+        <div className="relative mb-4" data-testid="autocomplete-services">
+          <div className="flex gap-2">
+            <Input
+              value={inputValue}
+              onChange={(e) => { setInputValue(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              placeholder="Search or type a service name..."
+              className="flex-1 bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm"
+              data-testid="input-service-search"
+            />
+            <Button
+              variant="ghost"
+              className="text-[#B3B3B8] shrink-0"
+              onClick={handleCustomAdd}
+              disabled={!inputValue.trim()}
+              data-testid="button-add-custom-service"
+            >
+              <Plus className="w-4 h-4 mr-1" /> Add
+            </Button>
+          </div>
+
+          {showSuggestions && filteredSuggestions.length > 0 && (
+            <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#141416] border border-white/10 rounded-md shadow-lg max-h-52 overflow-y-auto" data-testid="suggestions-list">
+              {filteredSuggestions.map((s) => (
+                <button
+                  key={s}
+                  className="w-full text-left px-4 py-2.5 text-sm text-[#F5F5F7] hover:bg-[#5D3FD3]/20 transition-colors"
+                  onMouseDown={() => addService(s)}
+                  data-testid={`suggestion-${s.replace(/\s+/g, "-").toLowerCase()}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {services.length > 0 ? (
+          <div className="space-y-3 mb-6">
+            {services.map((svc) => (
+              <div key={svc.title} className="p-4 rounded-md bg-[#0B0B0D] border border-white/5" data-testid={`service-item-${svc.title.replace(/\s+/g, "-").toLowerCase()}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-[#F5F5F7]">{svc.title}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-[#B3B3B8]/40 hover:text-red-400"
+                    onClick={() => removeService(svc.title)}
+                    data-testid={`button-remove-service-${svc.title.replace(/\s+/g, "-").toLowerCase()}`}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  value={svc.description}
+                  onChange={(e) => updateDescription(svc.title, e.target.value)}
+                  placeholder="Short description for AI context (optional)..."
+                  className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs resize-none"
+                  rows={2}
+                  data-testid={`textarea-service-desc-${svc.title.replace(/\s+/g, "-").toLowerCase()}`}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center py-8 text-[#B3B3B8]/30 text-sm mb-6" data-testid="text-no-services">
+            No services added yet. Search above or type a custom service name.
+          </p>
+        )}
+
+        <Button
+          className="bg-[#5D3FD3] text-white"
+          onClick={() => saveServices.mutate(services)}
+          disabled={saveServices.isPending}
+          data-testid="button-save-blog-services"
+        >
+          {saveServices.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          Save Services
+        </Button>
+      </div>
+
+      {isRoot && (
+        <div className="p-6 rounded-md bg-[#141416] border border-red-500/10" data-testid="card-danger-zone">
+          <div className="flex items-center gap-2 mb-2">
+            <Trash2 className="w-4 h-4 text-red-400/60" />
+            <h3 className="text-xs uppercase tracking-[0.3em] text-red-400/60 font-medium">Danger Zone</h3>
+          </div>
+          <p className="text-xs text-[#B3B3B8]/40 mb-4">
+            Delete all blog posts and draft articles. This cannot be undone. Use to clear out outdated PDR-era content.
+          </p>
+          {!confirmPurge ? (
+            <Button
+              variant="ghost"
+              className="text-red-400 border border-red-500/20 hover:bg-red-500/10"
+              onClick={() => setConfirmPurge(true)}
+              data-testid="button-purge-posts-trigger"
+            >
+              <Trash2 className="w-4 h-4 mr-2" /> Delete All Posts
+            </Button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-red-400">Are you sure? This deletes every post permanently.</span>
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                onClick={() => purgeAllPosts.mutate()}
+                disabled={purgeAllPosts.isPending}
+                data-testid="button-purge-posts-confirm"
+              >
+                {purgeAllPosts.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+                Yes, Delete All
+              </Button>
+              <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => setConfirmPurge(false)}>
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface SeoGlobal { siteTitle: string; metaDescription: string; ogImageUrl: string; }
 interface PageSeo { page: string; route: string; title: string; description: string; keywords: string; }

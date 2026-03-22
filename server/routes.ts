@@ -410,6 +410,18 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/posts/purge-all", authMiddleware, requireRole("root"), async (_req, res) => {
+    try {
+      const allPosts = await storage.getPosts();
+      for (const post of allPosts) {
+        await storage.deletePost(post.id);
+      }
+      res.json({ message: `Deleted ${allPosts.length} posts` });
+    } catch {
+      res.status(500).json({ message: "Failed to purge posts" });
+    }
+  });
+
   app.delete("/api/posts/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -429,12 +441,18 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Topic is required" });
       }
 
+      const blogServicesRaw = await storage.getSetting("blog_services");
+      const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+      const servicesContext = blogServices.length > 0
+        ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
+        : "custom turf design & installation, foundation repair, interior remodeling, outdoor remodeling, bespoke outdoor living spaces, turf & pavers";
+
       const job = await storage.createAiJob({
         type: "article",
         input: JSON.stringify({ topic, keywords, tone }),
       });
 
-      const systemPrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor. Write authoritative, professional blog articles about custom turf installation, foundation repair, interior remodeling, outdoor living spaces, and hardscaping.
+      const systemPrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor. Write authoritative, professional blog articles about the following active services: ${servicesContext}.
 
 Rules:
 - Write in a controlled, confident tone. No exclamation points. No sales hype.
@@ -548,20 +566,31 @@ Respond in this exact JSON format:
 
       (async () => {
         try {
-          const researchPrompt = `You are an expert SEO strategist and content marketing researcher for Reign Services, DFW's premier interior and exterior renovation contractor specializing in custom turf, foundation repair, interior remodeling, outdoor living spaces, and hardscaping in Dallas-Fort Worth, Texas.
+          const blogServicesRaw = await storage.getSetting("blog_services");
+          const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+          const activeServices = blogServices.length > 0
+            ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
+            : "Custom Turf Design & Install; Foundation Repair; Interior Remodeling; Outdoor Remodeling; Bespoke Outdoor Living Spaces; Turf & Pavers";
+
+          const researchPrompt = `You are an expert SEO strategist and content marketing researcher for Reign Services, DFW's premier interior and exterior renovation contractor in Dallas-Fort Worth, Texas.
+
+Active services offered by Reign Services:
+${activeServices}
+
+First, review these active services thoroughly. Your research and topic suggestions must be directly relevant to these services only.
 
 Conduct thorough competitive and market research for the home renovation and outdoor living industry in DFW. Analyze:
-1. What topics competitors are ranking for
-2. High-volume, low-competition keywords in the renovation and outdoor living space
-3. Seasonal search trends (spring/summer outdoor projects, year-round interior remodeling)
-4. Customer pain points and frequently asked questions about renovation projects
-5. Local SEO opportunities in Dallas-Fort Worth for renovation services
+1. What topics competitors are ranking for across these specific services
+2. High-volume, low-competition keywords tied to these services in the DFW market
+3. Seasonal search trends relevant to these services (outdoor projects, interior renovations)
+4. Customer pain points and frequently asked questions about these specific services
+5. Local SEO opportunities in Dallas-Fort Worth for these renovation services
 
 Then identify 5 highly effective article topics that will:
-- Drive organic search traffic
-- Convert readers into assessment requests
-- Target different aspects of renovation and outdoor living
-- Include location-specific angles where relevant
+- Drive organic search traffic specifically for these active services
+- Convert readers into free assessment requests
+- Target different services from the active list above
+- Include location-specific DFW angles where relevant
 - Cover informational, commercial, and transactional intent
 
 For each topic provide:
@@ -652,7 +681,15 @@ Respond in JSON format:
 
       (async () => {
         try {
+          const blogServicesRaw = await storage.getSetting("blog_services");
+          const blogServices: { title: string; description: string }[] = blogServicesRaw ? JSON.parse(blogServicesRaw) : [];
+          const activeServices = blogServices.length > 0
+            ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
+            : "Custom Turf Design & Install; Foundation Repair; Interior Remodeling; Outdoor Remodeling; Bespoke Outdoor Living Spaces; Turf & Pavers";
+
           const articlePrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor in Dallas, TX.
+
+Active services offered by Reign Services: ${activeServices}
 
 Write a comprehensive, SEO-optimized blog article based on this research:
 Topic: ${topic.title}
@@ -667,7 +704,8 @@ Rules:
 - Target Dallas-Fort Worth market when relevant
 - Structure with H2 and H3 headings using markdown
 - Minimum 1000 words
-- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact), [custom turf installation](/custom-turf-install). Do NOT output raw URLs or bare paths.
+- Only reference services from the active services list above when making internal links
+- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact). Do NOT output raw URLs or bare paths.
 - End with a subtle call-to-action that encourages booking a free assessment with Reign Services
 
 Respond in JSON format:
