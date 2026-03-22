@@ -2172,9 +2172,9 @@ function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string 
   const [confirmPurge, setConfirmPurge] = useState(false);
 
   const { data: setting, isLoading } = useQuery<{ key: string; value: string | null }>({
-    queryKey: ["/api/settings/blog_services"],
+    queryKey: ["/api/settings/blog-services"],
     queryFn: async () => {
-      const res = await fetch("/api/settings/blog_services", { credentials: "include" });
+      const res = await fetch("/api/settings/blog-services", { credentials: "include" });
       if (!res.ok) return { key: "blog_services", value: null };
       return res.json();
     },
@@ -2192,7 +2192,7 @@ function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string 
 
   const saveServices = useMutation({
     mutationFn: async (list: BlogService[]) => {
-      const res = await fetch("/api/settings/blog_services", {
+      const res = await fetch("/api/settings/blog-services", {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -2201,7 +2201,7 @@ function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string 
       if (!res.ok) throw new Error("Failed to save");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/settings/blog_services"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/blog-services"] });
       toast({ title: "Blog services saved" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
