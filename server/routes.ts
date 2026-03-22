@@ -1634,11 +1634,25 @@ Respond in JSON format:
   app.patch("/api/services/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const allowed = ["title", "badge", "header", "description", "keyDetails", "showPrice", "price", "isActive", "displayOrder"];
-      const updates: Record<string, any> = {};
-      for (const f of allowed) {
-        if (req.body[f] !== undefined) updates[f] = req.body[f];
+      if (Number.isNaN(id)) {
+        return res.status(400).json({ message: "Invalid service ID" });
       }
+      const patchSchema = z.object({
+        title: z.string().min(1).optional(),
+        badge: z.string().optional(),
+        header: z.string().optional(),
+        description: z.string().optional(),
+        keyDetails: z.array(z.string()).optional(),
+        showPrice: z.boolean().optional(),
+        price: z.string().nullable().optional(),
+        isActive: z.boolean().optional(),
+        displayOrder: z.number().int().optional(),
+      });
+      const parsed = patchSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid fields", errors: parsed.error.errors });
+      }
+      const updates = parsed.data as Record<string, any>;
       if (Object.keys(updates).length === 0) {
         return res.status(400).json({ message: "No valid fields to update" });
       }
@@ -1655,6 +1669,9 @@ Respond in JSON format:
   app.delete("/api/services/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      if (Number.isNaN(id)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
       const existing = await storage.getServiceById(id);
       if (!existing) {
         return res.status(404).json({ message: "Service not found" });
