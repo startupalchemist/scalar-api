@@ -184,7 +184,7 @@ function HeroSection() {
             className="group"
           >
             <img
-              src="/truetrade-certified.jpeg"
+              src="/truetrade-certified-nobg.png"
               alt="TrueTrade Certified 11.7"
               className="h-16 w-auto opacity-80 group-hover:opacity-100 transition-opacity duration-300"
             />

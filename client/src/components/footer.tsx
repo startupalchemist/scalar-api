@@ -55,7 +55,7 @@ export default function Footer() {
                 data-testid="link-truetrade-footer"
               >
                 <img
-                  src="/truetrade-certified.jpeg"
+                  src="/truetrade-certified-nobg.png"
                   alt="TrueTrade Certified 11.7"
                   className="h-20 w-auto opacity-90 hover:opacity-100 transition-opacity"
                 />
