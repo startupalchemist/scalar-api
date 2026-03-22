@@ -189,6 +189,12 @@ export default function Header() {
                 </Link>
               )
             )}
+            <img
+              src="/truetrade-certified-nobg.png"
+              alt="TrueTrade Certified"
+              className="h-10 w-auto object-contain"
+              data-testid="img-truetrade-header-desktop"
+            />
             <Link href="/contact?utm_source=website&utm_medium=header_nav&utm_campaign=sitewide">
               <Button
                 variant="default"
@@ -200,14 +206,22 @@ export default function Header() {
             </Link>
           </nav>
 
-          <button
-            className="lg:hidden text-white p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            data-testid="button-mobile-menu"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="lg:hidden flex items-center gap-2">
+            <img
+              src="/truetrade-certified-nobg.png"
+              alt="TrueTrade Certified"
+              className="h-8 w-auto object-contain"
+              data-testid="img-truetrade-header-mobile"
+            />
+            <button
+              className="text-white p-2"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              data-testid="button-mobile-menu"
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
