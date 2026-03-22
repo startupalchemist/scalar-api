@@ -68,28 +68,28 @@ async function runOneTimePDRCleanup(): Promise<void> {
     const flag = await storage.getSetting("pdr_cleanup_v1");
     if (flag === "done") return;
 
-    // Only remove published or queued legacy PDR content, leaving drafts/topics intact
+    // Remove only currently published legacy posts (queued drafts may still be valid)
     const allPosts = await storage.getPosts();
-    const legacyPosts = allPosts.filter((p) => p.status === "published" || p.status === "queued");
+    const publishedPosts = allPosts.filter((p) => p.status === "published");
+    const removedPostIds = new Set(publishedPosts.map((p) => p.id));
     let deletedPosts = 0;
-    for (const post of legacyPosts) {
+    for (const post of publishedPosts) {
       await storage.deletePost(post.id);
       deletedPosts++;
     }
 
-    // Archive topics that were linked to removed posts (now have dangling postId)
-    const removedPostIds = new Set(legacyPosts.map((p) => p.id));
+    // Hard-delete topics that were linked to the removed published posts
     const allTopics = await storage.getTopics();
-    let archivedTopics = 0;
+    let deletedTopics = 0;
     for (const topic of allTopics) {
       if (topic.postId && removedPostIds.has(topic.postId)) {
-        await storage.updateTopic(topic.id, { status: "archived", postId: null });
-        archivedTopics++;
+        await storage.deleteTopic(topic.id);
+        deletedTopics++;
       }
     }
 
     await storage.setSetting("pdr_cleanup_v1", "done");
-    log(`[startup cleanup] Removed ${deletedPosts} PDR-era posts, archived ${archivedTopics} topics`);
+    log(`[startup cleanup] Removed ${deletedPosts} PDR-era published posts and ${deletedTopics} associated topics`);
   } catch (err) {
     log(`[startup cleanup] Failed: ${err}`);
   }

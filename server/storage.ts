@@ -64,6 +64,7 @@ export interface IStorage {
   getTopics(status?: string): Promise<Topic[]>;
   getTopicById(id: number): Promise<Topic | undefined>;
   updateTopic(id: number, data: Partial<Topic>): Promise<Topic | undefined>;
+  deleteTopic(id: number): Promise<void>;
 
   incrementPostReadCount(id: number): Promise<void>;
   incrementPostShareCount(id: number): Promise<void>;
@@ -258,6 +259,9 @@ export class DatabaseStorage implements IStorage {
   async updateTopic(id: number, data: Partial<Topic>): Promise<Topic | undefined> {
     const [result] = await db.update(topics).set(data).where(eq(topics.id, id)).returning();
     return result;
+  }
+  async deleteTopic(id: number): Promise<void> {
+    await db.delete(topics).where(eq(topics.id, id));
   }
 
   async incrementPostReadCount(id: number): Promise<void> {

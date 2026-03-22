@@ -418,9 +418,9 @@ export async function registerRoutes(
       }
       const allTopics = await storage.getTopics();
       for (const topic of allTopics) {
-        await storage.updateTopic(topic.id, { status: "archived", postId: null });
+        await storage.deleteTopic(topic.id);
       }
-      res.json({ message: `Deleted ${allPosts.length} posts and archived ${allTopics.length} topics` });
+      res.json({ message: `Deleted ${allPosts.length} posts and ${allTopics.length} associated topics` });
     } catch {
       res.status(500).json({ message: "Failed to purge posts" });
     }
