@@ -68,9 +68,9 @@ async function runOneTimePDRCleanup(): Promise<void> {
     const flag = await storage.getSetting("pdr_cleanup_v1");
     if (flag === "done") return;
 
-    // Remove only currently published legacy posts (queued drafts may still be valid)
+    // Remove published and queued legacy PDR-era posts
     const allPosts = await storage.getPosts();
-    const publishedPosts = allPosts.filter((p) => p.status === "published");
+    const publishedPosts = allPosts.filter((p) => p.status === "published" || p.status === "queued");
     const removedPostIds = new Set(publishedPosts.map((p) => p.id));
     let deletedPosts = 0;
     for (const post of publishedPosts) {
