@@ -1475,6 +1475,21 @@ Respond in JSON format:
       if (typeof value !== "string") {
         return res.status(400).json({ message: "Value must be a string" });
       }
+      // Validate that value is a JSON array of {title, description} objects
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(value);
+      } catch {
+        return res.status(400).json({ message: "Value must be valid JSON" });
+      }
+      if (!Array.isArray(parsed)) {
+        return res.status(400).json({ message: "Value must be a JSON array" });
+      }
+      for (const item of parsed) {
+        if (typeof (item as any)?.title !== "string") {
+          return res.status(400).json({ message: "Each service entry must have a title string" });
+        }
+      }
       await storage.setSetting("blog_services", value);
       res.json({ key: "blog_services", value });
     } catch {

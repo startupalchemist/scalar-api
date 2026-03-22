@@ -2180,7 +2180,8 @@ function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string 
     },
   });
 
-  if (!initialized && setting) {
+  useEffect(() => {
+    if (initialized || !setting) return;
     try {
       const parsed: BlogService[] = setting.value ? JSON.parse(setting.value) : [];
       setServices(parsed);
@@ -2188,7 +2189,7 @@ function BlogSettingsSubTab({ toast, user }: { toast: any; user: { role: string 
       setServices([]);
     }
     setInitialized(true);
-  }
+  }, [setting, initialized]);
 
   const saveServices = useMutation({
     mutationFn: async (list: BlogService[]) => {
