@@ -2985,6 +2985,9 @@ function ServiceCard({
       header: draft.header,
       description: draft.description,
       keyDetails: draft.keyDetails,
+      icon: draft.icon,
+      slug: draft.slug,
+      accentColor: draft.accentColor,
       showPrice: draft.showPrice,
       price: draft.price,
       isActive: draft.isActive,
@@ -3081,6 +3084,48 @@ function ServiceCard({
             className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
             data-testid={`input-header-${service.id}`}
           />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+        <div>
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Icon Name</p>
+          <Input
+            value={draft.icon ?? ""}
+            onChange={(e) => setField("icon", e.target.value)}
+            placeholder="e.g. Leaf, Home, Wrench, Sun"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-icon-${service.id}`}
+          />
+        </div>
+        <div>
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Page Slug</p>
+          <Input
+            value={draft.slug ?? ""}
+            onChange={(e) => setField("slug", e.target.value)}
+            placeholder="e.g. /custom-turf-install"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-slug-${service.id}`}
+          />
+        </div>
+        <div>
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Accent Color</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={draft.accentColor ?? "#5D3FD3"}
+              onChange={(e) => setField("accentColor", e.target.value)}
+              className="w-9 h-9 rounded cursor-pointer border border-white/10 bg-transparent"
+              data-testid={`input-color-${service.id}`}
+            />
+            <Input
+              value={draft.accentColor ?? ""}
+              onChange={(e) => setField("accentColor", e.target.value)}
+              placeholder="#5D3FD3"
+              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+              data-testid={`input-color-text-${service.id}`}
+            />
+          </div>
         </div>
       </div>
 

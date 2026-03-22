@@ -1597,6 +1597,15 @@ Respond in JSON format:
 
   // ─── Services CRUD ──────────────────────────────────────────────
 
+  app.get("/api/services/public", async (_req, res) => {
+    try {
+      const all = await storage.getServices();
+      res.json(all.filter((s) => s.isActive).sort((a, b) => a.displayOrder - b.displayOrder));
+    } catch {
+      res.status(500).json({ message: "Failed to fetch services" });
+    }
+  });
+
   app.get("/api/services", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
     try {
       const all = await storage.getServices();
@@ -1643,6 +1652,9 @@ Respond in JSON format:
         header: z.string().optional(),
         description: z.string().optional(),
         keyDetails: z.array(z.string()).optional(),
+        icon: z.string().optional(),
+        slug: z.string().optional(),
+        accentColor: z.string().optional(),
         showPrice: z.boolean().optional(),
         price: z.string().nullable().optional(),
         isActive: z.boolean().optional(),

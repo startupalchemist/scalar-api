@@ -199,10 +199,156 @@ async function seedGallery(): Promise<void> {
   }
 }
 
+type SeedService = {
+  title: string;
+  badge: string;
+  description: string;
+  keyDetails: string[];
+  icon: string;
+  slug: string;
+  accentColor: string;
+  displayOrder: number;
+};
+
+async function seedServices(): Promise<void> {
+  try {
+    const flag = await storage.getSetting("services_seeded_v1");
+    if (flag === "done") return;
+
+    const SERVICES: SeedService[] = [
+      {
+        title: "Custom Turf Design & Install",
+        badge: "Residential & Commercial",
+        description: "From intimate backyard putting greens to large-scale commercial lawns, Reign Services delivers precision-installed artificial turf that looks natural year-round. Our process includes full design consultation, topsoil removal, professional base preparation, drainage engineering, and expert turf installation — finished to the highest standard.",
+        keyDetails: [
+          "Comprehensive site assessment and custom layout design",
+          "Professional topsoil and sod removal",
+          "Engineered base and drainage installation",
+          "Premium turf selection for Texas climate",
+          "15–20 year lifespan with minimal maintenance",
+          "Pet-safe and child-safe options available",
+        ],
+        icon: "Leaf",
+        slug: "/custom-turf-install",
+        accentColor: "#5D3FD3",
+        displayOrder: 0,
+      },
+      {
+        title: "Foundation Repair",
+        badge: "Structural Solutions",
+        description: "North Texas expansive clay soil creates unique foundation challenges. Our licensed structural team diagnoses and resolves foundation movement with proven, lasting methods — giving you peace of mind and protecting your property's value.",
+        keyDetails: [
+          "Thorough foundation inspection and diagnosis",
+          "Pier and beam reinforcement",
+          "Slab foundation leveling and repair",
+          "Drainage correction and soil stabilization",
+          "Warranty-backed workmanship",
+          "Residential and commercial properties",
+        ],
+        icon: "Home",
+        slug: "/foundation-repair",
+        accentColor: "#0A1F44",
+        displayOrder: 1,
+      },
+      {
+        title: "Interior Remodeling",
+        badge: "Full Interior Transformations",
+        description: "From kitchen renovations and bathroom remodels to flooring, cabinetry, and complete space redesigns — Reign Services handles every detail of your interior transformation. We serve homeowners and commercial clients across DFW who demand quality finishes and professional execution.",
+        keyDetails: [
+          "Full kitchen and bathroom renovations",
+          "Custom cabinetry and countertop installation",
+          "Flooring: hardwood, tile, LVP, and more",
+          "Lighting upgrades and fixture installation",
+          "Open-concept layout reconfiguration",
+          "Commercial tenant improvements",
+        ],
+        icon: "Wrench",
+        slug: "/interior-remodeling",
+        accentColor: "#5D3FD3",
+        displayOrder: 2,
+      },
+      {
+        title: "Outdoor Remodeling",
+        badge: "Exterior Upgrades",
+        description: "Elevate your property's exterior with professional outdoor remodeling. From deck construction and patio redesigns to pergolas and privacy fencing, we transform ordinary outdoor areas into functional, beautiful extensions of your living or working space.",
+        keyDetails: [
+          "Custom deck and patio construction",
+          "Pergola, gazebo, and shade structure installation",
+          "Privacy fencing and decorative borders",
+          "Outdoor lighting integration",
+          "Permit handling and HOA coordination",
+          "Designed for DFW's climate",
+        ],
+        icon: "Sun",
+        slug: "/outdoor-remodeling",
+        accentColor: "#0A1F44",
+        displayOrder: 3,
+      },
+      {
+        title: "Bespoke Outdoor Living Spaces",
+        badge: "Premium Outdoor Environments",
+        description: "Our signature service. We design and build fully custom outdoor living environments — from outdoor kitchens and covered pavilions to fire features, water elements, and entertainment systems. Every project is unique, built to your vision and engineered to last.",
+        keyDetails: [
+          "Custom outdoor kitchen design and build",
+          "Covered living pavilions and pergola systems",
+          "Fire pits, fireplaces, and water features",
+          "Entertainment system integration",
+          "Custom lighting and ambiance design",
+          "Residential estates and commercial hospitality",
+        ],
+        icon: "Trees",
+        slug: "/outdoor-living",
+        accentColor: "#5D3FD3",
+        displayOrder: 4,
+      },
+      {
+        title: "Turf & Pavers",
+        badge: "Hardscape & Softscape",
+        description: "The perfect union of artificial turf and premium pavers delivers stunning, low-maintenance outdoor surfaces. Ideal for driveways, walkways, pool decks, rooftop terraces, and commercial hardscaping. We design the pattern, source the materials, and handle professional installation.",
+        keyDetails: [
+          "Custom turf and paver pattern design",
+          "Driveway, walkway, and pool surround installation",
+          "Commercial hardscaping and plaza design",
+          "Permeable paver systems for drainage compliance",
+          "Natural stone, concrete, and porcelain options",
+          "Long-term durability for DFW conditions",
+        ],
+        icon: "Square",
+        slug: "/turf-and-pavers",
+        accentColor: "#0A1F44",
+        displayOrder: 5,
+      },
+    ];
+
+    for (const s of SERVICES) {
+      await storage.createService({
+        title: s.title,
+        badge: s.badge,
+        header: "",
+        description: s.description,
+        keyDetails: s.keyDetails,
+        icon: s.icon,
+        slug: s.slug,
+        accentColor: s.accentColor,
+        showPrice: false,
+        price: null,
+        isActive: true,
+        displayOrder: s.displayOrder,
+      });
+    }
+
+    await storage.setSetting("services_seeded_v1", "done");
+    log(`[services seed] Seeded ${SERVICES.length} services`);
+  } catch (err) {
+    log(`[services seed] Failed: ${err}`);
+  }
+}
+
 (async () => {
   await seedRootUser();
   await runOneTimePDRCleanup();
   await seedGallery();
+  await seedServices();
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
