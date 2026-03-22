@@ -68,9 +68,14 @@ async function runOneTimePDRCleanup(): Promise<void> {
     const flag = await storage.getSetting("pdr_cleanup_v1");
     if (flag === "done") return;
 
-    // Remove published and queued legacy PDR-era posts
+    // Remove published and queued legacy PDR-era posts (created before the Reign Services rebrand date)
+    const rebrandDate = new Date("2026-03-01T00:00:00Z");
     const allPosts = await storage.getPosts();
-    const publishedPosts = allPosts.filter((p) => p.status === "published" || p.status === "queued");
+    const publishedPosts = allPosts.filter(
+      (p) =>
+        (p.status === "published" || p.status === "queued") &&
+        new Date(p.createdAt) < rebrandDate
+    );
     const removedPostIds = new Set(publishedPosts.map((p) => p.id));
     let deletedPosts = 0;
     for (const post of publishedPosts) {
