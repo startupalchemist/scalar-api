@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs, ratings, settings,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs, ratings, settings, services,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -14,6 +14,7 @@ import {
   type WebhookLog,
   type Rating,
   type Setting,
+  type Service, type InsertService,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -95,6 +96,12 @@ export interface IStorage {
   setSetting(key: string, value: string): Promise<void>;
   getLeadSentimentSent(leadId: number): Promise<boolean>;
   markLeadSentimentSent(leadId: number): Promise<void>;
+
+  getServices(): Promise<Service[]>;
+  getServiceById(id: number): Promise<Service | undefined>;
+  createService(data: InsertService): Promise<Service>;
+  updateService(id: number, data: Partial<Service>): Promise<Service | undefined>;
+  deleteService(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -370,6 +377,25 @@ export class DatabaseStorage implements IStorage {
   }
   async markLeadSentimentSent(leadId: number): Promise<void> {
     await this.setSetting(`sentiment_sent_${leadId}`, "true");
+  }
+
+  async getServices(): Promise<Service[]> {
+    return db.select().from(services).orderBy(services.displayOrder, desc(services.createdAt));
+  }
+  async getServiceById(id: number): Promise<Service | undefined> {
+    const [result] = await db.select().from(services).where(eq(services.id, id));
+    return result;
+  }
+  async createService(data: InsertService): Promise<Service> {
+    const [result] = await db.insert(services).values(data).returning();
+    return result;
+  }
+  async updateService(id: number, data: Partial<Service>): Promise<Service | undefined> {
+    const [result] = await db.update(services).set(data).where(eq(services.id, id)).returning();
+    return result;
+  }
+  async deleteService(id: number): Promise<void> {
+    await db.delete(services).where(eq(services.id, id));
   }
 }
 

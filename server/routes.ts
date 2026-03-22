@@ -1595,5 +1595,133 @@ Respond in JSON format:
     }
   });
 
+  // ─── Services CRUD ──────────────────────────────────────────────
+
+  app.get("/api/services", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const all = await storage.getServices();
+      res.json(all);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch services" });
+    }
+  });
+
+  app.post("/api/services", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { title } = req.body;
+      if (!title || typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ message: "Title is required" });
+      }
+      const all = await storage.getServices();
+      const maxOrder = all.length > 0 ? Math.max(...all.map(s => s.displayOrder)) : -1;
+      const service = await storage.createService({
+        title: title.trim(),
+        badge: "",
+        header: "",
+        description: "",
+        keyDetails: [],
+        showPrice: false,
+        price: null,
+        isActive: true,
+        displayOrder: maxOrder + 1,
+      });
+      res.status(201).json(service);
+    } catch {
+      res.status(500).json({ message: "Failed to create service" });
+    }
+  });
+
+  app.patch("/api/services/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const allowed = ["title", "badge", "header", "description", "keyDetails", "showPrice", "price", "isActive", "displayOrder"];
+      const updates: Record<string, any> = {};
+      for (const f of allowed) {
+        if (req.body[f] !== undefined) updates[f] = req.body[f];
+      }
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update" });
+      }
+      const service = await storage.updateService(id, updates);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      res.json(service);
+    } catch {
+      res.status(500).json({ message: "Failed to update service" });
+    }
+  });
+
+  app.delete("/api/services/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const existing = await storage.getServiceById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      await storage.deleteService(id);
+      res.json({ message: "Service deleted" });
+    } catch {
+      res.status(500).json({ message: "Failed to delete service" });
+    }
+  });
+
+  // ─── AI Service Content Generation ─────────────────────────────
+
+  app.post("/api/ai/service-content", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { serviceTitle, description, generateDescription, generatePricing, generateKeyDetails } = req.body;
+      if (!serviceTitle) {
+        return res.status(400).json({ message: "serviceTitle is required" });
+      }
+      if (!generateDescription && !generatePricing && !generateKeyDetails) {
+        return res.status(400).json({ message: "At least one generation toggle must be enabled" });
+      }
+
+      const parts: string[] = [];
+      if (generateDescription) parts.push("description");
+      if (generatePricing) parts.push("pricing");
+      if (generateKeyDetails) parts.push("keyDetails");
+
+      const systemPrompt = `You are a marketing copywriter for Reign Services, DFW's premier interior and exterior renovation contractor. Write professional, confident, conversion-focused service copy. No exclamation points. No hype. Use clear, specific language. Target the Dallas-Fort Worth market.`;
+
+      const userPrompt = `Write marketing copy for the following service: "${serviceTitle}"
+${description ? `Current description for context: ${description}` : ""}
+
+Generate only the requested fields. Respond in this exact JSON format:
+{
+  ${generateDescription ? `"description": "3-5 sentences of professional marketing copy describing the service, its value, and the quality of work.",` : ""}
+  ${generatePricing ? `"price": "A natural free-text pricing note (e.g. 'Starting at $8/sq ft — final quote based on scope and materials'). Keep it short.",` : ""}
+  ${generateKeyDetails ? `"keyDetails": ["Feature bullet 1", "Feature bullet 2", "Feature bullet 3", "Feature bullet 4", "Feature bullet 5"]` : ""}
+}`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5.2",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 1024,
+      });
+
+      const raw = response.choices[0]?.message?.content || "{}";
+      let result: { description?: string; price?: string; keyDetails?: string[] };
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        result = {};
+      }
+
+      res.json({
+        description: generateDescription ? (result.description || "") : undefined,
+        price: generatePricing ? (result.price || "") : undefined,
+        keyDetails: generateKeyDetails ? (Array.isArray(result.keyDetails) ? result.keyDetails : []) : undefined,
+      });
+    } catch {
+      res.status(500).json({ message: "Failed to generate service content" });
+    }
+  });
+
   return httpServer;
 }

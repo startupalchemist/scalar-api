@@ -281,6 +281,28 @@ export const settings = pgTable("settings", {
 
 export type Setting = typeof settings.$inferSelect;
 
+export const services = pgTable("services", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  badge: text("badge").notNull().default(""),
+  header: text("header").notNull().default(""),
+  description: text("description").notNull().default(""),
+  keyDetails: text("key_details").array().default(sql`'{}'::text[]`),
+  showPrice: boolean("show_price").notNull().default(false),
+  price: text("price"),
+  isActive: boolean("is_active").notNull().default(true),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertServiceSchema = createInsertSchema(services).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertService = z.infer<typeof insertServiceSchema>;
+export type Service = typeof services.$inferSelect;
+
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),

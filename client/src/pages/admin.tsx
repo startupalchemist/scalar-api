@@ -52,10 +52,13 @@ import {
   Tag,
   Pencil,
   Save,
+  ChevronUp,
+  ChevronDown,
+  Wand2,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import TheDyno from "@/components/the-dyno";
-import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog } from "@shared/schema";
+import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog, Service } from "@shared/schema";
 import { leadStatuses, webhookEvents } from "@shared/schema";
 
 const statusColors: Record<string, string> = {
@@ -82,7 +85,7 @@ const statusColors: Record<string, string> = {
   "Closed": "bg-gray-500/20 text-gray-400",
 };
 
-type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations" | "seo";
+type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations" | "seo" | "services";
 
 export default function Admin() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -121,6 +124,7 @@ export default function Admin() {
     ...(user.role === "root" || user.role === "admin" ? [{ key: "users" as TabKey, label: "Users", icon: Users }] : []),
     ...(user.role === "root" || user.role === "admin" ? [{ key: "integrations" as TabKey, label: "Integrations", icon: Zap }] : []),
     ...(user.role === "root" || user.role === "admin" ? [{ key: "seo" as TabKey, label: "SEO", icon: Target }] : []),
+    ...(user.role === "root" || user.role === "admin" ? [{ key: "services" as TabKey, label: "Services", icon: Sparkles }] : []),
   ];
 
   return (
@@ -204,6 +208,9 @@ export default function Admin() {
         )}
         {activeTab === "seo" && (user.role === "root" || user.role === "admin") && (
           <SeoTab toast={toast} userRole={user.role} />
+        )}
+        {activeTab === "services" && (user.role === "root" || user.role === "admin") && (
+          <ServicesTab toast={toast} />
         )}
       </div>
     </div>
@@ -2729,6 +2736,486 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Services Tab ────────────────────────────────────────────────────────────
+
+function ServicesTab({ toast }: { toast: any }) {
+  const { data: services = [], isLoading } = useQuery<Service[]>({
+    queryKey: ["/api/services"],
+  });
+
+  const [newTitle, setNewTitle] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const createService = useMutation({
+    mutationFn: async (title: string) => {
+      const res = await apiRequest("POST", "/api/services", { title });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      setNewTitle("");
+      setShowAddForm(false);
+      toast({ title: "Service created" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-services" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50" data-testid="text-services-count">
+          {services.length} service{services.length !== 1 ? "s" : ""}
+        </p>
+        <Button
+          className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+          onClick={() => setShowAddForm(true)}
+          data-testid="button-add-service"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1.5" />
+          Add Service
+        </Button>
+      </div>
+
+      {showAddForm && (
+        <div className="mb-6 p-4 rounded-md bg-[#141416] border border-white/10 space-y-3">
+          <p className="text-xs text-[#B3B3B8]/70 uppercase tracking-wider">New Service</p>
+          <Input
+            placeholder="Service title (e.g. Custom Turf Design & Install)"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] placeholder:text-[#B3B3B8]/40 text-sm"
+            onKeyDown={(e) => { if (e.key === "Enter" && newTitle.trim()) createService.mutate(newTitle.trim()); }}
+            data-testid="input-new-service-title"
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <Button
+              className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+              onClick={() => { if (newTitle.trim()) createService.mutate(newTitle.trim()); }}
+              disabled={!newTitle.trim() || createService.isPending}
+              data-testid="button-confirm-add-service"
+            >
+              {createService.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create"}
+            </Button>
+            <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => { setShowAddForm(false); setNewTitle(""); }}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {services.length === 0 ? (
+        <div className="text-center py-20" data-testid="text-no-services">
+          <Sparkles className="w-8 h-8 text-[#B3B3B8]/20 mx-auto mb-3" />
+          <p className="text-[#B3B3B8]/50 text-sm">No services yet</p>
+          <p className="text-[#B3B3B8]/30 text-xs mt-1">Add services to manage your offerings</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {[...services].sort((a, b) => a.displayOrder - b.displayOrder).map((service, idx, sorted) => (
+            <ServiceCard
+              key={service.id}
+              service={service}
+              isFirst={idx === 0}
+              isLast={idx === sorted.length - 1}
+              prevId={idx > 0 ? sorted[idx - 1].id : null}
+              prevOrder={idx > 0 ? sorted[idx - 1].displayOrder : null}
+              nextId={idx < sorted.length - 1 ? sorted[idx + 1].id : null}
+              nextOrder={idx < sorted.length - 1 ? sorted[idx + 1].displayOrder : null}
+              toast={toast}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ServiceCard({
+  service,
+  isFirst,
+  isLast,
+  prevId,
+  prevOrder,
+  nextId,
+  nextOrder,
+  toast,
+}: {
+  service: Service;
+  isFirst: boolean;
+  isLast: boolean;
+  prevId: number | null;
+  prevOrder: number | null;
+  nextId: number | null;
+  nextOrder: number | null;
+  toast: any;
+}) {
+  const [draft, setDraft] = useState<Service>({ ...service });
+  const [keyDetailInput, setKeyDetailInput] = useState("");
+  const [dirty, setDirty] = useState(false);
+  const [showGenDialog, setShowGenDialog] = useState(false);
+  const [genToggles, setGenToggles] = useState({
+    generateDescription: true,
+    generatePricing: false,
+    generateKeyDetails: true,
+  });
+
+  useEffect(() => {
+    setDraft({ ...service });
+    setDirty(false);
+  }, [service]);
+
+  const update = useMutation({
+    mutationFn: async (data: Partial<Service>) => {
+      const res = await apiRequest("PATCH", `/api/services/${service.id}`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      setDirty(false);
+      toast({ title: "Service saved" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const deleteService = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/services/${service.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      toast({ title: "Service deleted" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const moveUp = useMutation({
+    mutationFn: async () => {
+      if (prevId === null || prevOrder === null) return;
+      await Promise.all([
+        apiRequest("PATCH", `/api/services/${service.id}`, { displayOrder: prevOrder }),
+        apiRequest("PATCH", `/api/services/${prevId}`, { displayOrder: service.displayOrder }),
+      ]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+    },
+  });
+
+  const moveDown = useMutation({
+    mutationFn: async () => {
+      if (nextId === null || nextOrder === null) return;
+      await Promise.all([
+        apiRequest("PATCH", `/api/services/${service.id}`, { displayOrder: nextOrder }),
+        apiRequest("PATCH", `/api/services/${nextId}`, { displayOrder: service.displayOrder }),
+      ]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+    },
+  });
+
+  const generateContent = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/ai/service-content", {
+        serviceTitle: draft.title,
+        description: draft.description,
+        ...genToggles,
+      });
+      return res.json();
+    },
+    onSuccess: (data: { description?: string; price?: string; keyDetails?: string[] }) => {
+      setDraft((prev) => ({
+        ...prev,
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.price !== undefined ? { price: data.price } : {}),
+        ...(data.keyDetails !== undefined ? { keyDetails: data.keyDetails } : {}),
+      }));
+      setDirty(true);
+      setShowGenDialog(false);
+      toast({ title: "Content generated — review and save" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+    },
+  });
+
+  function setField<K extends keyof Service>(key: K, value: Service[K]) {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+    setDirty(true);
+  }
+
+  function addKeyDetail() {
+    const trimmed = keyDetailInput.trim();
+    if (!trimmed) return;
+    setField("keyDetails", [...(draft.keyDetails || []), trimmed]);
+    setKeyDetailInput("");
+  }
+
+  function removeKeyDetail(idx: number) {
+    setField("keyDetails", (draft.keyDetails || []).filter((_, i) => i !== idx));
+  }
+
+  function handleSave() {
+    update.mutate({
+      title: draft.title,
+      badge: draft.badge,
+      header: draft.header,
+      description: draft.description,
+      keyDetails: draft.keyDetails,
+      showPrice: draft.showPrice,
+      price: draft.price,
+      isActive: draft.isActive,
+      displayOrder: draft.displayOrder,
+    });
+  }
+
+  return (
+    <div
+      className={`p-5 rounded-md bg-[#141416] border ${draft.isActive ? "border-white/10" : "border-white/5 opacity-60"}`}
+      data-testid={`card-service-${service.id}`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-0.5">
+            <button
+              disabled={isFirst || moveUp.isPending}
+              onClick={() => moveUp.mutate()}
+              className="text-[#B3B3B8]/40 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+              data-testid={`button-move-up-${service.id}`}
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button
+              disabled={isLast || moveDown.isPending}
+              onClick={() => moveDown.mutate()}
+              className="text-[#B3B3B8]/40 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+              data-testid={`button-move-down-${service.id}`}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
+          <div>
+            <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Title</p>
+            <Input
+              value={draft.title}
+              onChange={(e) => setField("title", e.target.value)}
+              className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] font-semibold text-sm w-72"
+              data-testid={`input-title-${service.id}`}
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#B3B3B8]/50">Active</span>
+            <Switch
+              checked={draft.isActive}
+              onCheckedChange={(v) => {
+                setField("isActive", v);
+                update.mutate({ isActive: v });
+              }}
+              data-testid={`switch-active-${service.id}`}
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[#B3B3B8]/40 hover:text-[#5D3FD3]"
+            onClick={() => setShowGenDialog(true)}
+            data-testid={`button-generate-${service.id}`}
+          >
+            <Wand2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[#B3B3B8]/40 hover:text-red-400"
+            onClick={() => deleteService.mutate()}
+            disabled={deleteService.isPending}
+            data-testid={`button-delete-service-${service.id}`}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+        <div>
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Badge / Tag line</p>
+          <Input
+            value={draft.badge}
+            onChange={(e) => setField("badge", e.target.value)}
+            placeholder="e.g. Residential & Commercial"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-badge-${service.id}`}
+          />
+        </div>
+        <div>
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Header / Subtitle</p>
+          <Input
+            value={draft.header}
+            onChange={(e) => setField("header", e.target.value)}
+            placeholder="Section headline on the service page"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-header-${service.id}`}
+          />
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-1">Description</p>
+        <Textarea
+          value={draft.description}
+          onChange={(e) => setField("description", e.target.value)}
+          placeholder="Marketing description of the service…"
+          rows={4}
+          className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30 resize-none"
+          data-testid={`textarea-description-${service.id}`}
+        />
+      </div>
+
+      <div className="mb-3">
+        <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider mb-2">Key Details / Feature Bullets</p>
+        <div className="space-y-1.5 mb-2">
+          {(draft.keyDetails || []).map((kd, i) => (
+            <div key={i} className="flex items-center gap-2 p-2 rounded bg-[#0B0B0D] border border-white/5" data-testid={`key-detail-${service.id}-${i}`}>
+              <span className="flex-1 text-sm text-[#F5F5F7]">{kd}</span>
+              <button onClick={() => removeKeyDetail(i)} className="text-[#B3B3B8]/40 hover:text-red-400 transition-colors" data-testid={`button-remove-detail-${service.id}-${i}`}>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={keyDetailInput}
+            onChange={(e) => setKeyDetailInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addKeyDetail(); } }}
+            placeholder="Add a feature bullet…"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-key-detail-${service.id}`}
+          />
+          <Button
+            variant="ghost"
+            className="text-[#B3B3B8] border border-white/10 text-xs px-3"
+            onClick={addKeyDetail}
+            data-testid={`button-add-detail-${service.id}`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-2">
+          <p className="text-xs text-[#B3B3B8]/40 uppercase tracking-wider">Show Price</p>
+          <Switch
+            checked={draft.showPrice}
+            onCheckedChange={(v) => setField("showPrice", v)}
+            data-testid={`switch-show-price-${service.id}`}
+          />
+        </div>
+        {draft.showPrice && (
+          <Input
+            value={draft.price || ""}
+            onChange={(e) => setField("price", e.target.value)}
+            placeholder="e.g. Starting at $8/sq ft"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm placeholder:text-[#B3B3B8]/30"
+            data-testid={`input-price-${service.id}`}
+          />
+        )}
+      </div>
+
+      {dirty && (
+        <div className="flex justify-end">
+          <Button
+            className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+            onClick={handleSave}
+            disabled={update.isPending}
+            data-testid={`button-save-service-${service.id}`}
+          >
+            {update.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Save className="w-3.5 h-3.5 mr-1.5" />}
+            Save
+          </Button>
+        </div>
+      )}
+
+      {showGenDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" data-testid={`dialog-generate-${service.id}`}>
+          <div className="bg-[#141416] border border-white/10 rounded-lg p-6 w-full max-w-sm mx-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Wand2 className="w-4 h-4 text-[#5D3FD3]" />
+                <p className="text-sm font-semibold text-[#F5F5F7]">Generate Content</p>
+              </div>
+              <button onClick={() => setShowGenDialog(false)} className="text-[#B3B3B8]/50 hover:text-[#B3B3B8] transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-[#B3B3B8]/50 mb-5 leading-relaxed">
+              AI will write copy for <span className="text-[#F5F5F7] font-medium">{draft.title}</span>. Select what to generate:
+            </p>
+            <div className="space-y-3 mb-6">
+              <label className="flex items-center justify-between cursor-pointer" data-testid="toggle-gen-description">
+                <span className="text-sm text-[#F5F5F7]">Description</span>
+                <Switch
+                  checked={genToggles.generateDescription}
+                  onCheckedChange={(v) => setGenToggles((prev) => ({ ...prev, generateDescription: v }))}
+                />
+              </label>
+              <label className="flex items-center justify-between cursor-pointer" data-testid="toggle-gen-pricing">
+                <span className="text-sm text-[#F5F5F7]">Pricing copy</span>
+                <Switch
+                  checked={genToggles.generatePricing}
+                  onCheckedChange={(v) => setGenToggles((prev) => ({ ...prev, generatePricing: v }))}
+                />
+              </label>
+              <label className="flex items-center justify-between cursor-pointer" data-testid="toggle-gen-key-details">
+                <span className="text-sm text-[#F5F5F7]">Key details / bullets</span>
+                <Switch
+                  checked={genToggles.generateKeyDetails}
+                  onCheckedChange={(v) => setGenToggles((prev) => ({ ...prev, generateKeyDetails: v }))}
+                />
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-sm"
+                onClick={() => generateContent.mutate()}
+                disabled={generateContent.isPending || (!genToggles.generateDescription && !genToggles.generatePricing && !genToggles.generateKeyDetails)}
+                data-testid={`button-confirm-generate-${service.id}`}
+              >
+                {generateContent.isPending ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Generating…</>
+                ) : (
+                  <><Wand2 className="w-4 h-4 mr-2" />Generate</>
+                )}
+              </Button>
+              <Button variant="ghost" className="text-[#B3B3B8] text-sm" onClick={() => setShowGenDialog(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
