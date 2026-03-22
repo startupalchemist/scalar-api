@@ -68,18 +68,24 @@ async function runOneTimePDRCleanup(): Promise<void> {
     const flag = await storage.getSetting("pdr_cleanup_v1");
     if (flag === "done") return;
 
+    // Only remove published or queued legacy PDR content, leaving drafts/topics intact
     const allPosts = await storage.getPosts();
+    const legacyPosts = allPosts.filter((p) => p.status === "published" || p.status === "queued");
     let deletedPosts = 0;
-    for (const post of allPosts) {
+    for (const post of legacyPosts) {
       await storage.deletePost(post.id);
       deletedPosts++;
     }
 
+    // Archive topics that were linked to removed posts (now have dangling postId)
+    const removedPostIds = new Set(legacyPosts.map((p) => p.id));
     const allTopics = await storage.getTopics();
     let archivedTopics = 0;
     for (const topic of allTopics) {
-      await storage.updateTopic(topic.id, { status: "archived", postId: null });
-      archivedTopics++;
+      if (topic.postId && removedPostIds.has(topic.postId)) {
+        await storage.updateTopic(topic.id, { status: "archived", postId: null });
+        archivedTopics++;
+      }
     }
 
     await storage.setSetting("pdr_cleanup_v1", "done");
