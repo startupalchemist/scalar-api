@@ -527,6 +527,94 @@ Respond in this exact JSON format:
     }
   });
 
+  // POST /api/ai/write — alias for generate-article with dynamic blog_services injection
+  app.post("/api/ai/write", authMiddleware, requireRole("root", "admin", "editor"), async (req, res) => {
+    try {
+      const { topic, keywords, tone } = req.body;
+      if (!topic) {
+        return res.status(400).json({ message: "Topic is required" });
+      }
+
+      const blogServicesRaw = await storage.getSetting("blog_services");
+      const blogServices: { title: string; description: string }[] = (() => { try { return blogServicesRaw ? JSON.parse(blogServicesRaw) : []; } catch { return []; } })();
+      const servicesContext = blogServices.length > 0
+        ? blogServices.map((s) => s.title + (s.description ? `: ${s.description}` : "")).join("; ")
+        : "custom turf design & installation, foundation repair, interior remodeling, outdoor remodeling, bespoke outdoor living spaces, turf & pavers";
+
+      const job = await storage.createAiJob({ type: "article", input: JSON.stringify({ topic, keywords, tone }) });
+
+      const systemPrompt = `You are an expert renovation content writer for Reign Services, DFW's premier interior and exterior renovation contractor. Write authoritative, professional blog articles about the following active services: ${servicesContext}.
+
+Rules:
+- Write in a controlled, confident tone. No exclamation points. No sales hype.
+- Use substantive, factual content. Include specific details about renovation techniques, material selection, and project execution.
+- Target Dallas-Fort Worth market when relevant.
+- Structure with H2 and H3 headings using markdown.
+- Include internal links using proper markdown link syntax: [link text](/path). For example: [our services](/services), [contact us](/contact). Do NOT output raw URLs or bare paths.
+- Include a compelling excerpt (2 sentences max).
+- Suggest 3-5 relevant tags.
+- Suggest an SEO title (60 chars max) and meta description (155 chars max).
+- Minimum 800 words of article content.`;
+
+      const userPrompt = `Write a blog article about: ${topic}${keywords ? `\nTarget keywords: ${keywords}` : ""}${tone ? `\nTone: ${tone}` : ""}
+
+Respond in this exact JSON format:
+{
+  "title": "Article Title",
+  "excerpt": "Brief 1-2 sentence excerpt",
+  "content": "Full article content in markdown",
+  "tags": ["tag1", "tag2"],
+  "seoTitle": "SEO Title",
+  "seoDescription": "Meta description"
+}`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5.2",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 4096,
+      });
+
+      const raw = response.choices[0]?.message?.content || "{}";
+      let article: { title?: string; content?: string; excerpt?: string; tags?: string[]; seoTitle?: string; seoDescription?: string };
+      try {
+        article = JSON.parse(raw);
+      } catch {
+        article = { title: topic, content: raw, excerpt: "", tags: [], seoTitle: "", seoDescription: "" };
+      }
+
+      await storage.updateAiJob(job.id, { output: raw, status: "completed" });
+
+      const slug = slugify(article.title || topic);
+      const existingSlug = await storage.getPostBySlug(slug);
+      const finalSlug = existingSlug ? slug + "-" + Date.now().toString(36) : slug;
+
+      const post = await storage.createPost({
+        title: article.title || topic,
+        slug: finalSlug,
+        content: article.content || "",
+        excerpt: article.excerpt || null,
+        tags: article.tags || [],
+        seoTitle: article.seoTitle || null,
+        seoDescription: article.seoDescription || null,
+        seoKeywords: [],
+        status: "draft",
+        featuredImage: null,
+        publishedAt: null,
+        authorId: req.user!.id,
+      });
+
+      res.json({ post, job });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("AI write error:", msg);
+      res.status(500).json({ message: "Failed to write article", error: msg });
+    }
+  });
+
   app.get("/api/ai/jobs", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
     try {
       const jobs = await storage.getAiJobs();
@@ -1486,7 +1574,12 @@ Respond in JSON format:
         return res.status(400).json({ message: "Value must be a JSON array" });
       }
       for (const item of parsed) {
-        if (typeof (item as any)?.title !== "string") {
+        if (
+          typeof item !== "object" ||
+          item === null ||
+          !("title" in item) ||
+          typeof (item as Record<string, unknown>).title !== "string"
+        ) {
           return res.status(400).json({ message: "Each service entry must have a title string" });
         }
       }
