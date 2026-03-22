@@ -1574,13 +1574,15 @@ Respond in JSON format:
         return res.status(400).json({ message: "Value must be a JSON array" });
       }
       for (const item of parsed) {
-        if (
-          typeof item !== "object" ||
-          item === null ||
-          !("title" in item) ||
-          typeof (item as Record<string, unknown>).title !== "string"
-        ) {
+        if (typeof item !== "object" || item === null) {
+          return res.status(400).json({ message: "Each service entry must be an object" });
+        }
+        const entry = item as Record<string, unknown>;
+        if (!("title" in entry) || typeof entry.title !== "string") {
           return res.status(400).json({ message: "Each service entry must have a title string" });
+        }
+        if ("description" in entry && typeof entry.description !== "string") {
+          return res.status(400).json({ message: "Each service entry description must be a string" });
         }
       }
       await storage.setSetting("blog_services", value);
