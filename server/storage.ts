@@ -1,5 +1,5 @@
 import {
-  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs, ratings, settings, services,
+  leads, users, sessions, posts, subscribers, newsletters, aiJobs, backlinks, backlinkClicks, topics, webhooks, webhookLogs, ratings, settings, services, gallerySections, galleryItems,
   type Lead, type InsertLead,
   type User, type InsertUser,
   type Session,
@@ -15,6 +15,8 @@ import {
   type Rating,
   type Setting,
   type Service, type InsertService,
+  type GallerySection, type InsertGallerySection,
+  type GalleryItem, type InsertGalleryItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -102,6 +104,18 @@ export interface IStorage {
   createService(data: InsertService): Promise<Service>;
   updateService(id: number, data: Partial<Service>): Promise<Service | undefined>;
   deleteService(id: number): Promise<void>;
+
+  getPublicGallery(): Promise<{ sections: (GallerySection & { items: GalleryItem[] })[] }>;
+  getGallerySections(): Promise<GallerySection[]>;
+  getGallerySectionById(id: number): Promise<GallerySection | undefined>;
+  createGallerySection(data: InsertGallerySection): Promise<GallerySection>;
+  updateGallerySection(id: number, data: Partial<GallerySection>): Promise<GallerySection | undefined>;
+  deleteGallerySection(id: number): Promise<void>;
+  getGalleryItems(sectionId?: number): Promise<GalleryItem[]>;
+  getGalleryItemById(id: number): Promise<GalleryItem | undefined>;
+  createGalleryItem(data: InsertGalleryItem): Promise<GalleryItem>;
+  updateGalleryItem(id: number, data: Partial<GalleryItem>): Promise<GalleryItem | undefined>;
+  deleteGalleryItem(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -396,6 +410,65 @@ export class DatabaseStorage implements IStorage {
   }
   async deleteService(id: number): Promise<void> {
     await db.delete(services).where(eq(services.id, id));
+  }
+
+  async getPublicGallery(): Promise<{ sections: (GallerySection & { items: GalleryItem[] })[] }> {
+    const sections = await db
+      .select()
+      .from(gallerySections)
+      .where(eq(gallerySections.isActive, true))
+      .orderBy(gallerySections.displayOrder);
+    const result: (GallerySection & { items: GalleryItem[] })[] = [];
+    for (const section of sections) {
+      const items = await db
+        .select()
+        .from(galleryItems)
+        .where(and(eq(galleryItems.sectionId, section.id), eq(galleryItems.isActive, true)))
+        .orderBy(galleryItems.displayOrder);
+      result.push({ ...section, items });
+    }
+    return { sections: result };
+  }
+
+  async getGallerySections(): Promise<GallerySection[]> {
+    return db.select().from(gallerySections).orderBy(gallerySections.displayOrder);
+  }
+  async getGallerySectionById(id: number): Promise<GallerySection | undefined> {
+    const [result] = await db.select().from(gallerySections).where(eq(gallerySections.id, id));
+    return result;
+  }
+  async createGallerySection(data: InsertGallerySection): Promise<GallerySection> {
+    const [result] = await db.insert(gallerySections).values(data).returning();
+    return result;
+  }
+  async updateGallerySection(id: number, data: Partial<GallerySection>): Promise<GallerySection | undefined> {
+    const [result] = await db.update(gallerySections).set(data).where(eq(gallerySections.id, id)).returning();
+    return result;
+  }
+  async deleteGallerySection(id: number): Promise<void> {
+    await db.delete(gallerySections).where(eq(gallerySections.id, id));
+  }
+
+  async getGalleryItems(sectionId?: number): Promise<GalleryItem[]> {
+    if (sectionId !== undefined) {
+      return db.select().from(galleryItems).where(eq(galleryItems.sectionId, sectionId)).orderBy(galleryItems.displayOrder);
+    }
+    return db.select().from(galleryItems).orderBy(galleryItems.displayOrder);
+  }
+  async getGalleryItemById(id: number): Promise<GalleryItem | undefined> {
+    const [result] = await db.select().from(galleryItems).where(eq(galleryItems.id, id));
+    return result;
+  }
+  async createGalleryItem(data: InsertGalleryItem): Promise<GalleryItem> {
+    const [result] = await db.insert(galleryItems).values(data).returning();
+    return result;
+  }
+  async updateGalleryItem(id: number, data: Partial<GalleryItem>): Promise<GalleryItem | undefined> {
+    const [result] = await db.update(galleryItems).set(data).where(eq(galleryItems.id, id)).returning();
+    return result;
+  }
+  async deleteGalleryItem(id: number): Promise<void> {
+    await db.delete(galleryItems).where(eq(galleryItems.id, id));
   }
 }
 

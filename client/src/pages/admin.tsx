@@ -58,7 +58,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import TheDyno from "@/components/the-dyno";
-import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog, Service } from "@shared/schema";
+import type { Lead, Post, Subscriber, Newsletter, Topic, Webhook, WebhookLog, Service, GallerySection, GalleryItem } from "@shared/schema";
 import { leadStatuses, webhookEvents } from "@shared/schema";
 
 const statusColors: Record<string, string> = {
@@ -85,7 +85,7 @@ const statusColors: Record<string, string> = {
   "Closed": "bg-gray-500/20 text-gray-400",
 };
 
-type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations" | "seo" | "services";
+type TabKey = "dyno" | "dashboard" | "leads" | "blog" | "newsletter" | "users" | "integrations" | "seo" | "services" | "gallery";
 
 export default function Admin() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -125,6 +125,7 @@ export default function Admin() {
     ...(user.role === "root" || user.role === "admin" ? [{ key: "integrations" as TabKey, label: "Integrations", icon: Zap }] : []),
     ...(user.role === "root" || user.role === "admin" ? [{ key: "seo" as TabKey, label: "SEO", icon: Target }] : []),
     ...(user.role === "root" || user.role === "admin" ? [{ key: "services" as TabKey, label: "Services", icon: Sparkles }] : []),
+    ...(user.role === "root" || user.role === "admin" ? [{ key: "gallery" as TabKey, label: "Gallery", icon: Globe }] : []),
   ];
 
   return (
@@ -211,6 +212,9 @@ export default function Admin() {
         )}
         {activeTab === "services" && (user.role === "root" || user.role === "admin") && (
           <ServicesTab toast={toast} />
+        )}
+        {activeTab === "gallery" && (user.role === "root" || user.role === "admin") && (
+          <GalleryTab toast={toast} />
         )}
       </div>
     </div>
@@ -3216,6 +3220,398 @@ function ServiceCard({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+type GallerySectionWithItems = GallerySection & { items: GalleryItem[] };
+
+function GalleryTab({ toast }: { toast: any }) {
+  const adminSections = useQuery<GallerySection[]>({
+    queryKey: ["/api/gallery/sections"],
+  });
+
+  const galleryData = useQuery<{ sections: GallerySectionWithItems[] }>({
+    queryKey: ["/api/gallery"],
+  });
+
+  const [expandedSection, setExpandedSection] = useState<number | null>(null);
+  const [addSectionName, setAddSectionName] = useState("");
+  const [addingSection, setAddingSection] = useState(false);
+  const [editingItem, setEditingItem] = useState<number | null>(null);
+  const [itemDraft, setItemDraft] = useState<{ src: string; alt: string; badge: string }>({ src: "", alt: "", badge: "" });
+  const [addItemDraft, setAddItemDraft] = useState<{ src: string; alt: string; badge: string }>({ src: "", alt: "", badge: "" });
+  const [addingItemToSection, setAddingItemToSection] = useState<number | null>(null);
+
+  const sections = adminSections.data ?? [];
+
+  const createSection = useMutation({
+    mutationFn: async (name: string) => {
+      const maxOrder = sections.length > 0 ? Math.max(...sections.map((s) => s.displayOrder)) + 1 : 0;
+      await apiRequest("POST", "/api/gallery/sections", { name, displayOrder: maxOrder });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      setAddSectionName("");
+      setAddingSection(false);
+      toast({ title: "Section created" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const updateSection = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number } & Partial<GallerySection>) => {
+      await apiRequest("PATCH", `/api/gallery/sections/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const deleteSection = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/gallery/sections/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      toast({ title: "Section deleted" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const createItem = useMutation({
+    mutationFn: async ({ sectionId, src, alt, badge }: { sectionId: number; src: string; alt: string; badge: string }) => {
+      const sectionItems = galleryData.data?.sections?.find((s) => s.id === sectionId)?.items ?? [];
+      const maxOrder = sectionItems.length > 0 ? Math.max(...sectionItems.map((i) => i.displayOrder)) + 1 : 0;
+      await apiRequest("POST", "/api/gallery/items", { sectionId, src, alt, badge: badge || null, displayOrder: maxOrder });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      setAddingItemToSection(null);
+      setAddItemDraft({ src: "", alt: "", badge: "" });
+      toast({ title: "Image added" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const updateItem = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number } & Partial<GalleryItem>) => {
+      await apiRequest("PATCH", `/api/gallery/items/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      setEditingItem(null);
+      toast({ title: "Image updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/gallery/items/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      toast({ title: "Image removed" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  function swapSectionOrder(sectionId: number, direction: "up" | "down") {
+    const sorted = [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
+    const idx = sorted.findIndex((s) => s.id === sectionId);
+    if (direction === "up" && idx === 0) return;
+    if (direction === "down" && idx === sorted.length - 1) return;
+    const swapWith = direction === "up" ? sorted[idx - 1] : sorted[idx + 1];
+    const curr = sorted[idx];
+    updateSection.mutate({ id: curr.id, displayOrder: swapWith.displayOrder });
+    updateSection.mutate({ id: swapWith.id, displayOrder: curr.displayOrder });
+  }
+
+  if (adminSections.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-gallery" />
+      </div>
+    );
+  }
+
+  const sortedSections = [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50">
+          {sections.length} section{sections.length !== 1 ? "s" : ""}
+        </p>
+        <Button
+          className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+          onClick={() => setAddingSection(true)}
+          data-testid="button-add-section"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1.5" />
+          Add Section
+        </Button>
+      </div>
+
+      {addingSection && (
+        <div className="p-5 rounded-md bg-[#141416] border border-white/10 space-y-3">
+          <p className="text-xs uppercase tracking-wider text-[#B3B3B8]/50">New Section</p>
+          <Input
+            value={addSectionName}
+            onChange={(e) => setAddSectionName(e.target.value)}
+            placeholder="Section name (e.g. Foundation Repair)"
+            className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm"
+            data-testid="input-new-section-name"
+          />
+          <div className="flex gap-2">
+            <Button
+              className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+              disabled={!addSectionName.trim() || createSection.isPending}
+              onClick={() => createSection.mutate(addSectionName.trim())}
+              data-testid="button-confirm-add-section"
+            >
+              {createSection.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create"}
+            </Button>
+            <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => { setAddingSection(false); setAddSectionName(""); }}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {sortedSections.map((section, sIdx) => {
+        const sectionItems = galleryData.data?.sections?.find((s) => s.id === section.id)?.items ?? [];
+        const isExpanded = expandedSection === section.id;
+
+        return (
+          <div
+            key={section.id}
+            className="rounded-md bg-[#141416] border border-white/5 overflow-hidden"
+            data-testid={`card-section-${section.id}`}
+          >
+            <div className="flex flex-wrap items-center gap-3 px-5 py-4">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => swapSectionOrder(section.id, "up")}
+                  disabled={sIdx === 0}
+                  className="p-1 text-[#B3B3B8]/40 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+                  data-testid={`button-section-up-${section.id}`}
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => swapSectionOrder(section.id, "down")}
+                  disabled={sIdx === sortedSections.length - 1}
+                  className="p-1 text-[#B3B3B8]/40 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+                  data-testid={`button-section-down-${section.id}`}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+
+              <button
+                className="flex-1 flex items-center gap-3 text-left"
+                onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                data-testid={`button-expand-section-${section.id}`}
+              >
+                <span className="text-sm font-medium text-[#F5F5F7]">{section.name}</span>
+                <span className="text-xs text-[#B3B3B8]/40">{sectionItems.length} images</span>
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#B3B3B8]/40 uppercase tracking-wider">Active</span>
+                  <Switch
+                    checked={section.isActive}
+                    onCheckedChange={(v) => updateSection.mutate({ id: section.id, isActive: v })}
+                    data-testid={`switch-section-active-${section.id}`}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (!confirm(`Delete section "${section.name}" and all its images?`)) return;
+                    deleteSection.mutate(section.id);
+                  }}
+                  className="text-[#B3B3B8]/40 hover:text-red-400 transition-colors"
+                  data-testid={`button-delete-section-${section.id}`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                  className="text-[#B3B3B8]/40 hover:text-[#B3B3B8] transition-colors"
+                >
+                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {isExpanded && (
+              <div className="border-t border-white/5 px-5 py-4 space-y-3">
+                {sectionItems.length === 0 && (
+                  <p className="text-sm text-[#B3B3B8]/40 italic" data-testid={`text-no-items-${section.id}`}>No images in this section.</p>
+                )}
+                {sectionItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-md bg-[#0B0B0D] border border-white/5 overflow-hidden"
+                    data-testid={`card-item-${item.id}`}
+                  >
+                    {editingItem === item.id ? (
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          {itemDraft.src && (
+                            <img src={itemDraft.src} alt="" className="w-14 h-10 object-cover rounded flex-shrink-0" />
+                          )}
+                          <div className="flex-1 space-y-2">
+                            <Input
+                              value={itemDraft.src}
+                              onChange={(e) => setItemDraft((d) => ({ ...d, src: e.target.value }))}
+                              placeholder="/gallery/image.jpg"
+                              className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                              data-testid={`input-item-src-${item.id}`}
+                            />
+                            <Input
+                              value={itemDraft.alt}
+                              onChange={(e) => setItemDraft((d) => ({ ...d, alt: e.target.value }))}
+                              placeholder="Alt text"
+                              className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                              data-testid={`input-item-alt-${item.id}`}
+                            />
+                            <Input
+                              value={itemDraft.badge}
+                              onChange={(e) => setItemDraft((d) => ({ ...d, badge: e.target.value }))}
+                              placeholder="Badge — optional (Before / After / In Progress)"
+                              className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                              data-testid={`input-item-badge-${item.id}`}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+                            disabled={updateItem.isPending}
+                            onClick={() => updateItem.mutate({ id: item.id, src: itemDraft.src, alt: itemDraft.alt, badge: itemDraft.badge || null })}
+                            data-testid={`button-save-item-${item.id}`}
+                          >
+                            {updateItem.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                            Save
+                          </Button>
+                          <Button variant="ghost" className="text-[#B3B3B8] text-xs" onClick={() => setEditingItem(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-3 p-3">
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          className="w-14 h-10 object-cover rounded flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-[#F5F5F7] truncate">{item.alt}</p>
+                          <p className="text-[10px] text-[#B3B3B8]/40 truncate">{item.src}</p>
+                          {item.badge && (
+                            <Badge className="mt-1 bg-[#5D3FD3]/20 text-[#5D3FD3] border-0 no-default-hover-elevate no-default-active-elevate text-[10px]">
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Switch
+                            checked={item.isActive}
+                            onCheckedChange={(v) => updateItem.mutate({ id: item.id, isActive: v })}
+                            data-testid={`switch-item-active-${item.id}`}
+                          />
+                          <button
+                            onClick={() => {
+                              setEditingItem(item.id);
+                              setItemDraft({ src: item.src, alt: item.alt, badge: item.badge ?? "" });
+                            }}
+                            className="p-1 text-[#B3B3B8]/40 hover:text-[#B3B3B8] transition-colors"
+                            data-testid={`button-edit-item-${item.id}`}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (!confirm("Remove this image?")) return;
+                              deleteItem.mutate(item.id);
+                            }}
+                            className="p-1 text-[#B3B3B8]/40 hover:text-red-400 transition-colors"
+                            data-testid={`button-delete-item-${item.id}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {addingItemToSection === section.id ? (
+                  <div className="rounded-md bg-[#0B0B0D] border border-dashed border-white/10 p-4 space-y-2">
+                    <p className="text-[10px] uppercase tracking-wider text-[#B3B3B8]/40">New Image</p>
+                    <Input
+                      value={addItemDraft.src}
+                      onChange={(e) => setAddItemDraft((d) => ({ ...d, src: e.target.value }))}
+                      placeholder="/gallery/image.jpg (path or URL)"
+                      className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                      data-testid={`input-new-item-src-${section.id}`}
+                    />
+                    <Input
+                      value={addItemDraft.alt}
+                      onChange={(e) => setAddItemDraft((d) => ({ ...d, alt: e.target.value }))}
+                      placeholder="Alt text / description"
+                      className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                      data-testid={`input-new-item-alt-${section.id}`}
+                    />
+                    <Input
+                      value={addItemDraft.badge}
+                      onChange={(e) => setAddItemDraft((d) => ({ ...d, badge: e.target.value }))}
+                      placeholder="Badge label — optional (Before / After / In Progress)"
+                      className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                      data-testid={`input-new-item-badge-${section.id}`}
+                    />
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
+                        disabled={!addItemDraft.src.trim() || !addItemDraft.alt.trim() || createItem.isPending}
+                        onClick={() => createItem.mutate({ sectionId: section.id, ...addItemDraft })}
+                        data-testid={`button-confirm-add-item-${section.id}`}
+                      >
+                        {createItem.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
+                        Add Image
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="text-[#B3B3B8] text-xs"
+                        onClick={() => { setAddingItemToSection(null); setAddItemDraft({ src: "", alt: "", badge: "" }); }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="w-full py-3 rounded-md border border-dashed border-white/10 text-xs text-[#B3B3B8]/40 hover:text-[#B3B3B8] hover:border-white/20 transition-colors"
+                    onClick={() => { setAddingItemToSection(section.id); setAddItemDraft({ src: "", alt: "", badge: "" }); }}
+                    data-testid={`button-add-item-${section.id}`}
+                  >
+                    <Plus className="w-3.5 h-3.5 inline mr-1" />
+                    Add Image
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

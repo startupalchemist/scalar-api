@@ -1740,5 +1740,123 @@ Generate only the requested fields. Respond in this exact JSON format:
     }
   });
 
+  // ─── Gallery Routes (public) ──────────────────────────────────
+
+  app.get("/api/gallery", async (_req, res) => {
+    try {
+      const gallery = await storage.getPublicGallery();
+      res.json(gallery);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch gallery" });
+    }
+  });
+
+  // ─── Gallery Section Management (root + admin) ────────────────
+
+  app.get("/api/gallery/sections", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const sections = await storage.getGallerySections();
+      res.json(sections);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch gallery sections" });
+    }
+  });
+
+  app.post("/api/gallery/sections", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { name, displayOrder, isActive } = req.body;
+      if (!name) {
+        return res.status(400).json({ message: "Section name is required" });
+      }
+      const section = await storage.createGallerySection({
+        name,
+        displayOrder: typeof displayOrder === "number" ? displayOrder : 0,
+        isActive: isActive !== false,
+      });
+      res.status(201).json(section);
+    } catch {
+      res.status(500).json({ message: "Failed to create gallery section" });
+    }
+  });
+
+  app.patch("/api/gallery/sections/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid id" });
+      const updates: Record<string, any> = {};
+      if (req.body.name !== undefined) updates.name = req.body.name;
+      if (typeof req.body.displayOrder === "number") updates.displayOrder = req.body.displayOrder;
+      if (typeof req.body.isActive === "boolean") updates.isActive = req.body.isActive;
+      const section = await storage.updateGallerySection(id, updates);
+      if (!section) return res.status(404).json({ message: "Section not found" });
+      res.json(section);
+    } catch {
+      res.status(500).json({ message: "Failed to update gallery section" });
+    }
+  });
+
+  app.delete("/api/gallery/sections/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid id" });
+      await storage.deleteGallerySection(id);
+      res.json({ message: "Section deleted" });
+    } catch {
+      res.status(500).json({ message: "Failed to delete gallery section" });
+    }
+  });
+
+  // ─── Gallery Item Management (root + admin) ───────────────────
+
+  app.post("/api/gallery/items", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { sectionId, src, alt, badge, displayOrder, isActive } = req.body;
+      if (!sectionId || !src || !alt) {
+        return res.status(400).json({ message: "sectionId, src, and alt are required" });
+      }
+      const item = await storage.createGalleryItem({
+        sectionId: parseInt(sectionId),
+        src,
+        alt,
+        badge: badge || null,
+        displayOrder: typeof displayOrder === "number" ? displayOrder : 0,
+        isActive: isActive !== false,
+      });
+      res.status(201).json(item);
+    } catch {
+      res.status(500).json({ message: "Failed to create gallery item" });
+    }
+  });
+
+  app.patch("/api/gallery/items/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid id" });
+      const updates: Record<string, any> = {};
+      if (req.body.src !== undefined) updates.src = req.body.src;
+      if (req.body.alt !== undefined) updates.alt = req.body.alt;
+      if (req.body.badge !== undefined) updates.badge = req.body.badge || null;
+      if (typeof req.body.displayOrder === "number") updates.displayOrder = req.body.displayOrder;
+      if (typeof req.body.isActive === "boolean") updates.isActive = req.body.isActive;
+      if (typeof req.body.sectionId === "number") updates.sectionId = req.body.sectionId;
+      const item = await storage.updateGalleryItem(id, updates);
+      if (!item) return res.status(404).json({ message: "Item not found" });
+      res.json(item);
+    } catch {
+      res.status(500).json({ message: "Failed to update gallery item" });
+    }
+  });
+
+  app.delete("/api/gallery/items/:id", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid id" });
+      await storage.deleteGalleryItem(id);
+      res.json({ message: "Item deleted" });
+    } catch {
+      res.status(500).json({ message: "Failed to delete gallery item" });
+    }
+  });
+
   return httpServer;
 }

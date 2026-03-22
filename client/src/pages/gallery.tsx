@@ -1,21 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
+import type { GallerySection, GalleryItem } from "@shared/schema";
 
-interface GalleryImage {
-  src: string;
-  alt: string;
-  badge?: string;
-}
-
-const spotlight: GalleryImage[] = [
-  { src: "/gallery/spotlight-before-1.jpeg",   alt: "Before: bare patchy backyard",               badge: "Before" },
-  { src: "/gallery/spotlight-progress-1.jpeg",  alt: "In Progress: gravel base and edging laid",   badge: "In Progress" },
-  { src: "/gallery/spotlight-after-1.jpeg",     alt: "After: lush turf with rock border",           badge: "After" },
-  { src: "/gallery/spotlight-after-2.jpeg",     alt: "After: turf with flagstone and planter boxes",badge: "After" },
-  { src: "/gallery/spotlight-after-3.jpeg",     alt: "After: flagstone patio and turf, tree feature",badge: "After" },
-  { src: "/gallery/spotlight-after-4.jpeg",     alt: "After: golden hour full reveal",              badge: "After" },
-];
+type GallerySectionWithItems = GallerySection & { items: GalleryItem[] };
 
 const badgeColors: Record<string, string> = {
   "Before":      "bg-[#0A1F44]/90 text-white border border-white/20",
@@ -23,49 +12,11 @@ const badgeColors: Record<string, string> = {
   "After":       "bg-[#5D3FD3]/90 text-white border border-[#5D3FD3]/40",
 };
 
-const turfPavers: GalleryImage[] = [
-  { src: "/gallery/pool-stepping-stones.webp",   alt: "Pool with turf and stepping stones" },
-  { src: "/gallery/pool-diamond-pavers.webp",    alt: "Pool with diamond turf and paver surround" },
-  { src: "/gallery/outdoor-kitchen-pavers.webp", alt: "Covered outdoor kitchen with fire pit and pavers" },
-  { src: "/gallery/firepit-pavers-night.webp",   alt: "Fire pit with turf grid at night" },
-  { src: "/gallery/aerial-pool-turf-1.jpeg",     alt: "Aerial view: pool with turf and paver install" },
-  { src: "/gallery/aerial-pool-turf-2.jpeg",     alt: "Aerial view: pool and turf backyard" },
-  { src: "/gallery/aerial-pool-turf-3.jpeg",     alt: "Aerial view: full turf backyard with pool" },
-  { src: "/gallery/aerial-pool-turf-4.jpeg",     alt: "Aerial view: modern pool with turf and fire pit" },
-];
-
-const customPatterns: GalleryImage[] = [
-  { src: "/gallery/pattern-diamond-factory.jpeg", alt: "Custom diamond-cut turf pattern" },
-  { src: "/gallery/pattern-floral-wall.jpeg",     alt: "Custom floral turf accent wall" },
-  { src: "/gallery/pattern-circular-luxury.jpeg", alt: "Custom circular pattern on luxury estate" },
-];
-
-const puttingGreens: GalleryImage[] = [
-  { src: "/gallery/putting-green-aerial-1.jpeg",  alt: "Aerial view: multi-hole putting green" },
-  { src: "/gallery/putting-green-aerial-2.jpeg",  alt: "Aerial view: putting green alternate angle" },
-  { src: "/gallery/putting-green-gazebo.jpeg",    alt: "Putting green with backyard gazebo" },
-  { src: "/gallery/putting-green-side-yard.jpeg", alt: "Dual putting green in side yard" },
-];
-
-const sports: GalleryImage[] = [
-  { src: "/gallery/sports-mini-soccer.jpeg",      alt: "Backyard mini soccer field with turf" },
-  { src: "/gallery/sports-commercial-soccer.jpeg",alt: "Full indoor commercial soccer field" },
-];
-
-const outdoorLiving: GalleryImage[] = [
-  { src: "/gallery/outdoor-living-pergola.jpeg",  alt: "Modern pergola with outdoor seating" },
-];
-
-const residential: GalleryImage[] = [
-  { src: "/gallery/residential-playground.jpeg",  alt: "Children's playground on artificial turf" },
-  { src: "/gallery/residential-frontyard.jpeg",   alt: "Clean front yard turf and pavers, aerial view" },
-];
-
-function MasonryGrid({ images }: { images: GalleryImage[] }) {
+function MasonryGrid({ images }: { images: GalleryItem[] }) {
   return (
     <div className="columns-2 md:columns-3 gap-3">
       {images.map((img, i) => (
-        <div key={i} className="break-inside-avoid mb-3" data-testid={`gallery-img-${i}`}>
+        <div key={img.id} className="break-inside-avoid mb-3" data-testid={`gallery-img-${i}`}>
           <img
             src={img.src}
             alt={img.alt}
@@ -96,7 +47,100 @@ function SectionHeader({ label, title, callout }: { label: string; title: string
   );
 }
 
+function SpotlightSection({ section }: { section: GallerySectionWithItems }) {
+  return (
+    <section className="mb-20 lg:mb-28" data-testid="section-spotlight">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">Project Spotlight</span>
+          <h2
+            className="mt-2 text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Residential Turf + Outdoor Living Transformation
+          </h2>
+          <p className="mt-2 text-sm text-[#B3B3B8]/70">
+            A complete backyard transformation — from bare dirt to a finished outdoor living space.
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {section.items.map((img, i) => (
+          <div key={img.id} className="relative rounded-xl overflow-hidden group" data-testid={`spotlight-img-${i}`}>
+            <img
+              src={img.src}
+              alt={img.alt}
+              loading="lazy"
+              className="w-full h-56 sm:h-64 md:h-72 object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            {img.badge && (
+              <span
+                className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-[0.15em] px-2.5 py-1 rounded-full ${badgeColors[img.badge] ?? "bg-white/20 text-white border border-white/30"}`}
+              >
+                {img.badge}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GenericSection({ section, index }: { section: GallerySectionWithItems; index: number }) {
+  const isCustomPatterns = section.name === "Custom Patterns";
+  const testId = `section-${section.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
+  if (isCustomPatterns) {
+    return (
+      <section className="mb-20 lg:mb-28" data-testid={testId}>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">Custom Patterns</span>
+            <h2
+              className="mt-2 text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Made-to-Order Turf Design
+            </h2>
+            <p className="mt-2 text-sm text-[#B3B3B8]/70">
+              Geometric, floral, branded logos, and more — every pattern is quoted individually.{" "}
+              <Link href="/contact?utm_source=gallery&utm_medium=patterns_inline_cta">
+                <span className="text-[#5D3FD3] hover:text-white transition-colors cursor-pointer">Request a free estimate.</span>
+              </Link>
+            </p>
+          </div>
+        </div>
+        <MasonryGrid images={section.items} />
+      </section>
+    );
+  }
+
+  const sectionLabels: Record<string, { label: string; title: string }> = {
+    "Turf & Pavers":       { label: "Turf & Pavers",       title: "Pool Surrounds & Hardscaping" },
+    "Putting Greens":      { label: "Putting Greens",      title: "Backyard & Property Greens" },
+    "Sports & Commercial": { label: "Sports & Commercial", title: "Sports Fields & Large-Scale Installs" },
+    "Outdoor Living":      { label: "Outdoor Living",      title: "Covered Spaces & Pergolas" },
+    "Residential":         { label: "Residential",         title: "Front Yards, Playgrounds & More" },
+  };
+  const meta = sectionLabels[section.name] ?? { label: section.name, title: section.name };
+
+  return (
+    <section className="mb-20 lg:mb-28" data-testid={testId}>
+      <SectionHeader label={meta.label} title={meta.title} />
+      <MasonryGrid images={section.items} />
+    </section>
+  );
+}
+
 export default function Gallery() {
+  const { data, isLoading } = useQuery<{ sections: GallerySectionWithItems[] }>({
+    queryKey: ["/api/gallery"],
+  });
+
+  const sections = data?.sections ?? [];
+
   return (
     <div className="bg-[#0B0B0D] min-h-screen pt-24 lg:pt-32">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 pb-24 lg:pb-40">
@@ -115,89 +159,21 @@ export default function Gallery() {
           </p>
         </div>
 
-        <section className="mb-20 lg:mb-28" data-testid="section-spotlight">
-          <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">Project Spotlight</span>
-              <h2
-                className="mt-2 text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
-                Residential Turf + Outdoor Living Transformation
-              </h2>
-              <p className="mt-2 text-sm text-[#B3B3B8]/70">
-                A complete backyard transformation — from bare dirt to a finished outdoor living space.
-              </p>
-            </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" />
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {spotlight.map((img, i) => (
-              <div key={i} className="relative rounded-xl overflow-hidden group" data-testid={`spotlight-img-${i}`}>
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  loading="lazy"
-                  className="w-full h-56 sm:h-64 md:h-72 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                {img.badge && (
-                  <span
-                    className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-[0.15em] px-2.5 py-1 rounded-full ${badgeColors[img.badge]}`}
-                  >
-                    {img.badge}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-turf-pavers">
-          <SectionHeader label="Turf & Pavers" title="Pool Surrounds & Hardscaping" />
-          <MasonryGrid images={turfPavers} />
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-custom-patterns">
-          <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <span className="text-xs uppercase tracking-[0.3em] text-[#5D3FD3] font-semibold">Custom Patterns</span>
-              <h2
-                className="mt-2 text-2xl sm:text-3xl font-bold text-white uppercase tracking-tight"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
-                Made-to-Order Turf Design
-              </h2>
-              <p className="mt-2 text-sm text-[#B3B3B8]/70">
-                Geometric, floral, branded logos, and more — every pattern is quoted individually.{" "}
-                <Link href="/contact?utm_source=gallery&utm_medium=patterns_inline_cta">
-                  <span className="text-[#5D3FD3] hover:text-white transition-colors cursor-pointer">Request a free estimate.</span>
-                </Link>
-              </p>
-            </div>
-          </div>
-          <MasonryGrid images={customPatterns} />
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-putting-greens">
-          <SectionHeader label="Putting Greens" title="Backyard & Property Greens" />
-          <MasonryGrid images={puttingGreens} />
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-sports">
-          <SectionHeader label="Sports & Commercial" title="Sports Fields & Large-Scale Installs" />
-          <MasonryGrid images={sports} />
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-outdoor-living">
-          <SectionHeader label="Outdoor Living" title="Covered Spaces & Pergolas" />
-          <MasonryGrid images={outdoorLiving} />
-        </section>
-
-        <section className="mb-20 lg:mb-28" data-testid="section-residential">
-          <SectionHeader label="Residential" title="Front Yards, Playgrounds & More" />
-          <MasonryGrid images={residential} />
-        </section>
+        ) : (
+          <>
+            {sections.map((section, i) =>
+              section.name === "Project Spotlight" ? (
+                <SpotlightSection key={section.id} section={section} />
+              ) : (
+                <GenericSection key={section.id} section={section} index={i} />
+              )
+            )}
+          </>
+        )}
 
         <div
           className="mt-4 p-10 rounded-2xl text-center relative overflow-hidden"

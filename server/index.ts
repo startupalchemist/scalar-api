@@ -95,9 +95,111 @@ async function runOneTimePDRCleanup(): Promise<void> {
   }
 }
 
+async function seedGallery(): Promise<void> {
+  try {
+    const flag = await storage.getSetting("gallery_seeded_v1");
+    if (flag === "done") return;
+
+    const SECTIONS = [
+      {
+        name: "Project Spotlight",
+        displayOrder: 0,
+        items: [
+          { src: "/gallery/spotlight-before-1.jpeg",   alt: "Before: bare patchy backyard",                badge: "Before",      displayOrder: 0 },
+          { src: "/gallery/spotlight-progress-1.jpeg",  alt: "In Progress: gravel base and edging laid",   badge: "In Progress", displayOrder: 1 },
+          { src: "/gallery/spotlight-after-1.jpeg",     alt: "After: lush turf with rock border",           badge: "After",       displayOrder: 2 },
+          { src: "/gallery/spotlight-after-2.jpeg",     alt: "After: turf with flagstone and planter boxes",badge: "After",       displayOrder: 3 },
+          { src: "/gallery/spotlight-after-3.jpeg",     alt: "After: flagstone patio and turf, tree feature",badge: "After",      displayOrder: 4 },
+          { src: "/gallery/spotlight-after-4.jpeg",     alt: "After: golden hour full reveal",              badge: "After",       displayOrder: 5 },
+        ],
+      },
+      {
+        name: "Turf & Pavers",
+        displayOrder: 1,
+        items: [
+          { src: "/gallery/pool-stepping-stones.webp",   alt: "Pool with turf and stepping stones",                  displayOrder: 0 },
+          { src: "/gallery/pool-diamond-pavers.webp",    alt: "Pool with diamond turf and paver surround",           displayOrder: 1 },
+          { src: "/gallery/outdoor-kitchen-pavers.webp", alt: "Covered outdoor kitchen with fire pit and pavers",    displayOrder: 2 },
+          { src: "/gallery/firepit-pavers-night.webp",   alt: "Fire pit with turf grid at night",                   displayOrder: 3 },
+          { src: "/gallery/aerial-pool-turf-1.jpeg",     alt: "Aerial view: pool with turf and paver install",       displayOrder: 4 },
+          { src: "/gallery/aerial-pool-turf-2.jpeg",     alt: "Aerial view: pool and turf backyard",                displayOrder: 5 },
+          { src: "/gallery/aerial-pool-turf-3.jpeg",     alt: "Aerial view: full turf backyard with pool",           displayOrder: 6 },
+          { src: "/gallery/aerial-pool-turf-4.jpeg",     alt: "Aerial view: modern pool with turf and fire pit",     displayOrder: 7 },
+        ],
+      },
+      {
+        name: "Custom Patterns",
+        displayOrder: 2,
+        items: [
+          { src: "/gallery/pattern-diamond-factory.jpeg", alt: "Custom diamond-cut turf pattern",          displayOrder: 0 },
+          { src: "/gallery/pattern-floral-wall.jpeg",     alt: "Custom floral turf accent wall",           displayOrder: 1 },
+          { src: "/gallery/pattern-circular-luxury.jpeg", alt: "Custom circular pattern on luxury estate", displayOrder: 2 },
+        ],
+      },
+      {
+        name: "Putting Greens",
+        displayOrder: 3,
+        items: [
+          { src: "/gallery/putting-green-aerial-1.jpeg",  alt: "Aerial view: multi-hole putting green",   displayOrder: 0 },
+          { src: "/gallery/putting-green-aerial-2.jpeg",  alt: "Aerial view: putting green alternate angle",displayOrder: 1 },
+          { src: "/gallery/putting-green-gazebo.jpeg",    alt: "Putting green with backyard gazebo",       displayOrder: 2 },
+          { src: "/gallery/putting-green-side-yard.jpeg", alt: "Dual putting green in side yard",          displayOrder: 3 },
+        ],
+      },
+      {
+        name: "Sports & Commercial",
+        displayOrder: 4,
+        items: [
+          { src: "/gallery/sports-mini-soccer.jpeg",       alt: "Backyard mini soccer field with turf",   displayOrder: 0 },
+          { src: "/gallery/sports-commercial-soccer.jpeg", alt: "Full indoor commercial soccer field",    displayOrder: 1 },
+        ],
+      },
+      {
+        name: "Outdoor Living",
+        displayOrder: 5,
+        items: [
+          { src: "/gallery/outdoor-living-pergola.jpeg", alt: "Modern pergola with outdoor seating", displayOrder: 0 },
+        ],
+      },
+      {
+        name: "Residential",
+        displayOrder: 6,
+        items: [
+          { src: "/gallery/residential-playground.jpeg", alt: "Children's playground on artificial turf",          displayOrder: 0 },
+          { src: "/gallery/residential-frontyard.jpeg",  alt: "Clean front yard turf and pavers, aerial view", displayOrder: 1 },
+        ],
+      },
+    ];
+
+    for (const sectionData of SECTIONS) {
+      const section = await storage.createGallerySection({
+        name: sectionData.name,
+        displayOrder: sectionData.displayOrder,
+        isActive: true,
+      });
+      for (const item of sectionData.items) {
+        await storage.createGalleryItem({
+          sectionId: section.id,
+          src: item.src,
+          alt: item.alt,
+          badge: (item as any).badge || null,
+          displayOrder: item.displayOrder,
+          isActive: true,
+        });
+      }
+    }
+
+    await storage.setSetting("gallery_seeded_v1", "done");
+    log(`[gallery seed] Seeded ${SECTIONS.length} sections with 26 images`);
+  } catch (err) {
+    log(`[gallery seed] Failed: ${err}`);
+  }
+}
+
 (async () => {
   await seedRootUser();
   await runOneTimePDRCleanup();
+  await seedGallery();
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

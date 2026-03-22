@@ -303,6 +303,33 @@ export const insertServiceSchema = createInsertSchema(services).omit({
 export type InsertService = z.infer<typeof insertServiceSchema>;
 export type Service = typeof services.$inferSelect;
 
+export const gallerySections = pgTable("gallery_sections", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertGallerySectionSchema = createInsertSchema(gallerySections).omit({ id: true, createdAt: true });
+export type InsertGallerySection = z.infer<typeof insertGallerySectionSchema>;
+export type GallerySection = typeof gallerySections.$inferSelect;
+
+export const galleryItems = pgTable("gallery_items", {
+  id: serial("id").primaryKey(),
+  sectionId: integer("section_id").notNull().references(() => gallerySections.id, { onDelete: "cascade" }),
+  src: text("src").notNull(),
+  alt: text("alt").notNull(),
+  badge: text("badge"),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertGalleryItemSchema = createInsertSchema(galleryItems).omit({ id: true, createdAt: true });
+export type InsertGalleryItem = z.infer<typeof insertGalleryItemSchema>;
+export type GalleryItem = typeof galleryItems.$inferSelect;
+
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
