@@ -3227,32 +3227,35 @@ function ServiceCard({
 type GallerySectionWithItems = GallerySection & { items: GalleryItem[] };
 
 function GalleryTab({ toast }: { toast: any }) {
-  const adminSections = useQuery<GallerySection[]>({
-    queryKey: ["/api/gallery/sections"],
-  });
-
-  const galleryData = useQuery<{ sections: GallerySectionWithItems[] }>({
-    queryKey: ["/api/gallery"],
+  const adminGallery = useQuery<{ sections: GallerySectionWithItems[] }>({
+    queryKey: ["/api/gallery/admin"],
   });
 
   const [expandedSection, setExpandedSection] = useState<number | null>(null);
   const [addSectionName, setAddSectionName] = useState("");
   const [addingSection, setAddingSection] = useState(false);
+  const [renamingSectionId, setRenamingSectionId] = useState<number | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
   const [editingItem, setEditingItem] = useState<number | null>(null);
   const [itemDraft, setItemDraft] = useState<{ src: string; alt: string; badge: string }>({ src: "", alt: "", badge: "" });
-  const [addItemDraft, setAddItemDraft] = useState<{ src: string; alt: string; badge: string }>({ src: "", alt: "", badge: "" });
+  const [addItemDraft, setAddItemDraft] = useState<{ src: string; alt: string; badge: string; displayOrder: string }>({ src: "", alt: "", badge: "", displayOrder: "" });
   const [addingItemToSection, setAddingItemToSection] = useState<number | null>(null);
 
-  const sections = adminSections.data ?? [];
+  const allSections = adminGallery.data?.sections ?? [];
+
+  const invalidateGallery = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/gallery/admin"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
+  };
 
   const createSection = useMutation({
     mutationFn: async (name: string) => {
-      const maxOrder = sections.length > 0 ? Math.max(...sections.map((s) => s.displayOrder)) + 1 : 0;
+      const maxOrder = allSections.length > 0 ? Math.max(...allSections.map((s) => s.displayOrder)) + 1 : 0;
       await apiRequest("POST", "/api/gallery/sections", { name, displayOrder: maxOrder });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      invalidateGallery();
       setAddSectionName("");
       setAddingSection(false);
       toast({ title: "Section created" });
@@ -3264,10 +3267,7 @@ function GalleryTab({ toast }: { toast: any }) {
     mutationFn: async ({ id, ...data }: { id: number } & Partial<GallerySection>) => {
       await apiRequest("PATCH", `/api/gallery/sections/${id}`, data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
-    },
+    onSuccess: () => { invalidateGallery(); },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
@@ -3276,23 +3276,23 @@ function GalleryTab({ toast }: { toast: any }) {
       await apiRequest("DELETE", `/api/gallery/sections/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery/sections"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      invalidateGallery();
       toast({ title: "Section deleted" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const createItem = useMutation({
-    mutationFn: async ({ sectionId, src, alt, badge }: { sectionId: number; src: string; alt: string; badge: string }) => {
-      const sectionItems = galleryData.data?.sections?.find((s) => s.id === sectionId)?.items ?? [];
-      const maxOrder = sectionItems.length > 0 ? Math.max(...sectionItems.map((i) => i.displayOrder)) + 1 : 0;
-      await apiRequest("POST", "/api/gallery/items", { sectionId, src, alt, badge: badge || null, displayOrder: maxOrder });
+    mutationFn: async ({ sectionId, src, alt, badge, displayOrder }: { sectionId: number; src: string; alt: string; badge: string; displayOrder: string }) => {
+      const parsed = parseInt(displayOrder);
+      const sectionItems = allSections.find((s) => s.id === sectionId)?.items ?? [];
+      const order = isNaN(parsed) ? (sectionItems.length > 0 ? Math.max(...sectionItems.map((i) => i.displayOrder)) + 1 : 0) : parsed;
+      await apiRequest("POST", "/api/gallery/items", { sectionId, src, alt, badge: badge || null, displayOrder: order });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      invalidateGallery();
       setAddingItemToSection(null);
-      setAddItemDraft({ src: "", alt: "", badge: "" });
+      setAddItemDraft({ src: "", alt: "", badge: "", displayOrder: "" });
       toast({ title: "Image added" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
@@ -3303,7 +3303,7 @@ function GalleryTab({ toast }: { toast: any }) {
       await apiRequest("PATCH", `/api/gallery/items/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      invalidateGallery();
       setEditingItem(null);
       toast({ title: "Image updated" });
     },
@@ -3315,14 +3315,14 @@ function GalleryTab({ toast }: { toast: any }) {
       await apiRequest("DELETE", `/api/gallery/items/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/gallery"] });
+      invalidateGallery();
       toast({ title: "Image removed" });
     },
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   function swapSectionOrder(sectionId: number, direction: "up" | "down") {
-    const sorted = [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
+    const sorted = [...allSections].sort((a, b) => a.displayOrder - b.displayOrder);
     const idx = sorted.findIndex((s) => s.id === sectionId);
     if (direction === "up" && idx === 0) return;
     if (direction === "down" && idx === sorted.length - 1) return;
@@ -3332,7 +3332,18 @@ function GalleryTab({ toast }: { toast: any }) {
     updateSection.mutate({ id: swapWith.id, displayOrder: curr.displayOrder });
   }
 
-  if (adminSections.isLoading) {
+  function swapItemOrder(sectionId: number, itemId: number, direction: "up" | "down") {
+    const items = [...(allSections.find((s) => s.id === sectionId)?.items ?? [])].sort((a, b) => a.displayOrder - b.displayOrder);
+    const idx = items.findIndex((i) => i.id === itemId);
+    if (direction === "up" && idx === 0) return;
+    if (direction === "down" && idx === items.length - 1) return;
+    const swapWith = direction === "up" ? items[idx - 1] : items[idx + 1];
+    const curr = items[idx];
+    updateItem.mutate({ id: curr.id, displayOrder: swapWith.displayOrder });
+    updateItem.mutate({ id: swapWith.id, displayOrder: curr.displayOrder });
+  }
+
+  if (adminGallery.isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-6 h-6 text-[#5D3FD3] animate-spin" data-testid="loader-gallery" />
@@ -3340,13 +3351,13 @@ function GalleryTab({ toast }: { toast: any }) {
     );
   }
 
-  const sortedSections = [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sortedSections = [...allSections].sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50">
-          {sections.length} section{sections.length !== 1 ? "s" : ""}
+          {allSections.length} section{allSections.length !== 1 ? "s" : ""}
         </p>
         <Button
           className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
@@ -3385,8 +3396,9 @@ function GalleryTab({ toast }: { toast: any }) {
       )}
 
       {sortedSections.map((section, sIdx) => {
-        const sectionItems = galleryData.data?.sections?.find((s) => s.id === section.id)?.items ?? [];
+        const sectionItems = [...(section.items)].sort((a, b) => a.displayOrder - b.displayOrder);
         const isExpanded = expandedSection === section.id;
+        const isRenaming = renamingSectionId === section.id;
 
         return (
           <div
@@ -3414,41 +3426,80 @@ function GalleryTab({ toast }: { toast: any }) {
                 </button>
               </div>
 
-              <button
-                className="flex-1 flex items-center gap-3 text-left"
-                onClick={() => setExpandedSection(isExpanded ? null : section.id)}
-                data-testid={`button-expand-section-${section.id}`}
-              >
-                <span className="text-sm font-medium text-[#F5F5F7]">{section.name}</span>
-                <span className="text-xs text-[#B3B3B8]/40">{sectionItems.length} images</span>
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-[#B3B3B8]/40 uppercase tracking-wider">Active</span>
-                  <Switch
-                    checked={section.isActive}
-                    onCheckedChange={(v) => updateSection.mutate({ id: section.id, isActive: v })}
-                    data-testid={`switch-section-active-${section.id}`}
+              {isRenaming ? (
+                <div className="flex-1 flex items-center gap-2">
+                  <Input
+                    value={renameDraft}
+                    onChange={(e) => setRenameDraft(e.target.value)}
+                    autoFocus
+                    className="bg-[#0B0B0D] border-white/10 text-[#F5F5F7] text-sm h-8"
+                    data-testid={`input-rename-section-${section.id}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        updateSection.mutate({ id: section.id, name: renameDraft });
+                        setRenamingSectionId(null);
+                      }
+                      if (e.key === "Escape") setRenamingSectionId(null);
+                    }}
                   />
+                  <Button
+                    className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs h-8 px-3"
+                    disabled={!renameDraft.trim() || updateSection.isPending}
+                    onClick={() => { updateSection.mutate({ id: section.id, name: renameDraft }); setRenamingSectionId(null); }}
+                    data-testid={`button-confirm-rename-section-${section.id}`}
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" className="text-[#B3B3B8] text-xs h-8 px-2" onClick={() => setRenamingSectionId(null)}>
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
                 </div>
+              ) : (
                 <button
-                  onClick={() => {
-                    if (!confirm(`Delete section "${section.name}" and all its images?`)) return;
-                    deleteSection.mutate(section.id);
-                  }}
-                  className="text-[#B3B3B8]/40 hover:text-red-400 transition-colors"
-                  data-testid={`button-delete-section-${section.id}`}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <button
+                  className="flex-1 flex items-center gap-3 text-left"
                   onClick={() => setExpandedSection(isExpanded ? null : section.id)}
-                  className="text-[#B3B3B8]/40 hover:text-[#B3B3B8] transition-colors"
+                  data-testid={`button-expand-section-${section.id}`}
                 >
-                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <span className="text-sm font-medium text-[#F5F5F7]">{section.name}</span>
+                  <span className="text-xs text-[#B3B3B8]/40">{sectionItems.length} images</span>
                 </button>
-              </div>
+              )}
+
+              {!isRenaming && (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => { setRenamingSectionId(section.id); setRenameDraft(section.name); }}
+                    className="p-1 text-[#B3B3B8]/40 hover:text-[#B3B3B8] transition-colors"
+                    data-testid={`button-rename-section-${section.id}`}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-[#B3B3B8]/40 uppercase tracking-wider">Active</span>
+                    <Switch
+                      checked={section.isActive}
+                      onCheckedChange={(v) => updateSection.mutate({ id: section.id, isActive: v })}
+                      data-testid={`switch-section-active-${section.id}`}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!confirm(`Delete section "${section.name}" and all its images?`)) return;
+                      deleteSection.mutate(section.id);
+                    }}
+                    className="text-[#B3B3B8]/40 hover:text-red-400 transition-colors"
+                    data-testid={`button-delete-section-${section.id}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                    className="text-[#B3B3B8]/40 hover:text-[#B3B3B8] transition-colors"
+                  >
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              )}
             </div>
 
             {isExpanded && (
@@ -3456,10 +3507,10 @@ function GalleryTab({ toast }: { toast: any }) {
                 {sectionItems.length === 0 && (
                   <p className="text-sm text-[#B3B3B8]/40 italic" data-testid={`text-no-items-${section.id}`}>No images in this section.</p>
                 )}
-                {sectionItems.map((item) => (
+                {sectionItems.map((item, iIdx) => (
                   <div
                     key={item.id}
-                    className="rounded-md bg-[#0B0B0D] border border-white/5 overflow-hidden"
+                    className={`rounded-md border overflow-hidden ${item.isActive ? "bg-[#0B0B0D] border-white/5" : "bg-[#0B0B0D]/50 border-white/5 opacity-60"}`}
                     data-testid={`card-item-${item.id}`}
                   >
                     {editingItem === item.id ? (
@@ -3507,6 +3558,24 @@ function GalleryTab({ toast }: { toast: any }) {
                       </div>
                     ) : (
                       <div className="flex flex-wrap items-center gap-3 p-3">
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            onClick={() => swapItemOrder(section.id, item.id, "up")}
+                            disabled={iIdx === 0}
+                            className="p-0.5 text-[#B3B3B8]/30 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+                            data-testid={`button-item-up-${item.id}`}
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => swapItemOrder(section.id, item.id, "down")}
+                            disabled={iIdx === sectionItems.length - 1}
+                            className="p-0.5 text-[#B3B3B8]/30 hover:text-[#B3B3B8] disabled:opacity-20 transition-colors"
+                            data-testid={`button-item-down-${item.id}`}
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                        </div>
                         <img
                           src={item.src}
                           alt={item.alt}
@@ -3578,6 +3647,14 @@ function GalleryTab({ toast }: { toast: any }) {
                       className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
                       data-testid={`input-new-item-badge-${section.id}`}
                     />
+                    <Input
+                      value={addItemDraft.displayOrder}
+                      onChange={(e) => setAddItemDraft((d) => ({ ...d, displayOrder: e.target.value }))}
+                      placeholder={`Display order (leave blank to append after ${sectionItems.length > 0 ? sectionItems[sectionItems.length - 1].displayOrder : 0})`}
+                      type="number"
+                      className="bg-[#141416] border-white/10 text-[#F5F5F7] text-xs"
+                      data-testid={`input-new-item-order-${section.id}`}
+                    />
                     <div className="flex gap-2 pt-1">
                       <Button
                         className="bg-[#5D3FD3] hover:bg-[#4a32a8] text-white border-0 text-xs"
@@ -3591,7 +3668,7 @@ function GalleryTab({ toast }: { toast: any }) {
                       <Button
                         variant="ghost"
                         className="text-[#B3B3B8] text-xs"
-                        onClick={() => { setAddingItemToSection(null); setAddItemDraft({ src: "", alt: "", badge: "" }); }}
+                        onClick={() => { setAddingItemToSection(null); setAddItemDraft({ src: "", alt: "", badge: "", displayOrder: "" }); }}
                       >
                         Cancel
                       </Button>
@@ -3600,7 +3677,7 @@ function GalleryTab({ toast }: { toast: any }) {
                 ) : (
                   <button
                     className="w-full py-3 rounded-md border border-dashed border-white/10 text-xs text-[#B3B3B8]/40 hover:text-[#B3B3B8] hover:border-white/20 transition-colors"
-                    onClick={() => { setAddingItemToSection(section.id); setAddItemDraft({ src: "", alt: "", badge: "" }); }}
+                    onClick={() => { setAddingItemToSection(section.id); setAddItemDraft({ src: "", alt: "", badge: "", displayOrder: "" }); }}
                     data-testid={`button-add-item-${section.id}`}
                   >
                     <Plus className="w-3.5 h-3.5 inline mr-1" />

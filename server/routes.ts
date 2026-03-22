@@ -1751,6 +1751,15 @@ Generate only the requested fields. Respond in this exact JSON format:
     }
   });
 
+  app.get("/api/gallery/admin", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const gallery = await storage.getAdminGallery();
+      res.json(gallery);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch admin gallery" });
+    }
+  });
+
   // ─── Gallery Section Management (root + admin) ────────────────
 
   app.get("/api/gallery/sections", authMiddleware, requireRole("root", "admin"), async (_req, res) => {

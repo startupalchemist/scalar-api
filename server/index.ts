@@ -95,12 +95,15 @@ async function runOneTimePDRCleanup(): Promise<void> {
   }
 }
 
+type SeedItem = { src: string; alt: string; badge?: string; displayOrder: number };
+type SeedSection = { name: string; displayOrder: number; items: SeedItem[] };
+
 async function seedGallery(): Promise<void> {
   try {
     const flag = await storage.getSetting("gallery_seeded_v1");
     if (flag === "done") return;
 
-    const SECTIONS = [
+    const SECTIONS: SeedSection[] = [
       {
         name: "Project Spotlight",
         displayOrder: 0,
@@ -182,7 +185,7 @@ async function seedGallery(): Promise<void> {
           sectionId: section.id,
           src: item.src,
           alt: item.alt,
-          badge: (item as any).badge || null,
+          badge: item.badge ?? null,
           displayOrder: item.displayOrder,
           isActive: true,
         });

@@ -106,6 +106,7 @@ export interface IStorage {
   deleteService(id: number): Promise<void>;
 
   getPublicGallery(): Promise<{ sections: (GallerySection & { items: GalleryItem[] })[] }>;
+  getAdminGallery(): Promise<{ sections: (GallerySection & { items: GalleryItem[] })[] }>;
   getGallerySections(): Promise<GallerySection[]>;
   getGallerySectionById(id: number): Promise<GallerySection | undefined>;
   createGallerySection(data: InsertGallerySection): Promise<GallerySection>;
@@ -424,6 +425,23 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(galleryItems)
         .where(and(eq(galleryItems.sectionId, section.id), eq(galleryItems.isActive, true)))
+        .orderBy(galleryItems.displayOrder);
+      result.push({ ...section, items });
+    }
+    return { sections: result };
+  }
+
+  async getAdminGallery(): Promise<{ sections: (GallerySection & { items: GalleryItem[] })[] }> {
+    const sections = await db
+      .select()
+      .from(gallerySections)
+      .orderBy(gallerySections.displayOrder);
+    const result: (GallerySection & { items: GalleryItem[] })[] = [];
+    for (const section of sections) {
+      const items = await db
+        .select()
+        .from(galleryItems)
+        .where(eq(galleryItems.sectionId, section.id))
         .orderBy(galleryItems.displayOrder);
       result.push({ ...section, items });
     }
