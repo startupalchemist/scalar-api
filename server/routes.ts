@@ -416,7 +416,11 @@ export async function registerRoutes(
       for (const post of allPosts) {
         await storage.deletePost(post.id);
       }
-      res.json({ message: `Deleted ${allPosts.length} posts` });
+      const allTopics = await storage.getTopics();
+      for (const topic of allTopics) {
+        await storage.updateTopic(topic.id, { status: "archived", postId: null });
+      }
+      res.json({ message: `Deleted ${allPosts.length} posts and archived ${allTopics.length} topics` });
     } catch {
       res.status(500).json({ message: "Failed to purge posts" });
     }
@@ -1454,6 +1458,29 @@ Respond in JSON format:
   });
 
   // ─── Settings Routes ─────────────────────────────────────────
+
+  // Explicit blog-services endpoint (also accessible via generic /:key below)
+  app.get("/api/settings/blog-services", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
+    try {
+      const val = await storage.getSetting("blog_services");
+      res.json({ key: "blog_services", value: val ?? null });
+    } catch {
+      res.status(500).json({ message: "Failed to fetch blog services" });
+    }
+  });
+
+  app.put("/api/settings/blog-services", authMiddleware, requireRole("root", "admin"), async (req, res) => {
+    try {
+      const { value } = req.body;
+      if (typeof value !== "string") {
+        return res.status(400).json({ message: "Value must be a string" });
+      }
+      await storage.setSetting("blog_services", value);
+      res.json({ key: "blog_services", value });
+    } catch {
+      res.status(500).json({ message: "Failed to update blog services" });
+    }
+  });
 
   app.get("/api/settings/:key", authMiddleware, requireRole("root", "admin"), async (req, res) => {
     try {

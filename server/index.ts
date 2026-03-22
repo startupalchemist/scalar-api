@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { seedRootUser } from "./auth";
+import { storage } from "./storage";
 
 const app = express();
 const httpServer = createServer(app);
@@ -62,8 +63,35 @@ app.use((req, res, next) => {
   next();
 });
 
+async function runOneTimePDRCleanup(): Promise<void> {
+  try {
+    const flag = await storage.getSetting("pdr_cleanup_v1");
+    if (flag === "done") return;
+
+    const allPosts = await storage.getPosts();
+    let deletedPosts = 0;
+    for (const post of allPosts) {
+      await storage.deletePost(post.id);
+      deletedPosts++;
+    }
+
+    const allTopics = await storage.getTopics();
+    let archivedTopics = 0;
+    for (const topic of allTopics) {
+      await storage.updateTopic(topic.id, { status: "archived", postId: null });
+      archivedTopics++;
+    }
+
+    await storage.setSetting("pdr_cleanup_v1", "done");
+    log(`[startup cleanup] Removed ${deletedPosts} PDR-era posts, archived ${archivedTopics} topics`);
+  } catch (err) {
+    log(`[startup cleanup] Failed: ${err}`);
+  }
+}
+
 (async () => {
   await seedRootUser();
+  await runOneTimePDRCleanup();
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
