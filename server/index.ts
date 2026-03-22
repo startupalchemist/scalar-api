@@ -65,25 +65,20 @@ app.use((req, res, next) => {
 
 async function runOneTimePDRCleanup(): Promise<void> {
   try {
-    const flag = await storage.getSetting("pdr_cleanup_v1");
+    // v2 supersedes v1: no date filter, deletes ALL published/queued legacy posts
+    const flag = await storage.getSetting("pdr_cleanup_v2");
     if (flag === "done") return;
 
-    // Remove published and queued legacy PDR-era posts (created before the Reign Services rebrand date)
-    const rebrandDate = new Date("2026-03-01T00:00:00Z");
     const allPosts = await storage.getPosts();
-    const publishedPosts = allPosts.filter(
-      (p) =>
-        (p.status === "published" || p.status === "queued") &&
-        new Date(p.createdAt) < rebrandDate
-    );
-    const removedPostIds = new Set(publishedPosts.map((p) => p.id));
+    const legacyPosts = allPosts.filter((p) => p.status === "published" || p.status === "queued");
+    const removedPostIds = new Set(legacyPosts.map((p) => p.id));
     let deletedPosts = 0;
-    for (const post of publishedPosts) {
+    for (const post of legacyPosts) {
       await storage.deletePost(post.id);
       deletedPosts++;
     }
 
-    // Hard-delete topics that were linked to the removed published posts
+    // Hard-delete topics linked to removed posts
     const allTopics = await storage.getTopics();
     let deletedTopics = 0;
     for (const topic of allTopics) {
@@ -93,8 +88,8 @@ async function runOneTimePDRCleanup(): Promise<void> {
       }
     }
 
-    await storage.setSetting("pdr_cleanup_v1", "done");
-    log(`[startup cleanup] Removed ${deletedPosts} PDR-era published posts and ${deletedTopics} associated topics`);
+    await storage.setSetting("pdr_cleanup_v2", "done");
+    log(`[startup cleanup v2] Removed ${deletedPosts} legacy published/queued posts and ${deletedTopics} associated topics; ${allPosts.length - legacyPosts.length} draft posts preserved`);
   } catch (err) {
     log(`[startup cleanup] Failed: ${err}`);
   }
