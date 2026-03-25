@@ -47,17 +47,19 @@ export default function Footer() {
               </Link>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 bg-transparent">
               <a
                 href="https://tachyonbuilt.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="link-truetrade-footer"
+                className="inline-block bg-transparent"
               >
                 <img
                   src="/truetrade-certified-nobg.png"
                   alt="TrueTrade Certified 11.7"
-                  className="h-20 w-auto opacity-90 hover:opacity-100 transition-opacity"
+                  className="h-20 w-auto opacity-90 hover:opacity-100 transition-opacity bg-transparent"
+                  style={{ background: "transparent", mixBlendMode: "normal" }}
                 />
               </a>
             </div>

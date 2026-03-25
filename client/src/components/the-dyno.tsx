@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import logoMark from "@assets/Asset_6_1770967674840.png";
 
 interface DynoData {
   rpm: number;
@@ -258,7 +257,12 @@ export default function TheDyno() {
         <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="h-px flex-1 max-w-16" style={{ background: "linear-gradient(to right, transparent, #5D3FD333)" }} />
-            <img src={logoMark} alt="DS" className="h-5 w-auto opacity-30" />
+            <img
+              src="/startup-alchemist-rocket.png"
+              alt="Startup Alchemist"
+              className="h-5 w-5 object-contain"
+              style={{ filter: "brightness(0) invert(1)", opacity: 0.3 }}
+            />
             <span className="text-[10px] uppercase tracking-[0.4em] text-[#5D3FD3]/40 font-semibold">
               The Dyno
             </span>
