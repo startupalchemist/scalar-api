@@ -27,6 +27,7 @@ const InteriorRemodeling = lazy(() => import("@/pages/interior-remodeling"));
 const OutdoorRemodeling = lazy(() => import("@/pages/outdoor-remodeling"));
 const OutdoorLiving = lazy(() => import("@/pages/outdoor-living"));
 const TurfAndPavers = lazy(() => import("@/pages/turf-and-pavers"));
+const ServiceDetail = lazy(() => import("@/pages/service-detail"));
 
 function PageLoader() {
   return (
@@ -58,6 +59,8 @@ function Router() {
         <Route path="/outdoor-remodeling" component={OutdoorRemodeling} />
         <Route path="/outdoor-living" component={OutdoorLiving} />
         <Route path="/turf-and-pavers" component={TurfAndPavers} />
+
+        <Route path="/:slug" component={ServiceDetail} />
 
         <Route component={NotFound} />
       </Switch>

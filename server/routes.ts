@@ -1606,6 +1606,18 @@ Respond in JSON format:
     }
   });
 
+  app.get("/api/services/by-slug/:slug", async (req, res) => {
+    try {
+      const slug = `/${req.params.slug}`;
+      const all = await storage.getServices();
+      const service = all.find((s) => s.isActive && s.slug === slug);
+      if (!service) return res.status(404).json({ message: "Service not found" });
+      res.json(service);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch service" });
+    }
+  });
+
   app.get("/api/services", authMiddleware, requireRole("root", "admin"), async (_req, res) => {
     try {
       const all = await storage.getServices();

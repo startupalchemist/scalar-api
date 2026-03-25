@@ -2443,6 +2443,10 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
     },
   });
 
+  const { data: activeServices = [] } = useQuery<Service[]>({
+    queryKey: ["/api/services/public"],
+  });
+
   const [globalForm, setGlobalForm] = useState<SeoGlobal>({ siteTitle: "", metaDescription: "", ogImageUrl: "" });
   const [pages, setPages] = useState<PageSeo[]>(DEFAULT_PAGES);
   const [editingPage, setEditingPage] = useState<string | null>(null);
@@ -2458,6 +2462,19 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
     if (seoData.keywords) setKeywords(seoData.keywords);
     setInitialized(true);
   }
+
+  const mergedPages: PageSeo[] = [
+    ...pages,
+    ...activeServices
+      .filter((s) => s.slug && !pages.some((p) => p.route === s.slug))
+      .map((s) => ({
+        page: s.title,
+        route: s.slug,
+        title: "",
+        description: "",
+        keywords: "",
+      })),
+  ];
 
   const saveMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
@@ -2479,13 +2496,16 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
   const handleGlobalSave = () => saveMutation.mutate({ key: "seo_global", value: globalForm });
 
   const handlePageEdit = (route: string) => {
-    const p = pages.find(p => p.route === route);
+    const p = mergedPages.find(p => p.route === route);
     if (p) { setEditingPage(route); setEditPageForm({ ...p }); }
   };
 
   const handlePageSave = () => {
     if (!editPageForm) return;
-    const updated = pages.map(p => p.route === editPageForm.route ? editPageForm : p);
+    const exists = pages.some(p => p.route === editPageForm.route);
+    const updated = exists
+      ? pages.map(p => p.route === editPageForm.route ? editPageForm : p)
+      : [...pages, editPageForm];
     setPages(updated);
     saveMutation.mutate({ key: "seo_pages", value: updated });
     setEditingPage(null);
@@ -2581,7 +2601,7 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
             <FileText className="w-4 h-4 text-[#B3B3B8]/50" />
             <h3 className="text-xs uppercase tracking-[0.3em] text-[#B3B3B8]/50 font-medium">Page SEO Manager</h3>
           </div>
-          <span className="text-xs text-[#B3B3B8]/30">{pages.length} pages</span>
+          <span className="text-xs text-[#B3B3B8]/30">{mergedPages.length} pages</span>
         </div>
 
         {editingPage && editPageForm && isRoot ? (
@@ -2623,7 +2643,7 @@ function SeoTab({ toast, userRole }: { toast: any; userRole: string }) {
               </tr>
             </thead>
             <tbody>
-              {pages.map((p) => (
+              {mergedPages.map((p) => (
                 <tr key={p.route} className="border-b border-white/5 align-top" data-testid={`row-page-seo-${p.route.replace(/\//g, "-")}`}>
                   <td className="py-3 px-3 text-[#F5F5F7] font-medium whitespace-nowrap">{p.page}</td>
                   <td className="py-3 px-3 text-[#5D3FD3] text-xs whitespace-nowrap">{p.route}</td>
