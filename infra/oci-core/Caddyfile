@@ -1,0 +1,5 @@
+:80 {
+  @health path /healthz
+  respond @health "{\"status\":\"ok\",\"service\":\"txl-edge\"}" 200
+  respond "TachyonX infrastructure is running. Application deployment pending." 503
+}

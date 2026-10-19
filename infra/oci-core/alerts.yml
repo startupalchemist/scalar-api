@@ -1,0 +1,20 @@
+groups:
+  - name: core
+    rules:
+      - alert: TargetUnavailable
+        expr: up == 0
+        for: 3m
+        labels: {severity: critical}
+        annotations: {summary: "A monitored component is unavailable"}
+      - alert: HostMemoryPressure
+        expr: 1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes > 0.80
+        for: 15m
+        labels: {severity: warning}
+      - alert: HostDiskPressure
+        expr: (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}) > 0.75
+        for: 15m
+        labels: {severity: warning}
+      - alert: BackupMissingOrStale
+        expr: (time() - txl_backup_last_success_timestamp_seconds > 93600) or absent(txl_backup_last_success_timestamp_seconds)
+        for: 15m
+        labels: {severity: critical}
