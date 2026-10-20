@@ -1,0 +1,8 @@
+[Unit]
+Description=Hourly TXL PostgreSQL backup
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=120
+Persistent=true
+[Install]
+WantedBy=timers.target

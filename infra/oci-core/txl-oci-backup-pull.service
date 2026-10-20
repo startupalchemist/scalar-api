@@ -1,0 +1,7 @@
+[Unit]
+Description=Copy encrypted Oracle backups to Starlight
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/opt/txl/scripts/pull-oci-backups

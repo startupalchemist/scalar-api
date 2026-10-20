@@ -1,0 +1,7 @@
+[Unit]
+Description=Encrypted TXL PostgreSQL backup
+Requires=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+ExecStart=/srv/txl/core/backup.sh

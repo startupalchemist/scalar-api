@@ -11,3 +11,6 @@ Add production domains and test TLS before handling client data.
 Backups must be encrypted, copied off-host, and restored before production acceptance.
 Manual promotion and rollback must be implemented per app. Do not deploy unreviewed main branches automatically.
 Database credentials, SSH keys and all /etc/txl files must never be committed.
+
+
+Backup scheduling: install txl-postgres-backup.service/timer on Oracle for hourly encrypted dumps (7-day local retention). Install txl-oci-backup-pull.service/timer and pull-oci-backups on Starlight for copying the latest encrypted dump every fifteen minutes (30-day retention). Both timers are enabled on the initial hosts. The restore key remains root-only on Starlight. Notification delivery for failures still requires configuration.

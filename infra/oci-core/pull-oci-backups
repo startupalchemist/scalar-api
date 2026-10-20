@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+target=/opt/txl/backups/oci-app01
+mkdir -p "$target"
+chmod 700 "$target"
+remote_backup=$(ssh -i /opt/txl/secrets/oci/txl-oci-app01 -o BatchMode=yes -o ConnectTimeout=10 ubuntu@129.153.109.242 "sudo find /srv/txl/backups -maxdepth 1 -name 'postgres-*.sql.age' -type f | sort | tail -1")
+[[ "$remote_backup" =~ ^/srv/txl/backups/postgres-[0-9]{8}T[0-9]{6}Z.sql.age$ ]]
+file_name="${remote_backup##*/}"
+if [ ! -s "$target/$file_name" ]; then
+ ssh -i /opt/txl/secrets/oci/txl-oci-app01 -o BatchMode=yes -o ConnectTimeout=10 ubuntu@129.153.109.242 "sudo cat $remote_backup" > "$target/$file_name.tmp"
+ test -s "$target/$file_name.tmp"
+ mv "$target/$file_name.tmp" "$target/$file_name"
+fi
+find "$target" -name 'postgres-*.sql.age' -mtime +30 -delete
+echo "Encrypted backup copied to Starlight"
