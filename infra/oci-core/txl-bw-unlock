@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+if [ "$(id -u)" -eq 0 ]; then
+  exec runuser -l dev -c /usr/local/bin/txl-bw-unlock
+fi
+if [ "$(id -un)" != dev ]; then
+  echo "Connect to Starlight as dev or root to unlock the configured vault." >&2
+  exit 1
+fi
+umask 077
+session_file=/dev/shm/txl-bw-session
+if /usr/bin/bw unlock --raw > "$session_file"; then
+  if [ ! -s "$session_file" ]; then
+    rm -f "$session_file"
+    echo "Unlock returned no session. Try again." >&2
+    exit 1
+  fi
+  chmod 600 "$session_file"
+  echo "Bitwarden unlocked for this task. Tell Santiago: unlocked."
+else
+  rm -f "$session_file"
+  echo "Vault remains locked. Try again." >&2
+  exit 1
+fi
