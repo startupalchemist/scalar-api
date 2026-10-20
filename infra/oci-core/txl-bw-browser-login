@@ -58,10 +58,10 @@ def main():
         if not password:
             raise RuntimeError("No password entered.")
         window = verified_login_window()
-        command("xdotool", "mousemove", "--window", window, "190", "254", "click", "1", "key", "ctrl+a")
+        command("xdotool", "mousemove", "--window", window, "190", "274", "click", "1", "key", "ctrl+a")
         command("xdotool", "type", "--clearmodifiers", "--file", "-", value=password)
         password = None
-        command("xdotool", "mousemove", "--window", window, "190", "336", "click", "1")
+        command("xdotool", "mousemove", "--window", window, "190", "356", "click", "1")
     finally:
         password = None
     print("Browser login submitted. Tell Santiago: submitted.")
