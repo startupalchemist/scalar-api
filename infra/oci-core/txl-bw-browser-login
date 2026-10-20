@@ -1,0 +1,78 @@
+#!/usr/bin/python3
+"""One-time terminal input for the prepared, official Bitwarden extension login."""
+import getpass
+import hashlib
+import os
+import resource
+import subprocess
+import sys
+import time
+from PIL import ImageGrab
+
+EXTENSION_CLASS = "crx_nngceckbapebfimnlniiiahkandclblb"
+# Hash of the visually verified email/master-password labels, excluding input.
+EXPECTED_LABELS = "ebddd0630d6c8c1e76cbabe2178bf24359b2bef2d03c26007466170e20e22714"
+ENV = dict(os.environ, DISPLAY=":91")
+resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+
+def command(*args, value=None):
+    return subprocess.run(args, input=value, env=ENV, text=True,
+                          capture_output=True, check=True).stdout.strip()
+
+
+def verified_login_window():
+    windows = command("xdotool", "search", "--onlyvisible", "--classname",
+                      "^" + EXTENSION_CLASS + "$").splitlines()
+    if len(windows) != 1:
+        raise RuntimeError("The prepared Bitwarden window is unavailable.")
+    window = windows[0]
+    if command("xdotool", "getwindowname", window) != "Bitwarden":
+        raise RuntimeError("Bitwarden window identity did not match.")
+    if EXTENSION_CLASS not in command("xprop", "-id", window, "WM_CLASS"):
+        raise RuntimeError("The official extension window was not found.")
+    command("xdotool", "windowactivate", "--sync", window)
+    time.sleep(0.2)
+    geometry = dict(line.split("=", 1) for line in command(
+        "xdotool", "getwindowgeometry", "--shell", window).splitlines())
+    if (geometry["WIDTH"], geometry["HEIGHT"]) != ("480", "630"):
+        raise RuntimeError("The prepared Bitwarden window changed size.")
+    x, y = int(geometry["X"]), int(geometry["Y"])
+    labels = ImageGrab.grab(xdisplay=":91").crop((x+15, y+165, x+460, y+228))
+    if hashlib.sha256(labels.tobytes()).hexdigest() != EXPECTED_LABELS:
+        raise RuntimeError("The Bitwarden login view changed; ask Santiago to prepare it again.")
+    return window
+
+
+def main():
+    verified_login_window()
+    if sys.argv[1:] == ["--check"]:
+        print("Verified official Bitwarden extension and prepared password screen.")
+        return
+    if sys.argv[1:]:
+        raise RuntimeError("Run this command without arguments; never put a password on the command line.")
+    if not sys.stdin.isatty():
+        raise RuntimeError("Run this interactively from your Starlight terminal.")
+    password = getpass.getpass("Bitwarden master password (hidden): ")
+    try:
+        if not password:
+            raise RuntimeError("No password entered.")
+        window = verified_login_window()
+        command("xdotool", "mousemove", "--window", window, "190", "254", "click", "1", "key", "ctrl+a")
+        command("xdotool", "type", "--clearmodifiers", "--file", "-", value=password)
+        password = None
+        command("xdotool", "mousemove", "--window", window, "190", "336", "click", "1")
+    finally:
+        password = None
+    print("Browser login submitted. Tell Santiago: submitted.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nCancelled.", file=sys.stderr)
+        sys.exit(1)
+    except Exception as error:
+        print("Login helper stopped: " + str(error), file=sys.stderr)
+        sys.exit(1)
